@@ -1,0 +1,75 @@
+import shutil
+import os
+import numpy as np
+import abjad
+import glob
+import pdf2image
+import cv2
+import random
+from app.constants import *
+from app.config import config
+
+
+class Generator():
+    def __init__(self):
+        pass
+
+
+    def crop_staff_row(self, image, row: int):
+        dpi = config["pdf.dpi"]
+
+        top = config["pdf.staff.top-inch"]
+        height = config["pdf.staff.height-inch"]
+        vertical_margin = config["pdf.staff.vertical-margin-inch"]
+        row_stride = config["pdf.staff.row-stride-inch"]
+
+        offset = int(row_stride * dpi * row)
+        t = offset + int(top * dpi)
+        b = t + int(height * dpi)
+
+        t -= int(vertical_margin * dpi)
+        b += int(vertical_margin * dpi)
+
+        return image[t:b,:]
+
+
+    def convert_notation_to_image(self, notation):
+        shutil.rmtree(ABJAD_OUTPUT_DIR)
+        os.mkdir(ABJAD_OUTPUT_DIR)
+        abjad.show(notation, should_open=False)
+        filename = glob.glob(os.path.join(ABJAD_OUTPUT_DIR, "*.pdf"))[0]
+        pages = pdf2image.convert_from_path(
+            pdf_path=filename,
+            dpi=config["pdf.dpi"],
+            first_page=1,
+            last_page=1,
+            grayscale=True
+        )
+        img = np.array(pages[0], dtype=np.uint8) # numpy grayscale image
+        return img
+
+
+    def normalize_image_height(self, img):
+        target = config["normalized-height"]
+        ratio = target / img.shape[0]
+        w = int(img.shape[1] * ratio)
+        return cv2.resize(img, (w, target), interpolation=cv2.INTER_AREA)
+
+
+    def generate_notation_row(self) -> abjad.Staff:
+        duration = abjad.Duration(1, 4)
+        notes = [random.choice([abjad.Note("g'", duration), abjad.Rest(duration)]) for pitch in range(32)]
+        staff = abjad.Staff(notes)
+        return staff
+
+    def generate_notation_row_image(self, crop_row=1, normalize_image_height=False):
+        notation = self.generate_notation_row()
+        img = self.convert_notation_to_image(notation)
+
+        if crop_row is not False:
+            img = self.crop_staff_row(img, crop_row)
+
+        if normalize_image_height:
+            img = self.normalize_image_height(img)
+
+        return img

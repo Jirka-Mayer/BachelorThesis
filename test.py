@@ -12,7 +12,7 @@ ABJAD_OUTPUT_DIR = os.path.join(os.environ['HOME'], ".abjad/output")
 
 def crop_line(img):
     dpi = 300 # pixels per inch
-    
+
     # box containing staff lines only
     left = 0.98 # inch
     top = 0.38 # inch
