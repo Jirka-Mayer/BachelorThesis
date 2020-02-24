@@ -13,4 +13,4 @@ klasifikačních tříd, které se vyskytují zřídka).
 
 ## 2020-02-24
 
-- vývoj logiky kolem generování datasetu
+- programování logiky kolem generování a ukládání datasetu
