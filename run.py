@@ -4,6 +4,22 @@
 import app
 
 
+# setup datasets
+train_dataset = app.GeneratedDataset(
+    size=8,
+    name="train",
+    generator_options={}
+)
+train_dataset.load_or_generate_and_save()
+
+dev_dataset = app.GeneratedDataset(
+    size=2,
+    name="dev",
+    generator_options={}
+)
+dev_dataset.load_or_generate_and_save()
+
+# setup network
 network = app.Network(
     continual_saving=False,
     name="TestingNetwork",
@@ -11,17 +27,10 @@ network = app.Network(
 )
 network.construct(logdir="tf-logs")
 
-
-# ===========================================
-exit()
-
-import app
-import matplotlib.pyplot as plt
-
-
-dataset = app.GeneratedDataset(
-    size=3,
-    generator_options={}
+# train network
+network.train(
+    train_dataset,
+    dev_dataset,
+    epochs=1,
+    batch_size=1
 )
-dataset.load_or_generate_and_save()
-dataset.check_dataset_visually()

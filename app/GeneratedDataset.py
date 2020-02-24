@@ -28,6 +28,9 @@ class GeneratedDataset:
         # encoder used for working with the network output
         self.symbol_encoder = SymbolEncoder()
 
+        # permutation used for data retrieval (when training)
+        self.permutation = None
+
     #############
     # Debugging #
     #############
@@ -61,7 +64,10 @@ class GeneratedDataset:
     def load(self):
         data = pickle.load(open(self._path, "rb"))
         if data["size"] != self.size:
-            raise Error("Saved dataset has different size: " + data["size"])
+            raise Exception(
+                "Saved dataset has size %s, not %s" \
+                % (data["size"], self.size)
+            )
         self.images = data["images"]
         self.symbols = data["symbols"]
         self.labels = data["labels"]
@@ -113,3 +119,61 @@ class GeneratedDataset:
             symbols,
             self.symbol_encoder.encode_sequence(symbols)
         )
+
+    ##################
+    # Data interface #
+    ##################
+
+    def prepare_epoch(self):
+        """Call this before you start training an epoch"""
+        self.permutation = np.random.permutation(self.size)
+
+    def has_batch(self):
+        """Returns true if there is at least one more batch to be returned"""
+        if self.permutation is None:
+            return False
+        elif len(self.permutation) == 0:
+            return False
+        return True
+
+    def next_batch(self, batch_size=1):
+        """Returns the next batch for training"""
+        # take batch of indices
+        take = min(batch_size, len(self.permutation))
+        indices = self.permutation[0:take]
+        self.permutation = self.permutation[take:]
+
+        # resolve indices to data
+        picked_images = []
+        picked_labels = []
+        for i in indices:
+            picked_images.append(self.images[i])
+            picked_labels.append(self.labels[i])
+
+        # get maximum image width
+        max_image_width = 0
+        for i in picked_images:
+            if i.shape[1] > max_image_width:
+                max_image_width = i.shape[1]
+
+        # create output image tensor and fill it
+        image_tensor = np.empty(
+            shape=(take, self.image_height, max_image_width),
+            dtype=np.float32
+        )
+        image_widths = np.empty(
+            shape=(take,),
+            dtype=np.int32
+        )
+
+        for i in range(take):
+            w = picked_images[i].shape[1]
+            image_tensor[i, :, 0:w] = picked_images[i]
+            image_tensor[i, :, w:] = 1.0 # pad with white
+            image_widths[i] = w
+
+        return image_tensor, picked_labels, image_widths
+
+    def count_batches(self, batch_size):
+        """Returns the number of batches, with respect to a given batch size"""
+        return len(self.images) // batch_size

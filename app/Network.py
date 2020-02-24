@@ -3,6 +3,10 @@ import tensorflow as tf
 import os
 import cv2
 import shutil
+from typing import List
+from app.sparse_tensor_from_sequences import sparse_tensor_from_sequences
+from app.SymbolEncoder import SymbolEncoder
+from app.Symbol import Symbol
 
 
 class Network:
@@ -16,11 +20,11 @@ class Network:
         # name of the model (for continual saving)
         self.name = name
 
-        # number of output classes (not including blank)
-        self.num_classes = 2 # HACK: constant 2, for now
-
         # whether summaries are logged or not
         self.has_summaries = False
+
+        # symbol encoder used in netowrk output encoding
+        self.symbol_encoder = SymbolEncoder()
 
         # Create an empty graph and a session
         self.graph = tf.Graph()
@@ -195,7 +199,7 @@ class Network:
         # BxTx1x2H -> BxTx1xC -> BxTxC
         kernel = tf.Variable(
             tf.truncated_normal(
-                [1, 1, num_hidden * 2, self.num_classes + 1],
+                [1, 1, num_hidden * 2, self.symbol_encoder.num_classes + 1],
                 stddev=0.1
             )
         )
@@ -290,3 +294,149 @@ class Network:
                 session=self.session,
                 graph=self.session.graph
             )
+
+    #########################
+    # Training & prediction #
+    #########################
+
+    def train(self, train_dataset, dev_dataset, epochs, batch_size):
+        """
+        Train the model for given number of epochs over a given training dataset
+        and evaluate after each epoch on a given testing dataset.
+        """
+        for epoch in range(epochs):
+            self._train_epoch(
+                train_dataset,
+                dev_dataset,
+                epoch + 1,
+                epochs,
+                batch_size
+            )
+
+    def _train_epoch(self, train_dataset, dev_dataset, epoch, epochs, batch_size):
+        batches = train_dataset.count_batches(batch_size)
+        batch = 1
+        train_dataset.prepare_epoch()
+
+        while train_dataset.has_batch():
+            images, texts, widths = train_dataset.next_batch(batch_size)
+            rate = self._calculate_learning_rate(self.get_global_step())
+
+            # vars to evaluate
+            evaluate = [self.loss, self.greedy_edit_distance, self.training]
+            if self.has_summaries:
+                evaluate.append(self.summaries["train"])
+
+            # train
+            self.session.run(self.reset_metrics)
+            evaluated = self.session.run(evaluate, {
+                self.images: images,
+                self.labels: sparse_tensor_from_sequences(texts),
+                self.image_widths: widths,
+                self.is_training: True,
+                self.learning_rate: rate
+            })
+
+            loss = evaluated[0]
+            greedy_edit_distance = evaluated[1]
+
+            print("Epoch: %d/%s Batch: %d/%d Loss: %f ED: %f" % (
+                epoch, str(epochs), batch, batches, loss, greedy_edit_distance
+            ))
+
+            batch += 1
+
+        # and evaluate the performance after the epoch
+        return self._evaluate(dev_dataset, batch_size)
+
+    def _evaluate(self, dataset, batch_size, dataset_name="dev"):
+        batches = dataset.count_batches(batch_size)
+        batch = 1
+
+        self.session.run(self.reset_metrics)
+        dataset.prepare_epoch()
+
+        right_items = 0
+        all_items = 0
+        wrong_examples = []
+
+        while dataset.has_batch():
+            images, labels, widths = dataset.next_batch(batch_size)
+            predictions, _, _ = self.session.run([
+                self.predictions,
+                self.update_edit_distance,
+                self.update_loss
+            ], {
+                self.images: images,
+                self.labels: sparse_tensor_from_sequences(labels),
+                self.image_widths: widths,
+                self.is_training: False
+            })
+
+            all_items += batch_size
+            offset = 0
+            for i in range(len(labels)):
+                indices = predictions.indices[predictions.indices[:,0] == i, 1]
+                l = 0 if len(indices) == 0 else indices.max() + 1
+                label = self.symbol_encoder.decode_sequence(labels[i])
+                pred = self.symbol_encoder.decode_sequence(predictions.values[offset:offset+l])
+                ok = "[ok]" if label == pred else "[err]"
+                if label == pred: right_items += 1
+                print(ok, label, "->", pred)
+                offset += l
+                if label != pred: wrong_examples.append((label, pred))
+
+            print("Batch: %d / %d" % (batch, batches))
+
+            batch += 1
+
+        word_accuracy = (right_items / all_items) * 100
+        edit_distance, loss = self.session.run([
+            self.current_edit_distance,
+            self.current_loss
+        ])
+        print("Edit distance: %f Word accuracy: %f%% Loss: %f" % (edit_distance, word_accuracy, loss))
+
+        if word_accuracy >= 10: # do not show completely terrible results
+            print("Some wrong examples:")
+            for i in range(min(10, len(wrong_examples))):
+                print(wrong_examples[i][0], "->", wrong_examples[i][1])
+
+        # save validation loss and edit distance to summaries
+        if self.has_summaries:
+            self.session.run(self.summaries[dataset_name])
+
+        # perform continual saving
+        if self.continual_saving:
+            self.save_if_better(self.name, edit_distance)
+
+        # return loss and edit distance
+        return loss, edit_distance
+
+    def predict(self, img) -> List[Symbol]:
+        """Predicts symbols in a single image"""
+        if len(img.shape) == 3:
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+        width = img.shape[1]
+        assert img.shape[0] == Network.IMAGE_HEIGHT
+
+        predictions = self.session.run(self.predictions, {
+            self.images: [img / 255.0],
+            self.image_widths: [width],
+            self.is_training: False
+        })
+
+        return self.symbol_encoder.decode_sequence(predictions.values)
+
+    def get_global_step(self):
+        """Returns value of the global step"""
+        return self.session.run(self.global_step)
+
+    def _calculate_learning_rate(self, batches_trained):
+        if batches_trained > 10000:
+            return 0.0001
+        elif batches_trained > 10:
+            return 0.001
+        else:
+            return 0.01
