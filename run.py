@@ -4,11 +4,10 @@
 import app
 import matplotlib.pyplot as plt
 
-generator = app.Generator()
-img = generator.generate_notation_row_image(
-    crop_row=0,
-    normalize_image_height=True
-)
 
-plt.imshow(img)
-plt.show()
+dataset = app.GeneratedDataset(
+    size=3,
+    generator_options={}
+)
+dataset.generate()
+dataset.check_dataset_visually()

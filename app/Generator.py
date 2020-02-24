@@ -6,14 +6,15 @@ import glob
 import pdf2image
 import cv2
 import random
+from typing import List
 from app.constants import *
 from app.config import config
+from app.Symbol import Symbol
 
 
 class Generator():
     def __init__(self):
         pass
-
 
     def crop_staff_row(self, image, row: int):
         dpi = config["pdf.dpi"]
@@ -32,7 +33,6 @@ class Generator():
 
         return image[t:b,:]
 
-
     def convert_notation_to_image(self, notation):
         shutil.rmtree(ABJAD_OUTPUT_DIR)
         os.mkdir(ABJAD_OUTPUT_DIR)
@@ -48,22 +48,23 @@ class Generator():
         img = np.array(pages[0], dtype=np.uint8) # numpy grayscale image
         return img
 
-
     def normalize_image_height(self, img):
         target = config["normalized-height"]
         ratio = target / img.shape[0]
         w = int(img.shape[1] * ratio)
         return cv2.resize(img, (w, target), interpolation=cv2.INTER_AREA)
 
-
-    def generate_notation_row(self) -> abjad.Staff:
-        duration = abjad.Duration(1, 4)
-        notes = [random.choice([abjad.Note("g'", duration), abjad.Rest(duration)]) for pitch in range(32)]
+    def generate_notation_row(self, symbols: List[Symbol]) -> abjad.Staff:
+        notes = [symbol.to_abjad_item() for symbol in symbols]
         staff = abjad.Staff(notes)
         return staff
 
-    def generate_notation_row_image(self, crop_row=1, normalize_image_height=False):
-        notation = self.generate_notation_row()
+    def generate_notation_row_image(self,
+        symbols: List[Symbol],
+        crop_row=0,
+        normalize_image_height=False
+    ):
+        notation = self.generate_notation_row(symbols)
         img = self.convert_notation_to_image(notation)
 
         if crop_row is not False:
@@ -73,3 +74,20 @@ class Generator():
             img = self.normalize_image_height(img)
 
         return img
+
+    def generate(self):
+        """Generates an image-label pair"""
+
+        # generate symbol stream
+        length = 32
+        symbol_names = [random.choice(["NOTE", "REST"]) for i in range(length)]
+        symbols = [Symbol(s) for s in symbol_names]
+
+        # generate the image
+        image = self.generate_notation_row_image(
+            symbols=symbols,
+            crop_row=0,
+            normalize_image_height=True
+        )
+
+        return image, symbols
