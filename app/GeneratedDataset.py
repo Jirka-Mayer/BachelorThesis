@@ -1,13 +1,18 @@
 import numpy as np
 import random
+import pickle
+import os
 from app.Generator import Generator
 from app.SymbolEncoder import SymbolEncoder
 
 
 class GeneratedDataset:
-    def __init__(self, size, generator_options={}):
+    def __init__(self, size, name="default", generator_options={}):
         # number of items in the dataset
         self.size = size
+
+        # name of the datased used for saving and loading
+        self.name = name
 
         # height of the normalized image
         self.image_height = 32
@@ -41,6 +46,43 @@ class GeneratedDataset:
                 self.images[index]
             ]))
             plt.show()
+
+    ###############
+    # Persistence #
+    ###############
+
+    def load_or_generate_and_save(self):
+        if os.path.isfile(self._path):
+            self.load()
+        else:
+            self.generate()
+            self.save()
+
+    def load(self):
+        data = pickle.load(open(self._path, "rb"))
+        if data["size"] != self.size:
+            raise Error("Saved dataset has different size: " + data["size"])
+        self.images = data["images"]
+        self.symbols = data["symbols"]
+        self.labels = data["labels"]
+        print("Dataset '%s' loaded." % (self.name,))
+
+    def save(self):
+        pickle.dump({
+            "size": self.size,
+            "images": self.images,
+            "symbols": self.symbols,
+            "labels": self.labels
+        }, open(self._path, "wb"))
+        print("Dataset '%s' saved." % (self.name,))
+
+    @property
+    def _path(self):
+        """Path, where the dataset should be saved"""
+        return os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "../generated-datasets/" + self.name + ".pkl"
+        )
 
     ##############
     # Generation #

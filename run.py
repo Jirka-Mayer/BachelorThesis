@@ -9,5 +9,5 @@ dataset = app.GeneratedDataset(
     size=3,
     generator_options={}
 )
-dataset.generate()
+dataset.load_or_generate_and_save()
 dataset.check_dataset_visually()
