@@ -2,6 +2,20 @@
 # Runs whatever is the latest thing being developed
 
 import app
+
+
+network = app.Network(
+    continual_saving=False,
+    name="TestingNetwork",
+    threads=1
+)
+network.construct(logdir="tf-logs")
+
+
+# ===========================================
+exit()
+
+import app
 import matplotlib.pyplot as plt
 
 
