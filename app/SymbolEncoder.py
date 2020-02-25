@@ -13,16 +13,24 @@ class SymbolEncoder:
     @property
     def num_classes(self):
         """Returns number of output classes"""
-        return 2
+        return 6
 
     def encode_sequence(self, symbol_sequence: List[Symbol]):
         return [self.encode(s) for s in symbol_sequence]
 
     def encode(self, symbol: Symbol):
-        if symbol.name == "REST":
+        if symbol.name == "_":
             return 0
-        if symbol.name == "NOTE":
+        if symbol.name == "g'":
             return 1
+        if symbol.name == "c'":
+            return 2
+        if symbol.name == "b'":
+            return 3
+        if symbol.name == "e''":
+            return 4
+        if symbol.name == "g''":
+            return 5
 
         raise Exception("Unknown symbol name: %s" % (symbol.name,))
 
@@ -31,8 +39,16 @@ class SymbolEncoder:
 
     def decode(self, label: int):
         if label == 0:
-            return Symbol("REST")
+            return Symbol("_")
         if label == 1:
-            return Symbol("NOTE")
+            return Symbol("g'")
+        if label == 2:
+            return Symbol("c'")
+        if label == 3:
+            return Symbol("b'")
+        if label == 4:
+            return Symbol("e''")
+        if label == 5:
+            return Symbol("g''")
 
         raise Exception("Unknown label: %s" % (label,))

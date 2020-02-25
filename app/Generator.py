@@ -59,10 +59,24 @@ class Generator():
         staff = abjad.Staff(notes)
         return staff
 
+    def crop_with(self, image):
+        s = (255 - image).sum(axis=0) # collapse vertically
+        start = 0
+        end = s.shape[0]
+        for x in range(s.shape[0]):
+            if start == 0 and s[x] != 0:
+                start = x
+            if start != 0 and s[x] == 0:
+                end = x
+                break
+        start += 25 # HACK: crop away clef and time signature
+        return image[:,start:end]
+
     def generate_notation_row_image(self,
         symbols: List[Symbol],
         crop_row=0,
-        normalize_image_height=False
+        normalize_image_height=False,
+        crop_width=False
     ):
         notation = self.generate_notation_row(symbols)
         img = self.convert_notation_to_image(notation)
@@ -73,21 +87,27 @@ class Generator():
         if normalize_image_height:
             img = self.normalize_image_height(img)
 
+        if crop_width:
+            img = self.crop_with(img)
+
         return img
 
     def generate(self):
         """Generates an image-label pair"""
 
         # generate symbol stream
-        length = 32
-        symbol_names = [random.choice(["NOTE", "REST"]) for i in range(length)]
+        #length = random.choice([1, 2, 3, 4, 5]) #32
+        length = random.choice([1, 2, 3])
+        nameset = ["_", "g'", "c'", "b'", "e''", "g''"]
+        symbol_names = [random.choice(nameset) for i in range(length)]
         symbols = [Symbol(s) for s in symbol_names]
 
         # generate the image
         image = self.generate_notation_row_image(
             symbols=symbols,
             crop_row=0,
-            normalize_image_height=True
+            normalize_image_height=True,
+            crop_width=True
         )
 
         return image, symbols

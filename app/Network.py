@@ -373,6 +373,10 @@ class Network:
                 self.is_training: False
             })
 
+            # HACK: helper
+            def syms2str(symbols):
+                return "".join([s.as_char() for s in symbols])
+
             all_items += batch_size
             offset = 0
             for i in range(len(labels)):
@@ -380,6 +384,8 @@ class Network:
                 l = 0 if len(indices) == 0 else indices.max() + 1
                 label = self.symbol_encoder.decode_sequence(labels[i])
                 pred = self.symbol_encoder.decode_sequence(predictions.values[offset:offset+l])
+                label = syms2str(label)
+                pred = syms2str(pred)
                 ok = "[ok]" if label == pred else "[err]"
                 if label == pred: right_items += 1
                 print(ok, label, "->", pred)
@@ -440,3 +446,9 @@ class Network:
             return 0.001
         else:
             return 0.01
+
+    #####################
+    # Model persistence #
+    #####################
+
+    # TODO: continue here
