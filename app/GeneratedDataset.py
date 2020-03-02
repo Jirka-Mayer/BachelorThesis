@@ -3,11 +3,18 @@ import random
 import pickle
 import os
 from app.Generator import Generator
+from app.Renderer import Renderer
 from app.SymbolEncoder import SymbolEncoder
 
 
 class GeneratedDataset:
-    def __init__(self, size, name="default", generator_options={}):
+    def __init__(
+        self,
+        size,
+        name="default",
+        generator_options={},
+        renderer_options={}
+    ):
         # number of items in the dataset
         self.size = size
 
@@ -25,6 +32,11 @@ class GeneratedDataset:
         # generator used for data generation
         self.generator = Generator(**generator_options)
 
+        # renderer used for rendering of the images
+        self.renderer = Renderer(**renderer_options)
+
+        # TODO: effector
+
         # encoder used for working with the network output
         self.symbol_encoder = SymbolEncoder()
 
@@ -35,11 +47,11 @@ class GeneratedDataset:
     # Debugging #
     #############
 
-    def check_dataset_visually(self):
+    def check_dataset_visually(self, example_count=10):
         """Shows couple of items in the dataset to visually check the content"""
         import matplotlib.pyplot as plt
 
-        for i in range(10):
+        for i in range(example_count):
             index = random.randint(0, self.size - 1)
             print("Symbols: %s" % list(map(str, self.symbols[index])))
             print("Label: %s" % self.labels[index])
@@ -110,7 +122,8 @@ class GeneratedDataset:
         print("Done.")
 
     def _generate_item(self):
-        image, symbols = self.generator.generate()
+        symbols = self.generator.generate()
+        image = self.renderer.render(symbols)
 
         # TODO: apply effects to the image here (noise, blur, transform)
 

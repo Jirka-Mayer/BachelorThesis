@@ -58,3 +58,8 @@ klasifikovat více symbolů a potom nějaké složitější kombinace symbolů.
 > **Pozor:** možná se mi ABBC slepí na ABC při parsování výstupu sítě
   Ale možná taky jen chybí dostatek příkladů v trénovacím setu, aby
   se síť naučila vkládat blank mezi opakování symbolu. (boost repeat?)
+
+
+## 2020-03-02
+
+Zatím nic zajímavého.

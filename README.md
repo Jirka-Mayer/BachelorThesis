@@ -42,5 +42,9 @@ Normalizovat výšku: 64px je ideální, 32px pro základní symboly projde
 
 ## Teď pracuj na / pokračuj s
 
-Vygeneruj řádek not o výšce 32px, který obsahuje čtvrťové pomlky a noty.
-Použij architekturu z texia a klasifikuj symboly.
+Vymysli nějakou lepší reprezentaci not (třída `Symbol`).
+
+Vyčisti zdrojové kódy.
+
+Přidej *trainer* - nějakou třídu, co provede postupné trénování sítě.
+(a s tím souvisí perzistence sítě (automaticky ulož při zlepšení))

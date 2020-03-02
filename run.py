@@ -3,14 +3,15 @@
 
 import app
 
-# t = app.GeneratedDataset(
-#     size=10,
-#     name="t",
-#     generator_options={}
-# )
-# t.generate()
-# t.check_dataset_visually()
-# exit()
+t = app.GeneratedDataset(
+    size=10,
+    name="t",
+    generator_options={},
+    renderer_options={}
+)
+t.generate()
+t.check_dataset_visually(example_count=10)
+exit()
 
 
 # TODO: put this into some utilities
