@@ -1,15 +1,13 @@
 import shutil
-import os
 import numpy as np
 import abjad
 import glob
 import pdf2image
 import cv2
-import random
-from typing import List
 from app.constants import *
 from app.config import config
-from app.Symbol import Symbol
+from app.Label import Label
+
 
 class Renderer:
     def __init__(self):
@@ -23,29 +21,18 @@ class Renderer:
         # all dimensions are in inches
         self.pdf_layout = config["pdf_layout"]
 
-    def render(self, symbols: List[Symbol]):
+    def render(self, label: Label):
         """Renders a symbol sequence into an image of a line"""
-        img = self.render_without_postprocessing(symbols)
+        img = self.render_without_postprocessing(label)
         img = self._crop_first_line(img)
         img = self._normalize_line_image_height(img)
-        img = self._trim_line(img)
+        img = Renderer._trim_line(img)
 
         return img
 
-    def render_without_postprocessing(self, symbols: List[Symbol]):
+    def render_without_postprocessing(self, label: Label):
         """Renders the symbol sequence and returns the rasterized PDF page"""
-        document = self._symbols_to_abjad(symbols)
-        return self._render_entire_page(document)
-
-    ##################################
-    # Turn symbols to abjad document #
-    ##################################
-
-    def _symbols_to_abjad(self, symbols: List[Symbol]) -> abjad.Staff:
-        """Converts sequence of symbols to an abjad document"""
-        notes = [symbol.to_abjad_item() for symbol in symbols]
-        staff = abjad.Staff(notes)
-        return staff
+        return self._render_entire_page(label._staff)
 
     ###################
     # Image rendering #
@@ -63,7 +50,7 @@ class Renderer:
             last_page=1,
             grayscale=True
         )
-        img = np.array(pages[0], dtype=np.uint8) # numpy grayscale image
+        img = np.array(pages[0], dtype=np.uint8)  # numpy grayscale image
         return img
 
     ########################
@@ -72,7 +59,7 @@ class Renderer:
 
     def _crop_first_line(self, image):
         """Crops out a line (vertically) from the entire page"""
-        line_index = 0 # the first line
+        line_index = 0  # the first line
 
         # all dimensions in inches
         dpi = self.dpi
@@ -88,11 +75,12 @@ class Renderer:
         t -= int(vertical_margin * dpi)
         b += int(vertical_margin * dpi)
 
-        return image[t:b,:]
+        return image[t:b, :]
 
-    def _trim_line(self, image):
+    @staticmethod
+    def _trim_line(image):
         """Trim image of a line horizontally"""
-        s = (255 - image).sum(axis=0) # collapse vertically
+        s = (255 - image).sum(axis=0)  # collapse vertically
         start = 0
         end = s.shape[0]
         for x in range(s.shape[0]):
@@ -101,8 +89,8 @@ class Renderer:
             if start != 0 and s[x] == 0:
                 end = x
                 break
-        start += 25 # HACK: crop away clef and time signature
-        return image[:,start:end]
+        start += 25  # HACK: crop away clef and time signature
+        return image[:, start:end]
 
     def _normalize_line_image_height(self, img):
         target = self.normalized_height

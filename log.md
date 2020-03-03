@@ -62,4 +62,17 @@ klasifikovat více symbolů a potom nějaké složitější kombinace symbolů.
 
 ## 2020-03-02
 
-Zatím nic zajímavého.
+Vymýšlím, jak na vícerozměrnou CTC.
+Tady ji vícerozměrnou nedělají: https://github.com/OMR-Research/tf-end-to-end
+
+Dobrý CTC přehled:
+https://towardsdatascience.com/intuitively-understanding-connectionist
+-temporal-classification-3797e43a86c
+
+Co takhle mít pro každou linku jednu CTC, která řekne TRUE když tam je nota
+a případně i její variantu a EMPTY když tam nota není. Navíc bude vždy
+hlásit pomlky, klíče a další symboly přes celou osnovu.
+
+To by mohlo vyřešit problém s vícenásobnými notami (akordy).
+Každý výstupní CTC kanál zaregistruje "je tu akord", ale každý řekne, zda
+je v tom akordu přítomen.

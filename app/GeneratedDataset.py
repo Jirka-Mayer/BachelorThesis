@@ -2,9 +2,12 @@ import numpy as np
 import random
 import pickle
 import os
+from typing import List
 from app.Generator import Generator
 from app.Renderer import Renderer
-from app.SymbolEncoder import SymbolEncoder
+from app.LabelEncoder import LabelEncoder
+from app.Label import Label
+from app.EncodedLabel import EncodedLabel
 
 
 class GeneratedDataset:
@@ -18,16 +21,15 @@ class GeneratedDataset:
         # number of items in the dataset
         self.size = size
 
-        # name of the datased used for saving and loading
+        # name of the dataset used for saving and loading
         self.name = name
 
         # height of the normalized image
         self.image_height = 32
 
         # the data itself
-        self.images = None
-        self.symbols = None
-        self.labels = None  # = encoded symbols
+        self.images: List[any] = None
+        self.labels: List[Label] = None
 
         # generator used for data generation
         self.generator = Generator(**generator_options)
@@ -36,9 +38,6 @@ class GeneratedDataset:
         self.renderer = Renderer(**renderer_options)
 
         # TODO: effector
-
-        # encoder used for working with the network output
-        self.symbol_encoder = SymbolEncoder()
 
         # permutation used for data retrieval (when training)
         self.permutation = None
@@ -53,8 +52,7 @@ class GeneratedDataset:
 
         for i in range(example_count):
             index = random.randint(0, self.size - 1)
-            print("Symbols: %s" % list(map(str, self.symbols[index])))
-            print("Label: %s" % self.labels[index])
+            self.labels[index].debug_print()
             plt.imshow(np.dstack([
                 self.images[index],
                 self.images[index],
@@ -77,11 +75,10 @@ class GeneratedDataset:
         data = pickle.load(open(self._path, "rb"))
         if data["size"] != self.size:
             raise Exception(
-                "Saved dataset has size %s, not %s" \
+                "Saved dataset has size %s, not %s"
                 % (data["size"], self.size)
             )
         self.images = data["images"]
-        self.symbols = data["symbols"]
         self.labels = data["labels"]
         print("Dataset '%s' loaded." % (self.name,))
 
@@ -89,7 +86,6 @@ class GeneratedDataset:
         pickle.dump({
             "size": self.size,
             "images": self.images,
-            "symbols": self.symbols,
             "labels": self.labels
         }, open(self._path, "wb"))
         print("Dataset '%s' saved." % (self.name,))
@@ -110,15 +106,13 @@ class GeneratedDataset:
         """Generates the entire dataset content
         with parameters specified in the constructor"""
         self.images = []
-        self.symbols = []
         self.labels = []
         print("Generating dataset...")
         for i in range(self.size):
             print("%d/%d" % (i+1, self.size))
-            image, symbols, label = self._generate_item()
+            image, symbols = self._generate_item()
             self.images.append(image)
-            self.symbols.append(symbols)
-            self.labels.append(label)
+            self.labels.append(symbols)
         print("Done.")
 
     def _generate_item(self):
@@ -129,8 +123,7 @@ class GeneratedDataset:
 
         return (
             (image / 255.0),
-            symbols,
-            self.symbol_encoder.encode_sequence(symbols)
+            symbols
         )
 
     ##################
@@ -157,11 +150,13 @@ class GeneratedDataset:
         self.permutation = self.permutation[take:]
 
         # resolve indices to data
-        picked_images = []
-        picked_labels = []
+        picked_images: List[any] = []
+        picked_labels: List[EncodedLabel] = []
         for i in indices:
             picked_images.append(self.images[i])
-            picked_labels.append(self.labels[i])
+            picked_labels.append(
+                LabelEncoder.encode_label(self.labels[i])
+            )
 
         # get maximum image width
         max_image_width = 0

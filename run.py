@@ -2,28 +2,26 @@
 # Runs whatever is the latest thing being developed
 
 import app
+print("==================================\n\n")
 
-t = app.GeneratedDataset(
-    size=10,
-    name="t",
-    generator_options={},
-    renderer_options={}
-)
-t.generate()
-t.check_dataset_visually(example_count=10)
-exit()
+# g = app.Generator()
+# symbols, staff = g.generate()
+# symbols.debug_print()
+# import abjad
+# abjad.show(staff)
+# exit()
+
+# t = app.GeneratedDataset(
+#     size=10,
+#     name="t",
+#     generator_options={},
+#     renderer_options={}
+# )
+# t.generate()
+# t.check_dataset_visually(example_count=10)
+# exit()
 
 
-# TODO: put this into some utilities
-def create_logdir(model_name):
-    import os
-    import datetime
-    if not os.path.exists("tf-logs"):
-        os.mkdir("tf-logs")
-    return "tf-logs/{}-{}".format(
-        model_name,
-        datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    )
 
 # setup datasets
 train_dataset = app.GeneratedDataset(
@@ -33,8 +31,8 @@ train_dataset = app.GeneratedDataset(
 )
 train_dataset.load_or_generate_and_save()
 
-# train_dataset.check_dataset_visually()
-# exit()
+#train_dataset.check_dataset_visually()
+#exit()
 
 dev_dataset = app.GeneratedDataset(
     size=10,
@@ -46,10 +44,10 @@ dev_dataset.load_or_generate_and_save()
 # setup network
 network = app.Network(
     continual_saving=False,
-    name="TestingNetwork",
+    name="TrueMultiChannelNetwork",
     threads=4
 )
-network.construct(logdir=create_logdir(network.name))
+network.construct(logdir=app.Network.create_logdir(network.name))
 
 # train network
 network.train(

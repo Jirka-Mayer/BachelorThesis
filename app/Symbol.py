@@ -1,14 +1,18 @@
 import abjad
 
 
-class Symbol:
+class SymbolInstance:  # private, should not leak outside this file
     """
-    Represents one output of the network
-    (network outputs a sequence of these symbols, but also encoded)
+    Represents an output class that can be produced by the network
+    on one of it's output channels.
     """
-    def __init__(self, name):
+
+    def __init__(self, name, short):
         # symbol name
         self.name = name
+
+        # short representation (for debug)
+        self.short = short
 
     def __str__(self):
         return self.name
@@ -16,19 +20,18 @@ class Symbol:
     def __repr__(self):
         return "Symbol(%s)" % (self.name,)
 
-    def as_char(self):
-        return self.name
 
-        raise Exception("Unknown symbol name: %s" % (self.name,))
+class Symbol(SymbolInstance):  # public (like an interface)
 
-    def to_abjad_item(self):
-        duration = abjad.Duration(1, 4)
+    # symbols for a note channel
+    NOTE_4 = SymbolInstance("NOTE_4", "4")  # present quarter note in a chord
+    NOTE_8 = SymbolInstance("NOTE_8", "8")  # present eight note in a chord
+    NO_NOTE = SymbolInstance("NO_NOTE", "-")  # missing note in a chord
 
-        if self.name == "_":
-            return abjad.Rest(duration)
-        if self.name == "g'":
-            return abjad.Note("g'", duration)
-        else:
-            return abjad.Note(self.name, duration)
-
-        raise Exception("Unknown symbol name: %s" % (self.name,))
+    @staticmethod
+    def note_symbol_from_duration(duration: abjad.Duration):
+        lookup = {
+            "4": Symbol.NOTE_4,
+            "8": Symbol.NOTE_8,
+        }
+        return lookup[duration.lilypond_duration_string]

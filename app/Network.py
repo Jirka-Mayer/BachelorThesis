@@ -4,9 +4,13 @@ import os
 import cv2
 import shutil
 from typing import List
+import datetime
 from app.sparse_tensor_from_sequences import sparse_tensor_from_sequences
-from app.SymbolEncoder import SymbolEncoder
+from app.LabelEncoder import LabelEncoder
 from app.Symbol import Symbol
+from app.EncodedLabel import EncodedLabel
+from app.Label import Label
+from app.Channel import Channel
 
 
 class Network:
@@ -21,10 +25,7 @@ class Network:
         self.name = name
 
         # whether summaries are logged or not
-        self.has_summaries = False
-
-        # symbol encoder used in netowrk output encoding
-        self.symbol_encoder = SymbolEncoder()
+        self._has_summaries = False
 
         # Create an empty graph and a session
         self.graph = tf.Graph()
@@ -104,7 +105,7 @@ class Network:
 
             if logdir is not None:
                 self._construct_summaries(losses, logdir)
-                self.has_summaries = True
+                self._has_summaries = True
 
             self.reset_metrics = tf.variables_initializer(
                 tf.get_collection(tf.GraphKeys.METRIC_VARIABLES)
@@ -199,7 +200,7 @@ class Network:
         # BxTx1x2H -> BxTx1xC -> BxTxC
         kernel = tf.Variable(
             tf.truncated_normal(
-                [1, 1, num_hidden * 2, self.symbol_encoder.num_classes + 1],
+                [1, 1, num_hidden * 2, Channel.NOTE_CHANNEL_SYMBOL_COUNT + 1],
                 stddev=0.1
             )
         )
@@ -217,6 +218,12 @@ class Network:
         """Creates the CTC loss and returns individual losses and their mean"""
         # time major
         logits = tf.transpose(logits, [1, 0, 2])
+
+        # WARNING:
+        # my version of tensorflow (1.12.0) uses "num_classes - 1" as the blank
+        # index however the new tensorflow uses "0"
+        if tf.__version__ != "1.12.0":
+            raise Exception("Make sure you know, how your blank is encoded!")
 
         # loss
         losses = tf.nn.ctc_loss(
@@ -295,6 +302,15 @@ class Network:
                 graph=self.session.graph
             )
 
+    @staticmethod
+    def create_logdir(model_name: str):
+        if not os.path.exists("tf-logs"):
+            os.mkdir("tf-logs")
+        return "tf-logs/{}-{}".format(
+            model_name,
+            datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        )
+
     #########################
     # Training & prediction #
     #########################
@@ -313,25 +329,33 @@ class Network:
                 batch_size
             )
 
+    def LABELS_TO_TENSOR(self, labels: List[EncodedLabel]):
+        # TODO: HACK
+        #print(labels)
+        old_labels = [label.get_channel(0) for label in labels]
+        #print(old_labels)
+        #exit()
+        return sparse_tensor_from_sequences(old_labels)
+
     def _train_epoch(self, train_dataset, dev_dataset, epoch, epochs, batch_size):
         batches = train_dataset.count_batches(batch_size)
         batch = 1
         train_dataset.prepare_epoch()
 
         while train_dataset.has_batch():
-            images, texts, widths = train_dataset.next_batch(batch_size)
+            images, labels, widths = train_dataset.next_batch(batch_size)
             rate = self._calculate_learning_rate(self.get_global_step())
 
             # vars to evaluate
             evaluate = [self.loss, self.greedy_edit_distance, self.training]
-            if self.has_summaries:
+            if self._has_summaries:
                 evaluate.append(self.summaries["train"])
 
             # train
             self.session.run(self.reset_metrics)
             evaluated = self.session.run(evaluate, {
                 self.images: images,
-                self.labels: sparse_tensor_from_sequences(texts),
+                self.labels: self.LABELS_TO_TENSOR(labels),
                 self.image_widths: widths,
                 self.is_training: True,
                 self.learning_rate: rate
@@ -368,29 +392,25 @@ class Network:
                 self.update_loss
             ], {
                 self.images: images,
-                self.labels: sparse_tensor_from_sequences(labels),
+                self.labels: self.LABELS_TO_TENSOR(labels),
                 self.image_widths: widths,
                 self.is_training: False
             })
-
-            # HACK: helper
-            def syms2str(symbols):
-                return "".join([s.as_char() for s in symbols])
 
             all_items += batch_size
             offset = 0
             for i in range(len(labels)):
                 indices = predictions.indices[predictions.indices[:,0] == i, 1]
                 l = 0 if len(indices) == 0 else indices.max() + 1
-                label = self.symbol_encoder.decode_sequence(labels[i])
-                pred = self.symbol_encoder.decode_sequence(predictions.values[offset:offset+l])
-                label = syms2str(label)
-                pred = syms2str(pred)
+                label: List[int] = labels[i].get_channel(0)
+                pred: List[int] = list(predictions.values[offset:offset+l])
                 ok = "[ok]" if label == pred else "[err]"
-                if label == pred: right_items += 1
+                if label == pred:
+                    right_items += 1
                 print(ok, label, "->", pred)
                 offset += l
-                if label != pred: wrong_examples.append((label, pred))
+                if label != pred:
+                    wrong_examples.append((label, pred))
 
             print("Batch: %d / %d" % (batch, batches))
 
@@ -409,7 +429,7 @@ class Network:
                 print(wrong_examples[i][0], "->", wrong_examples[i][1])
 
         # save validation loss and edit distance to summaries
-        if self.has_summaries:
+        if self._has_summaries:
             self.session.run(self.summaries[dataset_name])
 
         # perform continual saving
@@ -433,6 +453,7 @@ class Network:
             self.is_training: False
         })
 
+        # TODO: this is old, replace it for proper decoding
         return self.symbol_encoder.decode_sequence(predictions.values)
 
     def get_global_step(self):

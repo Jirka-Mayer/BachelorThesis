@@ -42,6 +42,8 @@ Normalizovat výšku: 64px je ideální, 32px pro základní symboly projde
 
 ## Teď pracuj na / pokračuj s
 
+Naprogramuj vícekanálový CTC výstup. (zatím pro jednoduché vstupy)
+
 Vymysli nějakou lepší reprezentaci not (třída `Symbol`).
 
 Vyčisti zdrojové kódy.
