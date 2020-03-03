@@ -22,10 +22,13 @@ print("==================================\n\n")
 # exit()
 
 
+# 32px -> ~400MB RAM
+# 64px -> ~450MB RAM
+
 
 # setup datasets
 train_dataset = app.GeneratedDataset(
-    size=50, #250,
+    size=1000, #50, #250,
     name="train",
     generator_options={}
 )
@@ -35,7 +38,7 @@ train_dataset.load_or_generate_and_save()
 #exit()
 
 dev_dataset = app.GeneratedDataset(
-    size=10,
+    size=50, #10,
     name="dev",
     generator_options={}
 )
@@ -44,7 +47,7 @@ dev_dataset.load_or_generate_and_save()
 # setup network
 network = app.Network(
     continual_saving=False,
-    name="TrueMultiChannelNetwork",
+    name="HighResNetwork",
     threads=4
 )
 network.construct(logdir=app.Network.create_logdir(network.name))
@@ -53,6 +56,6 @@ network.construct(logdir=app.Network.create_logdir(network.name))
 network.train(
     train_dataset,
     dev_dataset,
-    epochs=100,
+    epochs=1000,
     batch_size=10
 )

@@ -1,6 +1,6 @@
 config = {
     "dpi": 300,
-    "normalized_height": 32,
+    "normalized_height": 64,
     "pdf_layout": {
         "first_line_top": 0.38, # vertical distance from page top to first line
         "line_height": 0.28, # height of a line (just those 5 staff lines)

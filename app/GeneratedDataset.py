@@ -8,6 +8,7 @@ from app.Renderer import Renderer
 from app.LabelEncoder import LabelEncoder
 from app.Label import Label
 from app.EncodedLabel import EncodedLabel
+from app.config import config
 
 
 class GeneratedDataset:
@@ -25,7 +26,7 @@ class GeneratedDataset:
         self.name = name
 
         # height of the normalized image
-        self.image_height = 32
+        self.image_height = config["normalized_height"]
 
         # the data itself
         self.images: List[any] = None
