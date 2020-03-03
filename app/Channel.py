@@ -7,7 +7,7 @@ class Channel:
 
     # names of voice channels
     # VOICE_CHANNEL_NAMES = ["first", "second", "third", "fourth"]
-    VOICE_CHANNEL_NAMES = ["first", "second"]
+    VOICE_CHANNEL_NAMES = ["first"]
 
     # symbols that can appear in a voice channel
     VOICE_CHANNEL_SYMBOLS = [

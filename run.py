@@ -21,23 +21,23 @@ print("==================================\n\n")
 # 64px deeper channel split -> ~920MB
 
 
-# setup datasets
-train_dataset = app.GeneratedDataset(
-    size=50, #250,
-    name="train_voices",  # train_chords(1000)
-    generator_options={}
-)
-train_dataset.load_or_generate_and_save()
-
-#train_dataset.check_dataset_visually()
-#exit()
-
-dev_dataset = app.GeneratedDataset(
-    size=10,
-    name="dev_voices",  # dev_chords(50)
-    generator_options={}
-)
-dev_dataset.load_or_generate_and_save()
+# # setup datasets
+# train_dataset = app.GeneratedDataset(
+#     size=50, #250,
+#     name="train_voices",  # train_chords(1000)
+#     generator_options={}
+# )
+# train_dataset.load_or_generate_and_save()
+#
+# #train_dataset.check_dataset_visually()
+# #exit()
+#
+# dev_dataset = app.GeneratedDataset(
+#     size=10,
+#     name="dev_voices",  # dev_chords(50)
+#     generator_options={}
+# )
+# dev_dataset.load_or_generate_and_save()
 
 # setup network
 network = app.Network(
@@ -47,10 +47,14 @@ network = app.Network(
 )
 network.construct(logdir=app.Network.create_logdir(network.name))
 
+# train
+trainer = app.Trainer(network)
+trainer.train_all_phases()
+
 # train network
-network.train(
-    train_dataset,
-    dev_dataset,
-    epochs=1000,
-    batch_size=10
-)
+# network.train(
+#     train_dataset,
+#     dev_dataset,
+#     epochs=1000,
+#     batch_size=10
+# )

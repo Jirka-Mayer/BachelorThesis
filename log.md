@@ -106,3 +106,12 @@ být četnost vícenásobných not dostatečně nízká (1/8). Konvergence se mi
 povedla i se dvěma výstupními kanály na (1/8) četnosti dvojnot. Po prvotní
 konvergenci se ale četnost bude muset navýšit, protože jiank drhuý hlas všude
 predikuje "voice-not-present" třídu.
+
+Stejně je jeden hlas mnohem lepší než více hlasů. Teď jsem zkoušel trénovat
+na jednom hlasu síť pro dva hlasy a prostě ne a ne zkonvergovat a když
+jsem ji omezil na jeden hlas, tak konverguje okamžitě.
+
+Ještě mě napadá vrátit se k principu kanálů podle pozic not, jen místo
+štěpení jedné sítě trénovat oddělené modely. A taky jim generovat data
+s rozumným zastoupením cílové třídy. (síť detekující střední linku bude
+mít stejně not na střední lince, jako mimo ní)

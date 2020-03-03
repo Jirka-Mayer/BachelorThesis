@@ -368,7 +368,7 @@ class Network:
         and evaluate after each epoch on a given testing dataset.
         """
         for epoch in range(epochs):
-            self._train_epoch(
+            self.train_epoch(
                 train_dataset,
                 dev_dataset,
                 epoch + 1,
@@ -376,7 +376,7 @@ class Network:
                 batch_size
             )
 
-    def _train_epoch(self, train_dataset, dev_dataset, epoch, epochs, batch_size):
+    def train_epoch(self, train_dataset, dev_dataset, epoch, epochs, batch_size):
         batches = train_dataset.count_batches(batch_size)
         batch = 1
         train_dataset.prepare_epoch()
