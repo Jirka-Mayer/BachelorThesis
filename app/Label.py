@@ -1,5 +1,5 @@
 import abjad
-from typing import List, Dict, Set
+from typing import List, Dict
 from app.Symbol import Symbol
 from app.Channel import Channel
 
@@ -21,7 +21,7 @@ class Label:
     @staticmethod
     def _create_empty_channels(self):
         """Creates empty channels on a label instance"""
-        for name in Channel.NOTE_CHANNEL_NAMES:
+        for name in Channel.VOICE_CHANNEL_NAMES:
             self._channels[name] = []
 
     def get_channel(self, name):
@@ -38,12 +38,11 @@ class Label:
 
     def debug_print(self):
         """Prints the stream into the console for debugging"""
-        indices = list(Channel.NOTE_CHANNEL_NAMES)
-        indices.reverse()
+        indices = list(Channel.VOICE_CHANNEL_NAMES)
         for i in indices:
-            text = str(i).rjust(3) + " : "
+            text = str(i).rjust(8) + " : "
             for symbol in self._channels[i]:
-                text += symbol.short.ljust(2)
+                text += symbol.short.ljust(5)
             print(text)
         print()
 
@@ -51,23 +50,35 @@ class Label:
     # Label creation #
     ##################
 
-    def append_chord(self, note_channels: List[int], duration: abjad.Duration):
+    def append_chord(self, note_positions: List[int], duration: abjad.Duration):
         """Appends a single chord to the staff"""
         # append to abjad
         abjad_chord = abjad.Chord(
             Channel.note_channel_indices_to_pitches(
-                note_channels,
+                note_positions,
                 clef="treble"
             ),
             duration
         )
         self._staff.append(abjad_chord)
 
-        # append symbols in note channels
-        note_symbol = Symbol.note_symbol_from_duration(duration)
-        for name in Channel.NOTE_CHANNEL_NAMES:
-            if name in note_channels:
-                self._channels[name].append(note_symbol)
-            else:
-                self._channels[name].append(Symbol.NO_NOTE)
+        # append symbols to note channels
+        # note_symbol = Symbol.note_symbol_from_duration(duration)
+        # for name in Channel.NOTE_CHANNEL_NAMES:
+        #     if name in note_positions:
+        #         self._channels[name].append(note_symbol)
+        #     else:
+        #         self._channels[name].append(Symbol.NO_NOTE)
 
+        # Append symbols to voice channels
+        # Sort position descending (top note is the first voice)
+        note_positions.sort(reverse=True)
+        for i, channel_name in enumerate(Channel.VOICE_CHANNEL_NAMES):
+            if i < len(note_positions):
+                self._channels[channel_name].append(
+                    Symbol.voice_symbol_from_position_and_duration(
+                        note_positions[i], duration
+                    )
+                )
+            else:
+                self._channels[channel_name].append(Symbol.VOICE_NOT_PRESENT)

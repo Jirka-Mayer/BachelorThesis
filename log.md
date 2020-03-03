@@ -98,3 +98,11 @@ Zkusím se omezit jen na 4 kanály místo 13 a ty budou reprezentovat jednotliv�
 hlasy směrem odshora dolů. Pokud n-tý hlas nebude přítomen, tak bude predikovat
 třídu, že tu není nota. Monofonní vstupy bude potom klasifikovat čistě
 první kanál.
+
+Ok, naprogramoval jsem "voice channels". Když dám jeden voice, tak na
+13 možných výstupních tříd (pozic not) konverguje v pořádku.
+Když dám jeden voice, generuju občas i dvojnoty, tak zkonverguje, ale musí
+být četnost vícenásobných not dostatečně nízká (1/8). Konvergence se mi takhle
+povedla i se dvěma výstupními kanály na (1/8) četnosti dvojnot. Po prvotní
+konvergenci se ale četnost bude muset navýšit, protože jiank drhuý hlas všude
+predikuje "voice-not-present" třídu.

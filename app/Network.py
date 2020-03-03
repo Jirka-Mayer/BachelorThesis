@@ -18,6 +18,12 @@ class Network:
     IMAGE_HEIGHT = 64  # fixed by the CNN block architecture
     NETWORK_SCOPE = "network"
 
+    # channels that are present in the network structure
+    CHANNEL_NAMES = [*Channel.VOICE_CHANNEL_NAMES]
+
+    # number of classes in a channel (without the blank)
+    CHANNEL_CLASS_COUNT = Channel.VOICE_CHANNEL_SYMBOL_COUNT
+
     def __init__(self, continual_saving=False, name=None, threads=1):
         # does the network save itself on improvement during dev evaluation?
         self.continual_saving = continual_saving
@@ -64,7 +70,7 @@ class Network:
                 name="widths"
             )
             self.labels_in_channels = {}
-            for channel_name in Channel.NOTE_CHANNEL_NAMES:
+            for channel_name in Network.CHANNEL_NAMES:
                 self.labels_in_channels[channel_name] = tf.sparse_placeholder(
                     tf.int32,
                     name="labels_in_channel_" + str(channel_name)
@@ -97,7 +103,7 @@ class Network:
             self.greedy_predictions_in_channel = {}
             self.edit_distance_in_channel = {}
             self.greedy_edit_distance_in_channel = {}
-            for channel_name in Channel.NOTE_CHANNEL_NAMES:
+            for channel_name in Network.CHANNEL_NAMES:
                 individual_losses_in_channels[channel_name] = self._construct_ctc(
                     channel_name,
                     logits_in_channels[channel_name],
@@ -105,28 +111,28 @@ class Network:
                     widths
                 )
 
-            channel_count = len(Channel.NOTE_CHANNEL_NAMES)
+            channel_count = len(Network.CHANNEL_NAMES)
 
             # aggregate batch mean losses
             self.master_loss = sum([
                 self.losses_in_channel[channel_name]
-                for channel_name in Channel.NOTE_CHANNEL_NAMES
+                for channel_name in Network.CHANNEL_NAMES
             ]) / channel_count
 
             # aggregate individual losses
             individual_losses = sum([
                 individual_losses_in_channels[channel_name]
-                for channel_name in Channel.NOTE_CHANNEL_NAMES
+                for channel_name in Network.CHANNEL_NAMES
             ]) / channel_count
 
             # aggregate edit distances
             self.edit_distance = sum([
                 self.edit_distance_in_channel[channel_name]
-                for channel_name in Channel.NOTE_CHANNEL_NAMES
+                for channel_name in Network.CHANNEL_NAMES
             ]) / channel_count
             self.greedy_edit_distance = sum([
                 self.greedy_edit_distance_in_channel[channel_name]
-                for channel_name in Channel.NOTE_CHANNEL_NAMES
+                for channel_name in Network.CHANNEL_NAMES
             ]) / channel_count
 
             # === training logic part ===
@@ -211,7 +217,7 @@ class Network:
 
         # for each note channel
         logits_in_channels = {}
-        for channel_name in Channel.NOTE_CHANNEL_NAMES:
+        for channel_name in Network.CHANNEL_NAMES:
 
             # basic cells which are used to build RNN
             num_hidden = 256
@@ -240,7 +246,7 @@ class Network:
             # BxTx1x2H -> BxTx1xC -> BxTxC
             kernel = tf.Variable(
                 tf.truncated_normal(
-                    [1, 1, num_hidden * 2, Channel.NOTE_CHANNEL_SYMBOL_COUNT + 1],
+                    [1, 1, num_hidden * 2, Network.CHANNEL_CLASS_COUNT + 1],
                     stddev=0.1
                 )
             )
@@ -394,7 +400,7 @@ class Network:
                     self.labels_in_channels[channel_name]: sparse_tensor_from_sequences(
                         [label.get_channel(channel_name) for label in labels]
                     )
-                    for channel_name in Channel.NOTE_CHANNEL_NAMES
+                    for channel_name in Network.CHANNEL_NAMES
                 },
                 self.is_training: True,
                 self.learning_rate: rate
@@ -423,7 +429,7 @@ class Network:
         all_items = 0
         wrong_examples = []
 
-        displayed_channel_name = random.choice(Channel.NOTE_CHANNEL_NAMES)
+        displayed_channel_name = random.choice(Network.CHANNEL_NAMES)
         print("Displaying evaluation for channel: ", displayed_channel_name)
 
         while dataset.has_batch():
@@ -439,7 +445,7 @@ class Network:
                     self.labels_in_channels[channel_name]: sparse_tensor_from_sequences(
                         [label.get_channel(channel_name) for label in labels]
                     )
-                    for channel_name in Channel.NOTE_CHANNEL_NAMES
+                    for channel_name in Network.CHANNEL_NAMES
                 },
                 self.is_training: False
             })
@@ -449,7 +455,7 @@ class Network:
             for i in range(len(labels)):
                 indices = predictions.indices[predictions.indices[:, 0] == i, 1]
                 l = 0 if len(indices) == 0 else indices.max() + 1
-                label: List[int] = labels[i].get_channel(0)
+                label: List[int] = labels[i].get_channel(displayed_channel_name)
                 pred: List[int] = list(predictions.values[offset:offset+l])
                 ok = "[ok]" if label == pred else "[err]"
                 if label == pred:

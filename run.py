@@ -4,13 +4,6 @@
 import app
 print("==================================\n\n")
 
-# g = app.Generator()
-# symbols, staff = g.generate()
-# symbols.debug_print()
-# import abjad
-# abjad.show(staff)
-# exit()
-
 # t = app.GeneratedDataset(
 #     size=10,
 #     name="t",
@@ -31,7 +24,7 @@ print("==================================\n\n")
 # setup datasets
 train_dataset = app.GeneratedDataset(
     size=50, #250,
-    name="train_notes",  # train_chords(1000)
+    name="train_voices",  # train_chords(1000)
     generator_options={}
 )
 train_dataset.load_or_generate_and_save()
@@ -41,7 +34,7 @@ train_dataset.load_or_generate_and_save()
 
 dev_dataset = app.GeneratedDataset(
     size=10,
-    name="dev_notes",  # dev_chords(50)
+    name="dev_voices",  # dev_chords(50)
     generator_options={}
 )
 dev_dataset.load_or_generate_and_save()
@@ -49,7 +42,7 @@ dev_dataset.load_or_generate_and_save()
 # setup network
 network = app.Network(
     continual_saving=False,
-    name="EarlierSplitNetwork",
+    name="VoiceNetwork",
     threads=4
 )
 network.construct(logdir=app.Network.create_logdir(network.name))

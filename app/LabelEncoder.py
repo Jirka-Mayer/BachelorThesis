@@ -22,7 +22,7 @@ class LabelEncoder:
         out = EncodedLabel()
 
         # encode note channels
-        for name in Channel.NOTE_CHANNEL_NAMES:
+        for name in Channel.VOICE_CHANNEL_NAMES:
             out.set_channel(
                 name,
                 LabelEncoder._encode_note_channel(
@@ -38,7 +38,7 @@ class LabelEncoder:
         out = Label()
 
         # decode note channels
-        for name in Channel.NOTE_CHANNEL_NAMES:
+        for name in Channel.VOICE_CHANNEL_NAMES:
             out.set_channel(
                 name,
                 LabelEncoder._decode_note_channel(
@@ -64,11 +64,11 @@ class LabelEncoder:
 
     @staticmethod
     def _encode_note_symbol(symbol: Symbol) -> int:
-        for i in range(Channel.NOTE_CHANNEL_SYMBOL_COUNT):
-            if Channel.NOTE_CHANNEL_SYMBOLS[i].name == symbol.name:
+        for i in range(Channel.VOICE_CHANNEL_SYMBOL_COUNT):
+            if Channel.VOICE_CHANNEL_SYMBOLS[i].name == symbol.name:
                 return i
         raise Exception("Symbol %s couldn't be encoded" % (symbol,))
 
     @staticmethod
     def _decode_note_symbol(integer: int) -> Symbol:
-        return Channel.NOTE_CHANNEL_SYMBOLS[integer]
+        return Channel.VOICE_CHANNEL_SYMBOLS[integer]

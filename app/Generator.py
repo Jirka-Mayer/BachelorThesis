@@ -25,19 +25,20 @@ class Generator:
     @staticmethod
     def _generate_chord() -> List[int]:
         """Generates chord as a list of note channel indices"""
-        first_channel = Channel.NOTE_CHANNEL_NAMES[0]
-        last_channel = Channel.NOTE_CHANNEL_NAMES[-1]
+        first_position = Channel.NOTE_CHANNEL_NAMES[0]
+        last_position = Channel.NOTE_CHANNEL_NAMES[-1]
 
-        note_count = random.choice([1, 2, 3, 4])
-        #note_count = 1  # TODO: DEBUG: no chords, for now
+        # note_count = random.choice([1, 2, 3, 4])
+        note_count = random.choice(([1]*7) + [2])  # TODO: DEBUG: simple chords, for now
+        # note_count = 1  # TODO: DEBUG: simple notes, for now
         note_distances = []
         for i in range(note_count - 1):
             note_distances.append(random.choice([1, 2, 3, 4]))
         size = sum(note_distances)
-        total_space = last_channel - first_channel
+        total_space = last_position - first_position
         left_space = total_space - size
-        position = first_channel + random.randint(0, left_space)
+        position = first_position + random.randint(0, left_space)
 
         note_positions = np.array([0] + note_distances).cumsum() + position
 
-        return note_positions
+        return list(note_positions)
