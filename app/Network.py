@@ -3,8 +3,9 @@ import tensorflow as tf
 import os
 import cv2
 import shutil
-from typing import List
 import datetime
+import random
+from typing import List
 from app.sparse_tensor_from_sequences import sparse_tensor_from_sequences
 from app.LabelEncoder import LabelEncoder
 from app.Symbol import Symbol
@@ -62,10 +63,12 @@ class Network:
                 [None],
                 name="widths"
             )
-            self.labels = tf.sparse_placeholder(
-                tf.int32,
-                name="labels"
-            )
+            self.labels_in_channels = {}
+            for channel_name in Channel.NOTE_CHANNEL_NAMES:
+                self.labels_in_channels[channel_name] = tf.sparse_placeholder(
+                    tf.int32,
+                    name="labels_in_channel_" + str(channel_name)
+                )
 
             # metadata input
             self.is_training = tf.placeholder(
@@ -85,26 +88,58 @@ class Network:
                 )
 
                 # RNN
-                logits = self._construct_rnn(cnn_out_4d)
+                logits_in_channels = self._construct_rnn(cnn_out_4d)
 
-            # CTC
-            losses = self._construct_ctc(
-                logits,
-                self.labels,
-                widths
-            )
+            # CTC for each channel
+            individual_losses_in_channels = {}
+            self.losses_in_channel = {}
+            self.predictions_in_channel = {}
+            self.greedy_predictions_in_channel = {}
+            self.edit_distance_in_channel = {}
+            self.greedy_edit_distance_in_channel = {}
+            for channel_name in Channel.NOTE_CHANNEL_NAMES:
+                individual_losses_in_channels[channel_name] = self._construct_ctc(
+                    channel_name,
+                    logits_in_channels[channel_name],
+                    self.labels_in_channels[channel_name],
+                    widths
+                )
+
+            channel_count = len(Channel.NOTE_CHANNEL_NAMES)
+
+            # aggregate batch mean losses
+            self.master_loss = sum([
+                self.losses_in_channel[channel_name]
+                for channel_name in Channel.NOTE_CHANNEL_NAMES
+            ]) / channel_count
+
+            # aggregate individual losses
+            individual_losses = sum([
+                individual_losses_in_channels[channel_name]
+                for channel_name in Channel.NOTE_CHANNEL_NAMES
+            ]) / channel_count
+
+            # aggregate edit distances
+            self.edit_distance = sum([
+                self.edit_distance_in_channel[channel_name]
+                for channel_name in Channel.NOTE_CHANNEL_NAMES
+            ]) / channel_count
+            self.greedy_edit_distance = sum([
+                self.greedy_edit_distance_in_channel[channel_name]
+                for channel_name in Channel.NOTE_CHANNEL_NAMES
+            ]) / channel_count
 
             # === training logic part ===
 
             self.training = self._construct_training(
                 self.learning_rate,
-                self.loss
+                self.master_loss
             )
 
             # === summaries, metrics and others part ===
 
             if logdir is not None:
-                self._construct_summaries(losses, logdir)
+                self._construct_summaries(individual_losses, logdir)
                 self._has_summaries = True
 
             self.reset_metrics = tf.variables_initializer(
@@ -196,25 +231,29 @@ class Network:
         # BxTxH + BxTxH -> BxTx2H -> BxTx1x2H
         concat = tf.expand_dims(tf.concat([fw, bw], 2), 2)
 
-        # project output to classes (including blank):
-        # BxTx1x2H -> BxTx1xC -> BxTxC
-        kernel = tf.Variable(
-            tf.truncated_normal(
-                [1, 1, num_hidden * 2, Channel.NOTE_CHANNEL_SYMBOL_COUNT + 1],
-                stddev=0.1
+        # for each note channel
+        logits_in_channels = {}
+        for channel_name in Channel.NOTE_CHANNEL_NAMES:
+            # project output to classes (including blank):
+            # BxTx1x2H -> BxTx1xC -> BxTxC
+            kernel = tf.Variable(
+                tf.truncated_normal(
+                    [1, 1, num_hidden * 2, Channel.NOTE_CHANNEL_SYMBOL_COUNT + 1],
+                    stddev=0.1
+                )
             )
-        )
-        return tf.squeeze(
-            tf.nn.atrous_conv2d(
-                value=concat,
-                filters=kernel,
-                rate=1,
-                padding='SAME'
-            ),
-            axis=[2]
-        )
+            logits_in_channels[channel_name] = tf.squeeze(
+                tf.nn.atrous_conv2d(
+                    value=concat,
+                    filters=kernel,
+                    rate=1,
+                    padding='SAME'
+                ),
+                axis=[2]
+            )
+        return logits_in_channels
 
-    def _construct_ctc(self, logits, label_texts, image_widths):
+    def _construct_ctc(self, channel_name, logits, labels, logit_widths):
         """Creates the CTC loss and returns individual losses and their mean"""
         # time major
         logits = tf.transpose(logits, [1, 0, 2])
@@ -227,38 +266,38 @@ class Network:
 
         # loss
         losses = tf.nn.ctc_loss(
-            label_texts, # labels
-            logits, # logits (network output)
-            image_widths # vector of logit lengths
+            labels,
+            logits,
+            logit_widths
         )
-        self.loss = tf.reduce_mean(losses)
+        self.losses_in_channel[channel_name] = tf.reduce_mean(losses)
 
         # beam predictions
         top_beam_predictions, _ = tf.nn.ctc_beam_search_decoder(
             logits,
-            image_widths,
+            logit_widths,
             merge_repeated=False
         )
-        self.predictions = top_beam_predictions[0] # It's a single-element list
+        self.predictions_in_channel[channel_name] = top_beam_predictions[0]
 
         # greedy predictions
         top_greedy_predictions, _ = tf.nn.ctc_greedy_decoder(
             logits,
-            image_widths
+            logit_widths
         )
-        self.greedy_predictions = top_greedy_predictions[0] # again, 1 element
+        self.greedy_predictions_in_channel[channel_name] = top_greedy_predictions[0]
 
         # edit distance
-        self.edit_distance = tf.reduce_mean(
+        self.edit_distance_in_channel[channel_name] = tf.reduce_mean(
             tf.edit_distance(
-                self.predictions,
-                tf.cast(label_texts, tf.int64)
+                self.predictions_in_channel[channel_name],
+                tf.cast(labels, tf.int64)
             )
         )
-        self.greedy_edit_distance = tf.reduce_mean(
+        self.greedy_edit_distance_in_channel[channel_name] = tf.reduce_mean(
             tf.edit_distance(
-                self.greedy_predictions,
-                tf.cast(label_texts, tf.int64)
+                self.greedy_predictions_in_channel[channel_name],
+                tf.cast(labels, tf.int64)
             )
         )
 
@@ -329,14 +368,6 @@ class Network:
                 batch_size
             )
 
-    def LABELS_TO_TENSOR(self, labels: List[EncodedLabel]):
-        # TODO: HACK
-        #print(labels)
-        old_labels = [label.get_channel(0) for label in labels]
-        #print(old_labels)
-        #exit()
-        return sparse_tensor_from_sequences(old_labels)
-
     def _train_epoch(self, train_dataset, dev_dataset, epoch, epochs, batch_size):
         batches = train_dataset.count_batches(batch_size)
         batch = 1
@@ -347,7 +378,7 @@ class Network:
             rate = self._calculate_learning_rate(self.get_global_step())
 
             # vars to evaluate
-            evaluate = [self.loss, self.greedy_edit_distance, self.training]
+            evaluate = [self.master_loss, self.greedy_edit_distance, self.training]
             if self._has_summaries:
                 evaluate.append(self.summaries["train"])
 
@@ -355,8 +386,14 @@ class Network:
             self.session.run(self.reset_metrics)
             evaluated = self.session.run(evaluate, {
                 self.images: images,
-                self.labels: self.LABELS_TO_TENSOR(labels),
                 self.image_widths: widths,
+                **{
+                    # assign labels for each channel
+                    self.labels_in_channels[channel_name]: sparse_tensor_from_sequences(
+                        [label.get_channel(channel_name) for label in labels]
+                    )
+                    for channel_name in Channel.NOTE_CHANNEL_NAMES
+                },
                 self.is_training: True,
                 self.learning_rate: rate
             })
@@ -384,23 +421,31 @@ class Network:
         all_items = 0
         wrong_examples = []
 
+        displayed_channel_name = random.choice(Channel.NOTE_CHANNEL_NAMES)
+        print("Displaying evaluation for channel: ", displayed_channel_name)
+
         while dataset.has_batch():
             images, labels, widths = dataset.next_batch(batch_size)
             predictions, _, _ = self.session.run([
-                self.predictions,
+                self.predictions_in_channel[displayed_channel_name],
                 self.update_edit_distance,
                 self.update_loss
             ], {
                 self.images: images,
-                self.labels: self.LABELS_TO_TENSOR(labels),
                 self.image_widths: widths,
+                **{
+                    self.labels_in_channels[channel_name]: sparse_tensor_from_sequences(
+                        [label.get_channel(channel_name) for label in labels]
+                    )
+                    for channel_name in Channel.NOTE_CHANNEL_NAMES
+                },
                 self.is_training: False
             })
 
             all_items += batch_size
             offset = 0
             for i in range(len(labels)):
-                indices = predictions.indices[predictions.indices[:,0] == i, 1]
+                indices = predictions.indices[predictions.indices[:, 0] == i, 1]
                 l = 0 if len(indices) == 0 else indices.max() + 1
                 label: List[int] = labels[i].get_channel(0)
                 pred: List[int] = list(predictions.values[offset:offset+l])
@@ -447,6 +492,7 @@ class Network:
         width = img.shape[1]
         assert img.shape[0] == Network.IMAGE_HEIGHT
 
+        # TODO: predictions now exist for each channel
         predictions = self.session.run(self.predictions, {
             self.images: [img / 255.0],
             self.image_widths: [width],
