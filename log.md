@@ -76,3 +76,25 @@ hlásit pomlky, klíče a další symboly přes celou osnovu.
 To by mohlo vyřešit problém s vícenásobnými notami (akordy).
 Každý výstupní CTC kanál zaregistruje "je tu akord", ale každý řekne, zda
 je v tom akordu přítomen.
+
+
+## 2020-03-03
+
+Peru se s vícekanálovým výstupem sítě. (13 kanálů, od dolní pomocné linky po
+horní pomocnou linku) Moc to nejde, síť nekonverguje, má problémy se cokoliv
+naučit i když je vstup triviální. Když se štěpila na poslední vrstvě, tak
+to moc nedělalo a když jsem to teď rozštěpil mezi CNN a RNN, tak je teď
+síť podstatně větší a tedy se i o dost pomaleji trénuje.
+
+Tak nakonec dříve rozštěpená síť zkonvergovala, ale trvalo jí to déle, protože
+má teď asi větší kapacitu (a trénuje se pomaleji). Jo a taky zatím zkonvergovala
+jen na trénovacích datech, ne validačních, takže se je možná jen
+naučila nazpaměť. Jo, to bude ono. Overfituje.
+
+> Co takhle udělat model, co na monofonní hudbě funguje stejně nějako předchozí
+jednokanálová architektura? (o které víme, že zkonvergovala)
+
+Zkusím se omezit jen na 4 kanály místo 13 a ty budou reprezentovat jednotlivé
+hlasy směrem odshora dolů. Pokud n-tý hlas nebude přítomen, tak bude predikovat
+třídu, že tu není nota. Monofonní vstupy bude potom klasifikovat čistě
+první kanál.

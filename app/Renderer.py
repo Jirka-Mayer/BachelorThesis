@@ -25,8 +25,8 @@ class Renderer:
         """Renders a symbol sequence into an image of a line"""
         img = self.render_without_postprocessing(label)
         img = self._crop_first_line(img)
+        img = self._trim_line(img)
         img = self._normalize_line_image_height(img)
-        img = Renderer._trim_line(img)
 
         return img
 
@@ -77,8 +77,7 @@ class Renderer:
 
         return image[t:b, :]
 
-    @staticmethod
-    def _trim_line(image):
+    def _trim_line(self, image):
         """Trim image of a line horizontally"""
         s = (255 - image).sum(axis=0)  # collapse vertically
         start = 0
@@ -89,7 +88,12 @@ class Renderer:
             if start != 0 and s[x] == 0:
                 end = x
                 break
-        start += 25  # HACK: crop away clef and time signature
+
+        # HACK: crop away clef and time signature
+        start_crop_inch = 0.53125
+        start_crop_px = int(start_crop_inch * self.dpi)
+        start += start_crop_px
+
         return image[:, start:end]
 
     def _normalize_line_image_height(self, img):

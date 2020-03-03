@@ -29,6 +29,7 @@ class Generator:
         last_channel = Channel.NOTE_CHANNEL_NAMES[-1]
 
         note_count = random.choice([1, 2, 3, 4])
+        #note_count = 1  # TODO: DEBUG: no chords, for now
         note_distances = []
         for i in range(note_count - 1):
             note_distances.append(random.choice([1, 2, 3, 4]))
