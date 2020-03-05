@@ -115,3 +115,26 @@ Ještě mě napadá vrátit se k principu kanálů podle pozic not, jen místo
 štěpení jedné sítě trénovat oddělené modely. A taky jim generovat data
 s rozumným zastoupením cílové třídy. (síť detekující střední linku bude
 mít stejně not na střední lince, jako mimo ní)
+
+Ale to můžeme stejně tak dělat pro kanály podle hlasů. Takže můžu zkusit např
+natrénovat model, co bude detekovat právě druhé hlasy.
+
+
+## 2020-03-04
+
+- zkontroluj, že se neodchyluješ od zadání v přechodu od psaných k sázeným
+- omezení na monofonní hudbu by mělo být ok
+- jak moc jsem vázán na muscimu?
+
+...
+
+- Zahoď vícekanálový výstup sítě, kdyžtak současné věci serializujeme za sebe
+- Zkus generovat delší monofonní hudbu a jak na ní konverguješ (~3 takty).
+- Zkus jestli zkonverguješ na něčem o rozměrech muscimy
+- Vzít muscimu, vytahat z ní monofonní data, anotovat je a využít toho, že je
+    tam jen 20 děl, ale každé v 50 variantách. (méně anotování)
+
+Plán tedy je:
+
+- klasifikuj jen takty (nic delšího), data použij z muscimy, vyber nějaké
+lehké, anotuj je. Použij síť předtrénovanou na generovaných datech.

@@ -9,7 +9,20 @@ class Trainer:
 
     def train_all_phases(self):
         self._simple_single_voice()
-        self._introduce_second_voice()
+        self._testing_single_voice()
+        # self._introduce_second_voice()
+
+    def _testing_single_voice(self):
+        self._train_phase(
+            train_size=50,
+            dev_size=10,
+            phase_name="testing_single_voice",
+            generator_options={
+                "length_choices": [8, 9, 10, 11, 12, 13, 14, 15, 16],
+                "note_count_choices": [1]
+            },
+            stopping_condition=lambda p: False
+        )
 
     def _simple_single_voice(self):
         self._train_phase(
@@ -17,10 +30,10 @@ class Trainer:
             dev_size=10,
             phase_name="simple_single_voice",
             generator_options={
-                "length_choices": [1] * 4 + [2, 3],
+                "length_choices": [1, 2, 3],
                 "note_count_choices": [1]
             },
-            stopping_condition=lambda p: p["dev_edit_distance"] < 0.1
+            stopping_condition=lambda p: p["dev_edit_distance"] < 0.2
         )
 
     def _introduce_second_voice(self):

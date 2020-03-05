@@ -19,7 +19,8 @@ class Network:
     NETWORK_SCOPE = "network"
 
     # channels that are present in the network structure
-    CHANNEL_NAMES = [*Channel.VOICE_CHANNEL_NAMES]
+    # CHANNEL_NAMES = [*Channel.VOICE_CHANNEL_NAMES]
+    CHANNEL_NAMES = ["first"]  # detect first voices only
 
     # number of classes in a channel (without the blank)
     CHANNEL_CLASS_COUNT = Channel.VOICE_CHANNEL_SYMBOL_COUNT
@@ -515,6 +516,7 @@ class Network:
         return self.session.run(self.global_step)
 
     def _calculate_learning_rate(self, batches_trained):
+        # return 0.01
         if batches_trained > 10000:
             return 0.0001
         elif batches_trained > 10:
