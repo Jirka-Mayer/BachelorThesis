@@ -2,7 +2,8 @@ import os
 from muscima.io import parse_cropobject_list, CropObject
 import itertools
 from typing import List
-from generator.whole_notes import get_whole_notes, get_quarter_rests
+from generator.get_symbols import *
+from generator.CompositeObject import CompositeObject
 
 
 ##############################
@@ -35,4 +36,6 @@ CROP_OBJECT_DICT = {c.objid: c for c in CROP_OBJECTS}
 
 # load all symbols
 WHOLE_NOTES: List[CropObject] = get_whole_notes()
+QUARTER_NOTES: List[CompositeObject] = get_quarter_notes()
+HALF_NOTES: List[CompositeObject] = get_half_notes()
 QUARTER_RESTS: List[CropObject] = get_quarter_rests()

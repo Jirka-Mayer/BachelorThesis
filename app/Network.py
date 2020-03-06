@@ -22,10 +22,12 @@ class Network:
     # CHANNEL_NAMES = [*Channel.VOICE_CHANNEL_NAMES]
     CHANNEL_NAMES = ["first"]  # detect first voices only
 
-    # number of classes in a channel (without the blank)
-    CHANNEL_CLASS_COUNT = Channel.VOICE_CHANNEL_SYMBOL_COUNT
+    def __init__(self, continual_saving=False, name=None, threads=1, num_classes=None):
+        # number of output classes
+        self.num_classes: int = num_classes
+        if self.num_classes is None:
+            self.num_classes = Channel.VOICE_CHANNEL_SYMBOL_COUNT
 
-    def __init__(self, continual_saving=False, name=None, threads=1):
         # does the network save itself on improvement during dev evaluation?
         self.continual_saving = continual_saving
 
@@ -247,7 +249,7 @@ class Network:
             # BxTx1x2H -> BxTx1xC -> BxTxC
             kernel = tf.Variable(
                 tf.truncated_normal(
-                    [1, 1, num_hidden * 2, Network.CHANNEL_CLASS_COUNT + 1],
+                    [1, 1, num_hidden * 2, self.num_classes + 1],
                     stddev=0.1
                 )
             )

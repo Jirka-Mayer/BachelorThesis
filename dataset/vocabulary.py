@@ -1,3 +1,6 @@
+from typing import List
+
+
 LOWEST_POSITION = -8  # second additional line below
 HIGHEST_POSITION = 8  # second additional line above
 
@@ -75,3 +78,7 @@ for s in SYMBOLIC:
 
 # check no duplicities
 assert len(VOCABULARY) == len(set(VOCABULARY))
+
+
+def encode_annotation_string(annotation: str) -> List[int]:
+    return [VOCABULARY.index(s) for s in annotation.split()]
