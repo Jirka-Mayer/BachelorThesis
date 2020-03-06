@@ -2,12 +2,18 @@ from dataset.load_measure_dataset import load_measure_dataset
 from dataset.vocabulary import VOCABULARY
 import matplotlib.pyplot as plt
 
-images, labels, encoded_labels = load_measure_dataset()
+# images, labels, encoded_labels = load_measure_dataset()
+#
+# for i in range(len(images)):
+#     print(labels[i])
+#     plt.imshow(images[i])
+#     plt.show()
 
-for i in range(len(images)):
-    print(labels[i])
-    plt.imshow(images[i])
-    plt.show()
+#generate_dataset()
+
+from generator.generate import generate
+from generator.utils import show_images
+show_images([generate()[0] for i in range(20)])
 
 exit()
 # ========================================
@@ -23,13 +29,19 @@ CROPOBJECT_DIR = os.path.join(
     'Data/muscima-pp/v1.0/data/cropobjects_withstaff'
 )
 
-fname = os.path.join(CROPOBJECT_DIR, "CVC-MUSCIMA_W-06_N-02_D-ideal.xml")
+#fname = os.path.join(CROPOBJECT_DIR, "CVC-MUSCIMA_W-06_N-02_D-ideal.xml")
+fname = os.path.join(CROPOBJECT_DIR, "CVC-MUSCIMA_W-01_N-19_D-ideal.xml")
 imgname = os.path.join(os.environ['HOME'], "Data/CvcMuscima-Distortions/ideal/w-06/image/p002.png")
 doc = parse_cropobject_list(fname)
 img = cv2.imread(imgname)
 
 staves = [x for x in doc if x.clsname == "staff"]
-s = staves[0]
+s = staves[-1]
+
+print(s.mask.sum(axis=1))
+#plt.imshow(s.mask)
+#plt.show()
+exit()
 
 img = img[(s.top-s.height):(s.bottom+s.height), s.left:s.right]
 
