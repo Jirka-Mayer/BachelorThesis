@@ -132,7 +132,7 @@ class Network:
         # list of parameters for the layers
         kernel_vals = [5, 5, 5, 3, 3, 3]
         feature_vals = [1, 16, 32, 64, 128, 128, 256]
-        stride_vals = pool_vals = [(2,2), (2,2), (2,2), (2,1), (2,1), (2,1)]
+        stride_vals = pool_vals = [(2,2), (2,2), (2,1), (2,1), (2,1), (2,1)]
         numLayers = len(stride_vals)
 
         # create layers
