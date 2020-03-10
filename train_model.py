@@ -3,7 +3,7 @@ import app
 from typing import List
 import numpy as np
 import cv2
-from dataset.vocabulary import encode_annotation_string, VOCABULARY
+from dataset.vocabulary import decode_annotation_list, encode_annotation_string, VOCABULARY
 
 
 def normalize_image_height(img):
@@ -36,6 +36,26 @@ class Dataset:
             annotation = encode_annotation_string(annotation)
             self.images.append(img)
             self.labels.append(annotation)
+
+    #############
+    # Debugging #
+    #############
+
+    def check_dataset_visually(self, example_count=10):
+        """Shows couple of items in the dataset to visually check the content"""
+        import matplotlib.pyplot as plt
+        import random
+
+        for _ in range(example_count):
+            index = random.randint(0, self.size - 1)
+            print(decode_annotation_list(self.labels[index]))
+            # plt.imshow(np.dstack([
+            #     self.images[index],
+            #     self.images[index],
+            #     self.images[index]
+            # ]))
+            plt.imshow(self.images[index])
+            plt.show()
 
     ##################
     # Data interface #
@@ -93,6 +113,9 @@ class Dataset:
 # build the dataset
 train_dataset = Dataset(2500)
 dev_dataset = Dataset(100)
+
+# train_dataset.check_dataset_visually()
+# exit()
 
 # build the network
 network = app.Network(

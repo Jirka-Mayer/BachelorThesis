@@ -82,3 +82,7 @@ assert len(VOCABULARY) == len(set(VOCABULARY))
 
 def encode_annotation_string(annotation: str) -> List[int]:
     return [VOCABULARY.index(s) for s in annotation.split()]
+
+
+def decode_annotation_list(annotations: List[int]) -> str:
+    return " ".join([VOCABULARY[i] for i in annotations])

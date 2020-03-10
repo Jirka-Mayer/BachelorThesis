@@ -7,10 +7,7 @@ import datetime
 import random
 from typing import List
 from app.sparse_tensor_from_sequences import sparse_tensor_from_sequences
-from app.LabelEncoder import LabelEncoder
 from app.Symbol import Symbol
-from app.EncodedLabel import EncodedLabel
-from app.Label import Label
 from app.Channel import Channel
 
 
@@ -18,21 +15,17 @@ class Network:
     IMAGE_HEIGHT = 64  # fixed by the CNN block architecture
     NETWORK_SCOPE = "network"
 
-    # channels that are present in the network structure
-    # CHANNEL_NAMES = [*Channel.VOICE_CHANNEL_NAMES]
-    CHANNEL_NAMES = ["first"]  # detect first voices only
-
     def __init__(self, continual_saving=False, name=None, threads=1, num_classes=None):
+        # name of the model (for continual saving)
+        self.name = name
+
         # number of output classes
         self.num_classes: int = num_classes
         if self.num_classes is None:
-            self.num_classes = Channel.VOICE_CHANNEL_SYMBOL_COUNT
+            raise Exception("Number of output classes need to be specified")
 
         # does the network save itself on improvement during dev evaluation?
         self.continual_saving = continual_saving
-
-        # name of the model (for continual saving)
-        self.name = name
 
         # whether summaries are logged or not
         self._has_summaries = False
@@ -72,12 +65,10 @@ class Network:
                 [None],
                 name="widths"
             )
-            self.labels_in_channels = {}
-            for channel_name in Network.CHANNEL_NAMES:
-                self.labels_in_channels[channel_name] = tf.sparse_placeholder(
-                    tf.int32,
-                    name="labels_in_channel_" + str(channel_name)
-                )
+            self.labels = tf.sparse_placeholder(
+                tf.int32,
+                name="labels"
+            )
 
             # metadata input
             self.is_training = tf.placeholder(
@@ -97,58 +88,26 @@ class Network:
                 )
 
                 # RNN
-                logits_in_channels = self._construct_rnn(cnn_out_4d)
+                logits = self._construct_rnn(cnn_out_4d)
 
-            # CTC for each channel
-            individual_losses_in_channels = {}
-            self.losses_in_channel = {}
-            self.predictions_in_channel = {}
-            self.greedy_predictions_in_channel = {}
-            self.edit_distance_in_channel = {}
-            self.greedy_edit_distance_in_channel = {}
-            for channel_name in Network.CHANNEL_NAMES:
-                individual_losses_in_channels[channel_name] = self._construct_ctc(
-                    channel_name,
-                    logits_in_channels[channel_name],
-                    self.labels_in_channels[channel_name],
-                    widths
-                )
-
-            channel_count = len(Network.CHANNEL_NAMES)
-
-            # aggregate batch mean losses
-            self.master_loss = sum([
-                self.losses_in_channel[channel_name]
-                for channel_name in Network.CHANNEL_NAMES
-            ]) / channel_count
-
-            # aggregate individual losses
-            individual_losses = sum([
-                individual_losses_in_channels[channel_name]
-                for channel_name in Network.CHANNEL_NAMES
-            ]) / channel_count
-
-            # aggregate edit distances
-            self.edit_distance = sum([
-                self.edit_distance_in_channel[channel_name]
-                for channel_name in Network.CHANNEL_NAMES
-            ]) / channel_count
-            self.greedy_edit_distance = sum([
-                self.greedy_edit_distance_in_channel[channel_name]
-                for channel_name in Network.CHANNEL_NAMES
-            ]) / channel_count
+            # CTC
+            losses = self._construct_ctc(
+                logits,
+                self.labels,
+                widths
+            )
 
             # === training logic part ===
 
             self.training = self._construct_training(
                 self.learning_rate,
-                self.master_loss
+                self.loss
             )
 
             # === summaries, metrics and others part ===
 
             if logdir is not None:
-                self._construct_summaries(individual_losses, logdir)
+                self._construct_summaries(losses, logdir)
                 self._has_summaries = True
 
             self.reset_metrics = tf.variables_initializer(
@@ -218,53 +177,47 @@ class Network:
         """Creates RNN layers and returns output of these layers"""
         rnn_in_3d = tf.squeeze(rnn_in_4d, axis=[1])
 
-        # for each note channel
-        logits_in_channels = {}
-        for channel_name in Network.CHANNEL_NAMES:
+        # basic cells which are used to build RNN
+        num_hidden = 256
+        cells = [tf.contrib.rnn.LSTMCell(
+            num_units=num_hidden,
+            state_is_tuple=True
+        ) for _ in range(2)] # 2 layers
 
-            # basic cells which are used to build RNN
-            num_hidden = 256
-            cells = [tf.contrib.rnn.LSTMCell(
-                num_units=num_hidden,
-                state_is_tuple=True
-            ) for _ in range(2)] # 2 layers
+        # stack basic cells
+        stacked = tf.contrib.rnn.MultiRNNCell(cells, state_is_tuple=True)
 
-            # stack basic cells
-            stacked = tf.contrib.rnn.MultiRNNCell(cells, state_is_tuple=True)
+        # bidirectional RNN
+        # BxTxF -> BxTx2H
+        ((fw, bw), _) = tf.nn.bidirectional_dynamic_rnn(
+            cell_fw=stacked,
+            cell_bw=stacked,
+            inputs=rnn_in_3d,
+            dtype=rnn_in_3d.dtype
+        )
 
-            # bidirectional RNN
-            # BxTxF -> BxTx2H
-            ((fw, bw), _) = tf.nn.bidirectional_dynamic_rnn(
-                cell_fw=stacked,
-                cell_bw=stacked,
-                inputs=rnn_in_3d,
-                dtype=rnn_in_3d.dtype,
-                scope="bidirectional_rnn_for_channel_" + str(channel_name)
+        # BxTxH + BxTxH -> BxTx2H -> BxTx1x2H
+        concat = tf.expand_dims(tf.concat([fw, bw], 2), 2)
+
+        # project output to classes (including blank):
+        # BxTx1x2H -> BxTx1xC -> BxTxC
+        kernel = tf.Variable(
+            tf.truncated_normal(
+                [1, 1, num_hidden * 2, self.num_classes + 1],
+                stddev=0.1
             )
+        )
+        return tf.squeeze(
+            tf.nn.atrous_conv2d(
+                value=concat,
+                filters=kernel,
+                rate=1,
+                padding='SAME'
+            ),
+            axis=[2]
+        )
 
-            # BxTxH + BxTxH -> BxTx2H -> BxTx1x2H
-            concat = tf.expand_dims(tf.concat([fw, bw], 2), 2)
-
-            # project output to classes (including blank):
-            # BxTx1x2H -> BxTx1xC -> BxTxC
-            kernel = tf.Variable(
-                tf.truncated_normal(
-                    [1, 1, num_hidden * 2, self.num_classes + 1],
-                    stddev=0.1
-                )
-            )
-            logits_in_channels[channel_name] = tf.squeeze(
-                tf.nn.atrous_conv2d(
-                    value=concat,
-                    filters=kernel,
-                    rate=1,
-                    padding='SAME'
-                ),
-                axis=[2]
-            )
-        return logits_in_channels
-
-    def _construct_ctc(self, channel_name, logits, labels, logit_widths):
+    def _construct_ctc(self, logits, labels, logit_widths):
         """Creates the CTC loss and returns individual losses and their mean"""
         # time major
         logits = tf.transpose(logits, [1, 0, 2])
@@ -281,7 +234,7 @@ class Network:
             logits,
             logit_widths
         )
-        self.losses_in_channel[channel_name] = tf.reduce_mean(losses)
+        self.loss = tf.reduce_mean(losses)
 
         # beam predictions
         top_beam_predictions, _ = tf.nn.ctc_beam_search_decoder(
@@ -289,25 +242,25 @@ class Network:
             logit_widths,
             merge_repeated=False
         )
-        self.predictions_in_channel[channel_name] = top_beam_predictions[0]
+        self.predictions = top_beam_predictions[0]
 
         # greedy predictions
         top_greedy_predictions, _ = tf.nn.ctc_greedy_decoder(
             logits,
             logit_widths
         )
-        self.greedy_predictions_in_channel[channel_name] = top_greedy_predictions[0]
+        self.greedy_predictions = top_greedy_predictions[0]
 
         # edit distance
-        self.edit_distance_in_channel[channel_name] = tf.reduce_mean(
+        self.edit_distance = tf.reduce_mean(
             tf.edit_distance(
-                self.predictions_in_channel[channel_name],
+                self.predictions,
                 tf.cast(labels, tf.int64)
             )
         )
-        self.greedy_edit_distance_in_channel[channel_name] = tf.reduce_mean(
+        self.greedy_edit_distance = tf.reduce_mean(
             tf.edit_distance(
-                self.greedy_predictions_in_channel[channel_name],
+                self.greedy_predictions,
                 tf.cast(labels, tf.int64)
             )
         )
@@ -389,7 +342,7 @@ class Network:
             rate = self._calculate_learning_rate(self.get_global_step())
 
             # vars to evaluate
-            evaluate = [self.master_loss, self.greedy_edit_distance, self.training]
+            evaluate = [self.loss, self.greedy_edit_distance, self.training]
             if self._has_summaries:
                 evaluate.append(self.summaries["train"])
 
@@ -398,13 +351,7 @@ class Network:
             evaluated = self.session.run(evaluate, {
                 self.images: images,
                 self.image_widths: widths,
-                **{
-                    # assign labels for each channel
-                    self.labels_in_channels[channel_name]: sparse_tensor_from_sequences(
-                        [label.get_channel(channel_name) for label in labels]
-                    )
-                    for channel_name in Network.CHANNEL_NAMES
-                },
+                self.labels: sparse_tensor_from_sequences(labels),
                 self.is_training: True,
                 self.learning_rate: rate
             })
@@ -432,24 +379,16 @@ class Network:
         all_items = 0
         wrong_examples = []
 
-        displayed_channel_name = random.choice(Network.CHANNEL_NAMES)
-        print("Displaying evaluation for channel: ", displayed_channel_name)
-
         while dataset.has_batch():
             images, labels, widths = dataset.next_batch(batch_size)
             predictions, _, _ = self.session.run([
-                self.predictions_in_channel[displayed_channel_name],
+                self.predictions,
                 self.update_edit_distance,
                 self.update_loss
             ], {
                 self.images: images,
                 self.image_widths: widths,
-                **{
-                    self.labels_in_channels[channel_name]: sparse_tensor_from_sequences(
-                        [label.get_channel(channel_name) for label in labels]
-                    )
-                    for channel_name in Network.CHANNEL_NAMES
-                },
+                self.labels: sparse_tensor_from_sequences(labels),
                 self.is_training: False
             })
 
@@ -458,7 +397,7 @@ class Network:
             for i in range(len(labels)):
                 indices = predictions.indices[predictions.indices[:, 0] == i, 1]
                 l = 0 if len(indices) == 0 else indices.max() + 1
-                label: List[int] = labels[i].get_channel(displayed_channel_name)
+                label: List[int] = labels[i]
                 pred: List[int] = list(predictions.values[offset:offset+l])
                 ok = "[ok]" if label == pred else "[err]"
                 if label == pred:
