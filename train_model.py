@@ -7,7 +7,7 @@ from dataset.vocabulary import decode_annotation_list, encode_annotation_string,
 
 
 def normalize_image_height(img):
-    target = 32  # TODO: pull constant from config
+    target = 64  # TODO: pull constant from config
     ratio = target / img.shape[0]
     w = int(img.shape[1] * ratio)
     return cv2.resize(img, (w, target), interpolation=cv2.INTER_AREA)
@@ -17,7 +17,7 @@ def normalize_image_height(img):
 class Dataset:
     def __init__(self, size: int):
         # height of images
-        self.image_height = 32  # TODO: pull constant from config
+        self.image_height = 64  # TODO: pull constant from config
 
         # dataset size
         self.size = size

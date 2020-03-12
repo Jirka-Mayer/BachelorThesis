@@ -157,3 +157,10 @@ Možnosti jsou:
 Tak jako tak teď konverguje v rozmezí 100-200 batchů.
 
 Teď budu vracet složitost generování a nechám prozatím malý počet tříd.
+
+---
+
+Vrátil jsem 64px rozlišení a vše zůstalo ok.
+Vrátil jsem variabilitu ve vzdálenostech not a jejich tvaru a trénování to
+ještě urychlylo (ED spadne dříve pryč z 1.0, ale na 0.0 se dostane opět
+během zhruba 200 batchů).

@@ -95,10 +95,8 @@ def print_half_note(state: GeneratorState, position: int):
 
 def print_quarter_note(state: GeneratorState, position: int):
     from generator import QUARTER_NOTES
-    # n = random.choice(QUARTER_NOTES)
-    n = QUARTER_NOTES[0]
-    # space = n.width + random.randint(n.width // 2, n.width * 2)
-    space = int(n.width * 5)
+    n = random.choice(QUARTER_NOTES)
+    space = n.width + random.randint(n.width // 2, n.width * 2)
     n.print(
         state.img,
         state.head + space // 2,
