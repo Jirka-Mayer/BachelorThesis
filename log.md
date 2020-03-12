@@ -193,3 +193,14 @@ Ale na 5 třídách je zase OK. Jsou to noty umístěné na linkách.
 
 > Třeba má problém rozlišit mezi notou na lince a notou v mezeře
 > a třeba by zvýšení rozlišení na 128px pomohlo
+
+---
+
+DROPOUT!!!!!!! DROPOUT TO VYŘEŠIL !!!!!!
+
+Všechny problémy s konvergencí jsou pryč. Na dropout jsem narazil zde:
+https://github.com/OMR-Research/tf-end-to-end/blob/master/ctc_model.py#L88
+Takže jsem ho přidal na RNN vrstvy a výsledkem je:
+- navýšení počtu tříd už funguje
+- konvergence je pomalejší, ale konzistentní
+    (už se nezasekáváme v lokálním minimu)

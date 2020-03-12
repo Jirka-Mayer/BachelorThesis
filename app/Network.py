@@ -177,12 +177,21 @@ class Network:
         """Creates RNN layers and returns output of these layers"""
         rnn_in_3d = tf.squeeze(rnn_in_4d, axis=[1])
 
+        #self.rnn_keep_prob = tf.placeholder(dtype=tf.float32, name="keep_prob")
+
         # basic cells which are used to build RNN
-        num_hidden = 256
-        cells = [tf.contrib.rnn.LSTMCell(
-            num_units=num_hidden,
-            state_is_tuple=True
-        ) for _ in range(2)] # 2 layers
+        num_hidden = 256  # was 256
+        num_layers = 1  # was 2
+        cells = [
+            tf.nn.rnn_cell.DropoutWrapper(
+                tf.contrib.rnn.LSTMCell(
+                    num_units=num_hidden,
+                    state_is_tuple=True
+                ),
+                input_keep_prob=0.5  # TODO: via the self.rnn_keep_prob placeholder
+            )
+            for _ in range(num_layers)
+        ]
 
         # stack basic cells
         stacked = tf.contrib.rnn.MultiRNNCell(cells, state_is_tuple=True)
@@ -195,6 +204,30 @@ class Network:
             inputs=rnn_in_3d,
             dtype=rnn_in_3d.dtype
         )
+
+        # ================================================
+
+        # fully_num_hidden = 256
+        # fully_layers = 1
+        #
+        # # BxTxH + BxTxH -> BxTx2H
+        # rnn_outputs = tf.concat([fw, bw], 2)
+        #
+        # fully_hidden = rnn_outputs
+        # for _ in range(fully_layers):
+        #     fully_hidden = tf.contrib.layers.fully_connected(
+        #         fully_hidden,
+        #         fully_num_hidden,
+        #         activation_fn=None,
+        #     )
+        #
+        # return tf.contrib.layers.fully_connected(
+        #     fully_hidden,
+        #     self.num_classes + 1,
+        #     activation_fn=None,
+        # )
+
+        # ================================================
 
         # BxTxH + BxTxH -> BxTx2H -> BxTx1x2H
         concat = tf.expand_dims(tf.concat([fw, bw], 2), 2)
@@ -270,11 +303,14 @@ class Network:
     def _construct_training(self, learning_rate, loss):
         """Creates an optimizer"""
         self.global_step = tf.train.create_global_step()
-        return tf.train.RMSPropOptimizer(learning_rate).minimize(
-            loss,
-            global_step=self.global_step,
-            name="training"
+        return tf.train.AdamOptimizer().minimize(
+            loss, global_step=self.global_step, name="training"
         )
+        # return tf.train.RMSPropOptimizer(learning_rate).minimize(
+        #     loss,
+        #     global_step=self.global_step,
+        #     name="training"
+        # )
 
     def _construct_summaries(self, losses, logdir):
         """Creates summaries"""

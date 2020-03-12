@@ -68,9 +68,6 @@ SYMBOLIC = [
     "s={position}",  # beamed left sixteenth note
 ]
 
-# TODO: HACK
-#SYMBOLIC = ["q{position}"]
-
 # build actual vocabulary
 VOCABULARY = []
 for s in SYMBOLIC:
@@ -78,11 +75,6 @@ for s in SYMBOLIC:
         VOCABULARY += [s.replace("{position}", str(pos)) for pos in POSITIONS]
     else:
         VOCABULARY.append(s)
-
-# TODO: HACK
-#VOCABULARY = ["q-4", "q4"]
-#VOCABULARY = ["q-4", "q-3", "q-2", "q-1", "q0", "q1", "q2", "q3", "q4"]
-VOCABULARY = ["q-4", "q-2", "q0", "q2", "q4"]
 
 # check no duplicities
 assert len(VOCABULARY) == len(set(VOCABULARY))
