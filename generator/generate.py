@@ -46,8 +46,16 @@ def generate() -> Tuple[np.ndarray, str]:
     # generate
     # _generate_time_4(state)  # TODO: currently simplified for bootstrap
     for _ in range(random.choice([1, 2])):
-        print_quarter_note(state, random.choice([-4, 4]))
+        # print_quarter_note(state, _generate_note_position(state))
+        # print_quarter_note(state, random.choice([-4, -3, -2, -1, 0, 1, 2, 3, 4]))
+        print_quarter_note(state, random.choice([-4, -2, 0, 2, 4]))
+        # print_quarter_note(state, random.choice([-4, 4]))
         # _generate_time_1(state)
+        
+        # if fork("rest or note", 0.5):
+        #     print_quarter_note(state, 0)
+        # else:
+        #     print_quarter_rest(state)
 
     # crop the result
     img = state.img[:, 0:state.head]

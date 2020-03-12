@@ -164,3 +164,32 @@ Vrátil jsem 64px rozlišení a vše zůstalo ok.
 Vrátil jsem variabilitu ve vzdálenostech not a jejich tvaru a trénování to
 ještě urychlylo (ED spadne dříve pryč z 1.0, ale na 0.0 se dostane opět
 během zhruba 200 batchů).
+
+---
+
+Začínám experimentovat s počtem výstupních tříd. (do teď jsem měl jen 2)
+
+Když přidám 5 dummy tříd, které se nikdy v labelech neobjeví, tak síť konverguje
+normálně. Jako když tam jsou pouze dvě chtěné třídy.
+
+Když přidám 100 dummy tříd. Tak mám zase problémy s konvergencí. Jaké?
+Síť mi začne vracet jen jednu výstupní třídu. (cílové třídy jsou vedle sebe)
+
+Když přidám 100 dummy tříd, ale cílové třídy na opačné konce slovní zásoby,
+tak taky nekonverguje. Takže pořadí tříd nemá vliv (což by tak být mělo).
+
+> Hypotéza: Problémy jsou způsobené tím, že přebytečné třídy nevyužívám.
+
+Ano, vypadá to tak:
+
+Když mám 9 tříd a uniformě je generuju, tak síť zkonverguje. Sice čím víc tříd,
+tím pomaleji konverguje, ale konverguje konzistentně. Když mám ale těchto 9
+tříd a přidám k nim 8 dalších co nepoužívám, tak síť nezkonverguje.
+
+Super, tak teď mi přestala konvergovat i na těch 9 třídách na kterých
+ještě před chvílí konvergovala.
+
+Ale na 5 třídách je zase OK. Jsou to noty umístěné na linkách.
+
+> Třeba má problém rozlišit mezi notou na lince a notou v mezeře
+> a třeba by zvýšení rozlišení na 128px pomohlo
