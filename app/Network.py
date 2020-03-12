@@ -177,18 +177,18 @@ class Network:
         """Creates RNN layers and returns output of these layers"""
         rnn_in_3d = tf.squeeze(rnn_in_4d, axis=[1])
 
-        #self.rnn_keep_prob = tf.placeholder(dtype=tf.float32, name="keep_prob")
+        self.dropout = tf.placeholder(dtype=tf.float32, name="dropout")
 
         # basic cells which are used to build RNN
-        num_hidden = 256  # was 256
-        num_layers = 1  # was 2
+        num_hidden = 256
+        num_layers = 1
         cells = [
             tf.nn.rnn_cell.DropoutWrapper(
                 tf.contrib.rnn.LSTMCell(
                     num_units=num_hidden,
                     state_is_tuple=True
                 ),
-                input_keep_prob=0.5  # TODO: via the self.rnn_keep_prob placeholder
+                input_keep_prob=1 - self.dropout
             )
             for _ in range(num_layers)
         ]
@@ -205,49 +205,25 @@ class Network:
             dtype=rnn_in_3d.dtype
         )
 
-        # ================================================
+        fully_num_hidden = 256
+        fully_layers = 0  # no fully connected layers after the RNN block
 
-        # fully_num_hidden = 256
-        # fully_layers = 1
-        #
-        # # BxTxH + BxTxH -> BxTx2H
-        # rnn_outputs = tf.concat([fw, bw], 2)
-        #
-        # fully_hidden = rnn_outputs
-        # for _ in range(fully_layers):
-        #     fully_hidden = tf.contrib.layers.fully_connected(
-        #         fully_hidden,
-        #         fully_num_hidden,
-        #         activation_fn=None,
-        #     )
-        #
-        # return tf.contrib.layers.fully_connected(
-        #     fully_hidden,
-        #     self.num_classes + 1,
-        #     activation_fn=None,
-        # )
+        # BxTxH + BxTxH -> BxTx2H
+        rnn_outputs = tf.concat([fw, bw], 2)
 
-        # ================================================
-
-        # BxTxH + BxTxH -> BxTx2H -> BxTx1x2H
-        concat = tf.expand_dims(tf.concat([fw, bw], 2), 2)
-
-        # project output to classes (including blank):
-        # BxTx1x2H -> BxTx1xC -> BxTxC
-        kernel = tf.Variable(
-            tf.truncated_normal(
-                [1, 1, num_hidden * 2, self.num_classes + 1],
-                stddev=0.1
+        fully_hidden = rnn_outputs
+        for _ in range(fully_layers):
+            fully_hidden = tf.contrib.layers.fully_connected(
+                fully_hidden,
+                fully_num_hidden,
+                activation_fn=None,
             )
-        )
-        return tf.squeeze(
-            tf.nn.atrous_conv2d(
-                value=concat,
-                filters=kernel,
-                rate=1,
-                padding='SAME'
-            ),
-            axis=[2]
+
+        # reshape to output classes with a single fully connected layer
+        return tf.contrib.layers.fully_connected(
+            fully_hidden,
+            self.num_classes + 1,
+            activation_fn=None,
         )
 
     def _construct_ctc(self, logits, labels, logit_widths):
@@ -389,7 +365,8 @@ class Network:
                 self.image_widths: widths,
                 self.labels: sparse_tensor_from_sequences(labels),
                 self.is_training: True,
-                self.learning_rate: rate
+                self.learning_rate: rate,
+                self.dropout: 0.5
             })
 
             loss = evaluated[0]
@@ -425,7 +402,8 @@ class Network:
                 self.images: images,
                 self.image_widths: widths,
                 self.labels: sparse_tensor_from_sequences(labels),
-                self.is_training: False
+                self.is_training: False,
+                self.dropout: 0.0
             })
 
             all_items += batch_size
@@ -482,7 +460,8 @@ class Network:
         predictions = self.session.run(self.predictions, {
             self.images: [img / 255.0],
             self.image_widths: [width],
-            self.is_training: False
+            self.is_training: False,
+            self.dropout: 0.0
         })
 
         # TODO: this is old, replace it for proper decoding
