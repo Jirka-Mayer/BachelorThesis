@@ -138,3 +138,22 @@ Plán tedy je:
 
 - klasifikuj jen takty (nic delšího), data použij z muscimy, vyber nějaké
 lehké, anotuj je. Použij síť předtrénovanou na generovaných datech.
+
+
+## 2020-03-12
+
+Síť nechce zkonvergovat na generovaných datech z muscimy. Zjistil jsem, že
+má vliv počet výstupních tříd. Když nechám všechny třídy, edit distance se
+zasekne kolem 50%. Když dám jen dvě výstupní třídy, tak zkonverguje.
+
+> Zajímavé: síť se zasekne i když délka sekvencí je 1
+> To hintuje na nějaký fundamentální problém při velkém počtu tříd
+> (Délka vstupu nemá vliv na konvergenci, pouze počet tříd)
+
+Možnosti jsou:
+- je něco špatně se sítí (existuje nějaké tvrzení o CTC, že větší počet tříd je těžší)
+- je špatně něco s kódem někde jinde, že se síť potom špatně trénuje
+
+Tak jako tak teď konverguje v rozmezí 100-200 batchů.
+
+Teď budu vracet složitost generování a nechám prozatím malý počet tříd.

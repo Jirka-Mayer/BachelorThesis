@@ -76,6 +76,9 @@ for s in SYMBOLIC:
     else:
         VOCABULARY.append(s)
 
+# TODO: HACK
+VOCABULARY = ["q-4", "q4"]
+
 # check no duplicities
 assert len(VOCABULARY) == len(set(VOCABULARY))
 

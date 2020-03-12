@@ -26,7 +26,7 @@ def generate_staff_lines() -> Tuple[np.ndarray, Dict[int, int]]:
 
     staves = [x for x in doc if x.clsname == "staff"]
     staff = staves[-1]  # last staff has no notes on this piece
-    margin = staff.height
+    margin = int(staff.height * 0.1)  # TODO: HACK, do not multiply
 
     # build the empty staff image with proper margin
     img = np.zeros(

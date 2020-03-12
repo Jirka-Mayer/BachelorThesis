@@ -12,7 +12,7 @@ from app.Channel import Channel
 
 
 class Network:
-    IMAGE_HEIGHT = 64  # fixed by the CNN block architecture
+    IMAGE_HEIGHT = 32  # fixed by the CNN block architecture
     NETWORK_SCOPE = "network"
 
     def __init__(self, continual_saving=False, name=None, threads=1, num_classes=None):
@@ -130,9 +130,12 @@ class Network:
         cnn_in_4d = tf.expand_dims(input=cnn_in_3d, axis=3)
 
         # list of parameters for the layers
-        kernel_vals = [5, 5, 5, 3, 3, 3]
-        feature_vals = [1, 16, 32, 64, 128, 128, 256]
-        stride_vals = pool_vals = [(2,2), (2,2), (2,1), (2,1), (2,1), (2,1)]
+        #kernel_vals = [5, 5, 5, 3, 3, 3]
+        #feature_vals = [1, 16, 32, 64, 128, 128, 256]
+        #stride_vals = pool_vals = [(2,2), (2,2), (2,1), (2,1), (2,1), (2,1)]
+        kernel_vals = [5, 5, 3, 3, 3]
+        feature_vals = [1, 32, 64, 128, 128, 256]
+        stride_vals = pool_vals = [(2, 2), (2, 2), (2, 1), (2, 1), (2, 1)]
         numLayers = len(stride_vals)
 
         # create layers

@@ -44,7 +44,10 @@ def generate() -> Tuple[np.ndarray, str]:
     state = GeneratorState()
 
     # generate
-    _generate_time_4(state)
+    # _generate_time_4(state)  # TODO: currently simplified for bootstrap
+    for _ in range(random.choice([1, 2])):
+        print_quarter_note(state, random.choice([-4, 4]))
+        # _generate_time_1(state)
 
     # crop the result
     img = state.img[:, 0:state.head]

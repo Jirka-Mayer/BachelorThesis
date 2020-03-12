@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from generator.generate import generate
 from generator.utils import show_images
 import generator
-show_images([generate()[0] for i in range(1)])
+show_images([generate()[0] for i in range(15)])
 #show_images([o.mask for o in generator.HALF_NOTES][0:15])
 
 exit()
