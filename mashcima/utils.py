@@ -2,7 +2,7 @@ from muscima.io import CropObject
 
 
 def get_outlink_to(obj: CropObject, clsname: str) -> CropObject:
-    from generator import CROP_OBJECT_DICT
+    from mashcima import CROP_OBJECT_DICT
     for l in obj.outlinks:
         if CROP_OBJECT_DICT[l].clsname == clsname:
             return CROP_OBJECT_DICT[l]
@@ -10,7 +10,7 @@ def get_outlink_to(obj: CropObject, clsname: str) -> CropObject:
 
 
 def has_outlink_to(obj: CropObject, clsname: str) -> bool:
-    from generator import CROP_OBJECT_DICT
+    from mashcima import CROP_OBJECT_DICT
     for l in obj.outlinks:
         if CROP_OBJECT_DICT[l].clsname == clsname:
             return True

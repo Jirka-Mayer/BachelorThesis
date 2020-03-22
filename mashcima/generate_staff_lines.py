@@ -15,7 +15,7 @@ def generate_staff_lines() -> Tuple[np.ndarray, Dict[int, int]]:
     if _staff_line_cache is not None:
         return _staff_line_cache[0].copy(), _staff_line_cache[1]
 
-    from generator import CROP_OBJECT_DIRECTORY
+    from mashcima import CROP_OBJECT_DIRECTORY
 
     doc = parse_cropobject_list(
         os.path.join(

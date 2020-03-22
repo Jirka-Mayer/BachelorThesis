@@ -1,8 +1,7 @@
 import json
 import os
 import cv2
-from muscima.io import parse_cropobject_list
-from dataset.vocabulary import VOCABULARY
+from app.vocabulary import VOCABULARY
 
 
 CVC_MUSCIMA_PATH = os.path.join(

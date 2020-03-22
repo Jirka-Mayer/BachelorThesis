@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from generator.GeneratorState import GeneratorState
+from mashcima.GeneratorState import GeneratorState
 
 
 ####################
@@ -52,7 +52,7 @@ def print_mask_centered(img: np.ndarray, mask: np.ndarray, x: int, y: int):
 ########################
 
 def print_quarter_rest(state: GeneratorState):
-    from generator import QUARTER_RESTS
+    from mashcima import QUARTER_RESTS
     r = random.choice(QUARTER_RESTS)
     space = r.width + random.randint(r.width // 2, r.width * 2)
     print_mask_centered(
@@ -66,7 +66,7 @@ def print_quarter_rest(state: GeneratorState):
 
 
 def print_whole_note(state: GeneratorState, position: int):
-    from generator import WHOLE_NOTES
+    from mashcima import WHOLE_NOTES
     n = random.choice(WHOLE_NOTES)
     space = n.width + random.randint(n.width // 2, n.width * 2)
     print_mask_centered(
@@ -80,7 +80,7 @@ def print_whole_note(state: GeneratorState, position: int):
 
 
 def print_half_note(state: GeneratorState, position: int):
-    from generator import HALF_NOTES
+    from mashcima import HALF_NOTES
     n = random.choice(HALF_NOTES)
     space = n.width + random.randint(n.width // 2, n.width * 2)
     n.print(
@@ -94,7 +94,7 @@ def print_half_note(state: GeneratorState, position: int):
 
 
 def print_quarter_note(state: GeneratorState, position: int):
-    from generator import QUARTER_NOTES
+    from mashcima import QUARTER_NOTES
     n = random.choice(QUARTER_NOTES)
     space = n.width + random.randint(n.width // 2, n.width * 2)
     n.print(

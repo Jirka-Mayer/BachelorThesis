@@ -1,47 +1,46 @@
 import numpy as np
-import random
-import pickle
-import os
-from typing import List
-from app.Generator import Generator
-from app.Renderer import Renderer
-from app.LabelEncoder import LabelEncoder
-from app.Label import Label
-from app.EncodedLabel import EncodedLabel
-from app.config import config
+from typing import List, Callable, Tuple
+import cv2
+from app.vocabulary import decode_annotation_list, encode_annotation_string
+from app.Network import Network
+
+
+def normalize_image_height(img: np.ndarray):
+    target = Network.IMAGE_HEIGHT
+    ratio = target / img.shape[0]
+    w = int(img.shape[1] * ratio)
+    return cv2.resize(img, (w, target), interpolation=cv2.INTER_AREA)
 
 
 class GeneratedDataset:
+    """
+    Acts as the glue between a mashcima and the network.
+    Is only a container for generated data.
+    Also performs image height normalization and label encoding.
+    """
+
     def __init__(
-        self,
-        size,
-        name="default",
-        generator_options={},
-        renderer_options={}
+            self,
+            size: int,
+            generator: Callable[[], Tuple[np.ndarray, str]]
     ):
-        # number of items in the dataset
+        # dataset size
         self.size = size
 
-        # name of the dataset used for saving and loading
-        self.name = name
-
-        # height of the normalized image
-        self.image_height = config["normalized_height"]
-
         # the data itself
-        self.images: List[any] = None
-        self.labels: List[Label] = None
-
-        # generator used for data generation
-        self.generator = Generator(**generator_options)
-
-        # renderer used for rendering of the images
-        self.renderer = Renderer(**renderer_options)
-
-        # TODO: effector
+        self.images: List[np.ndarray] = []
+        self.labels: List[List[int]] = []
 
         # permutation used for data retrieval (when training)
         self.permutation = None
+
+        # generate the data
+        for i in range(size):
+            img, annotation = generator()
+            img = normalize_image_height(img)
+            annotation = encode_annotation_string(annotation)
+            self.images.append(img)
+            self.labels.append(annotation)
 
     #############
     # Debugging #
@@ -50,82 +49,18 @@ class GeneratedDataset:
     def check_dataset_visually(self, example_count=10):
         """Shows couple of items in the dataset to visually check the content"""
         import matplotlib.pyplot as plt
+        import random
 
-        for i in range(example_count):
+        for _ in range(example_count):
             index = random.randint(0, self.size - 1)
-            self.labels[index].debug_print()
-            plt.imshow(np.dstack([
-                self.images[index],
-                self.images[index],
-                self.images[index]
-            ]))
+            print(decode_annotation_list(self.labels[index]))
+            # plt.imshow(np.dstack([
+            #     self.images[index],
+            #     self.images[index],
+            #     self.images[index]
+            # ]))
+            plt.imshow(self.images[index])
             plt.show()
-
-    ###############
-    # Persistence #
-    ###############
-
-    def load_or_generate_and_save(self):
-        if os.path.isfile(self._path):
-            self.load()
-        else:
-            self.generate()
-            self.save()
-
-    def load(self):
-        data = pickle.load(open(self._path, "rb"))
-        if data["size"] != self.size:
-            raise Exception(
-                "Saved dataset has size %s, not %s"
-                % (data["size"], self.size)
-            )
-        self.images = data["images"]
-        self.labels = data["labels"]
-        print("Dataset '%s' loaded." % (self.name,))
-
-    def save(self):
-        pickle.dump({
-            "size": self.size,
-            "images": self.images,
-            "labels": self.labels
-        }, open(self._path, "wb"))
-        print("Dataset '%s' saved." % (self.name,))
-
-    @property
-    def _path(self):
-        """Path, where the dataset should be saved"""
-        return os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "../generated-datasets/" + self.name + ".pkl"
-        )
-
-    ##############
-    # Generation #
-    ##############
-
-    def generate(self):
-        """Generates the entire dataset content
-        with parameters specified in the constructor"""
-        self.images = []
-        self.labels = []
-        print("Generating dataset...")
-        for i in range(self.size):
-            print("%d/%d" % (i+1, self.size))
-            image, symbols = self._generate_item()
-            self.images.append(image)
-            self.labels.append(symbols)
-        print("Done.")
-
-    def _generate_item(self):
-        symbols = self.generator.generate()
-        image = self.renderer.render(symbols)
-
-        # TODO: apply effects to the image here (noise, blur, transform)
-
-        return (
-            (image / 255.0),
-            symbols
-        )
 
     ##################
     # Data interface #
@@ -151,34 +86,26 @@ class GeneratedDataset:
         self.permutation = self.permutation[take:]
 
         # resolve indices to data
-        picked_images: List[any] = []
-        picked_labels: List[EncodedLabel] = []
+        picked_images: List[np.ndarray] = []
+        picked_labels: List[List[int]] = []
         for i in indices:
             picked_images.append(self.images[i])
-            picked_labels.append(
-                LabelEncoder.encode_label(self.labels[i])
-            )
+            picked_labels.append(self.labels[i])
 
         # get maximum image width
-        max_image_width = 0
-        for i in picked_images:
-            if i.shape[1] > max_image_width:
-                max_image_width = i.shape[1]
+        max_image_width = max([i.shape[1] for i in picked_images])
 
         # create output image tensor and fill it
         image_tensor = np.empty(
-            shape=(take, self.image_height, max_image_width),
+            shape=(take, Network.IMAGE_HEIGHT, max_image_width),
             dtype=np.float32
         )
-        image_widths = np.empty(
-            shape=(take,),
-            dtype=np.int32
-        )
+        image_widths = np.empty(shape=(take,), dtype=np.int32)
 
         for i in range(take):
             w = picked_images[i].shape[1]
             image_tensor[i, :, 0:w] = picked_images[i]
-            image_tensor[i, :, w:] = 1.0 # pad with white
+            image_tensor[i, :, w:] = 1.0  # pad with white
             image_widths[i] = w
 
         return image_tensor, picked_labels, image_widths

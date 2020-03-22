@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List
 from muscima.io import CropObject
-from generator.printing import print_mask
+from mashcima.printing import print_mask
 
 
 class CompositeObject:

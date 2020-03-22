@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
+
 def sparse_tensor_from_sequences(sequences, dtype=np.int32):
     """Creates a sparse tensor from an array of sequences"""
     indices = []

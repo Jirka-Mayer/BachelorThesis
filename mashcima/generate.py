@@ -1,8 +1,8 @@
 import numpy as np
 from typing import Tuple
 import random
-from generator.GeneratorState import GeneratorState
-from generator.printing import *
+from mashcima.GeneratorState import GeneratorState
+from mashcima.printing import *
 
 
 def fork(label: str, stay_probability: float):

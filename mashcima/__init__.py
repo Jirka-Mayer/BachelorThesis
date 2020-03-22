@@ -2,8 +2,8 @@ import os
 from muscima.io import parse_cropobject_list, CropObject
 import itertools
 from typing import List
-from generator.get_symbols import *
-from generator.CompositeObject import CompositeObject
+from mashcima.get_symbols import *
+from mashcima.CompositeObject import CompositeObject
 
 
 ##############################

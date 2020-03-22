@@ -1,9 +1,9 @@
-from generator.utils import has_outlink_to, get_outlink_to
-from generator.CompositeObject import CompositeObject
+from mashcima.utils import has_outlink_to, get_outlink_to
+from mashcima.CompositeObject import CompositeObject
 
 
 def get_quarter_rests():
-    from generator import CROP_OBJECTS
+    from mashcima import CROP_OBJECTS
     return [
         o for o in CROP_OBJECTS
         if o.clsname == "quarter_rest"
@@ -11,7 +11,7 @@ def get_quarter_rests():
 
 
 def get_whole_notes():
-    from generator import CROP_OBJECTS
+    from mashcima import CROP_OBJECTS
 
     empty_noteheads = [
         o for o in CROP_OBJECTS
@@ -23,7 +23,7 @@ def get_whole_notes():
 
 
 def get_half_notes():
-    from generator import CROP_OBJECTS
+    from mashcima import CROP_OBJECTS
 
     full_noteheads = [
         o for o in CROP_OBJECTS
@@ -50,7 +50,7 @@ def get_half_notes():
 
 
 def get_quarter_notes():
-    from generator import CROP_OBJECTS
+    from mashcima import CROP_OBJECTS
 
     full_noteheads = [
         o for o in CROP_OBJECTS

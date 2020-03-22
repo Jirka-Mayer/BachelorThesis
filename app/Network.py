@@ -1,17 +1,20 @@
-import numpy as np
 import tensorflow as tf
 import os
 import cv2
-import shutil
 import datetime
-import random
 from typing import List
 from app.sparse_tensor_from_sequences import sparse_tensor_from_sequences
-from app.Symbol import Symbol
-from app.Channel import Channel
 
 
 class Network:
+    """
+    In goes a grayscale image normalized to 0.0 - 1.0
+    and out goes a sequence of classes (int[]).
+
+    Number of classes is specified by a constructor parameter.
+    Image height is a constant determined by the architecture.
+    """
+
     IMAGE_HEIGHT = 64  # fixed by the CNN block architecture
     NETWORK_SCOPE = "network"
 
@@ -448,7 +451,7 @@ class Network:
         # return loss and edit distance
         return loss, edit_distance
 
-    def predict(self, img) -> List[Symbol]:
+    def predict(self, img):
         """Predicts symbols in a single image"""
         if len(img.shape) == 3:
             img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
