@@ -21,9 +21,16 @@ network = Network(
 network.construct(logdir=Network.create_logdir(network.name))
 
 # train network
-network.train(
-    train_dataset,
-    dev_dataset,
-    epochs=100,
-    batch_size=10
-)
+# network.train(
+#     train_dataset,
+#     dev_dataset,
+#     epochs=100,
+#     batch_size=10
+# )
+
+# train and ask
+epoch = 1
+while True:
+    network.train_epoch(train_dataset, dev_dataset, epoch, "?", batch_size=10)
+    if input("continue? [Y/n]") == "n":
+        break

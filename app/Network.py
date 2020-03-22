@@ -456,19 +456,20 @@ class Network:
         if len(img.shape) == 3:
             img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
+        if img.max() > 1.0:
+            img = img / 255
+
         width = img.shape[1]
         assert img.shape[0] == Network.IMAGE_HEIGHT
 
-        # TODO: predictions now exist for each channel
         predictions = self.session.run(self.predictions, {
-            self.images: [img / 255.0],
+            self.images: [img],
             self.image_widths: [width],
             self.is_training: False,
             self.dropout: 0.0
         })
 
-        # TODO: this is old, replace it for proper decoding
-        return self.symbol_encoder.decode_sequence(predictions.values)
+        return predictions.values
 
     def get_global_step(self):
         """Returns value of the global step"""
