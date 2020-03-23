@@ -1,37 +1,33 @@
 from mashcima.utils import has_outlink_to, get_outlink_to
 from mashcima.CompositeObject import CompositeObject
+from mashcima import Mashcima
 
 
-def get_quarter_rests():
-    from mashcima import CROP_OBJECTS
+def get_quarter_rests(mc: Mashcima):
     return [
-        o for o in CROP_OBJECTS
+        o for o in mc.CROP_OBJECTS
         if o.clsname == "quarter_rest"
     ]
 
 
-def get_whole_notes():
-    from mashcima import CROP_OBJECTS
-
+def get_whole_notes(mc: Mashcima):
     empty_noteheads = [
-        o for o in CROP_OBJECTS
+        o for o in mc.CROP_OBJECTS
         if o.clsname == "notehead-empty"
-        and not has_outlink_to(o, "ledger_line")
+        and not has_outlink_to(mc, o, "ledger_line")
     ]
 
     return empty_noteheads
 
 
-def get_half_notes():
-    from mashcima import CROP_OBJECTS
-
+def get_half_notes(mc: Mashcima):
     full_noteheads = [
-        o for o in CROP_OBJECTS
+        o for o in mc.CROP_OBJECTS
         if o.clsname == "notehead-empty"
-        and has_outlink_to(o, "stem")
-        and not has_outlink_to(o, "ledger_line")
+        and has_outlink_to(mc, o, "stem")
+        and not has_outlink_to(mc, o, "ledger_line")
     ]
-    stems = [get_outlink_to(o, "stem") for o in full_noteheads]
+    stems = [get_outlink_to(mc, o, "stem") for o in full_noteheads]
 
     composites = []
     for i, h in enumerate(full_noteheads):
@@ -49,15 +45,13 @@ def get_half_notes():
     return composites
 
 
-def get_quarter_notes():
-    from mashcima import CROP_OBJECTS
-
+def get_quarter_notes(mc: Mashcima):
     full_noteheads = [
-        o for o in CROP_OBJECTS
+        o for o in mc.CROP_OBJECTS
         if o.clsname == "notehead-full"
-        and has_outlink_to(o, "stem")
+        and has_outlink_to(mc, o, "stem")
     ]
-    stems = [get_outlink_to(o, "stem") for o in full_noteheads]
+    stems = [get_outlink_to(mc, o, "stem") for o in full_noteheads]
 
     composites = []
     for i, h in enumerate(full_noteheads):

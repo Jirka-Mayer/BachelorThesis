@@ -3,6 +3,7 @@ from typing import Tuple
 import random
 from mashcima.GeneratorState import GeneratorState
 from mashcima.printing import *
+from mashcima import Mashcima
 
 
 def fork(label: str, stay_probability: float):
@@ -39,9 +40,9 @@ def _generate_time_4(state: GeneratorState):
         # print_whole_rest(state) TODO
 
 
-def generate() -> Tuple[np.ndarray, str]:
+def generate(mc: Mashcima) -> Tuple[np.ndarray, str]:
     """Generates a pair of image and annotation"""
-    state = GeneratorState()
+    state = GeneratorState(mc)
 
     # generate
     _generate_time_4(state)  # TODO: currently simplified for bootstrap

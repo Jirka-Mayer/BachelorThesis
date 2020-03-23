@@ -1,18 +1,17 @@
 from muscima.io import CropObject
+from mashcima import Mashcima
 
 
-def get_outlink_to(obj: CropObject, clsname: str) -> CropObject:
-    from mashcima import CROP_OBJECT_DICT
+def get_outlink_to(mc: Mashcima, obj: CropObject, clsname: str) -> CropObject:
     for l in obj.outlinks:
-        if CROP_OBJECT_DICT[l].clsname == clsname:
-            return CROP_OBJECT_DICT[l]
+        if mc.CROP_OBJECT_DICT[l].clsname == clsname:
+            return mc.CROP_OBJECT_DICT[l]
     raise Exception("Object has no outlink of requested clsname")
 
 
-def has_outlink_to(obj: CropObject, clsname: str) -> bool:
-    from mashcima import CROP_OBJECT_DICT
+def has_outlink_to(mc: Mashcima, obj: CropObject, clsname: str) -> bool:
     for l in obj.outlinks:
-        if CROP_OBJECT_DICT[l].clsname == clsname:
+        if mc.CROP_OBJECT_DICT[l].clsname == clsname:
             return True
     return False
 

@@ -1,11 +1,15 @@
 import numpy as np
 from typing import List, Dict
+from mashcima import Mashcima
 
 
 class GeneratorState:
     """Represents state of the mashcima at some point
     in time during generation"""
-    def __init__(self):
+    def __init__(self, mc: Mashcima):
+        # mashcima reference
+        self.mc = mc
+
         # generated staff image
         self.img: np.ndarray = None
 

@@ -2,6 +2,8 @@ import numpy as np
 from mashcima.GeneratorState import GeneratorState
 from mashcima.utils import show_images
 from mashcima.printing import *
+from mashcima import Mashcima
+import matplotlib.pyplot as plt
 
 """
 Symbols that need be generated:
@@ -32,9 +34,12 @@ Symbols that need be generated:
     - G clef
 """
 
+mc = Mashcima()
+
 
 def generator():
-    state = GeneratorState()
+    global mc
+    state = GeneratorState(mc)
 
     print_quarter_note(state, -4)
     print_quarter_note(state, -4)
@@ -46,4 +51,6 @@ def generator():
     return img
 
 
-show_images([generator() for i in range(3)], row_length=1)
+#show_images([generator() for i in range(3)], row_length=1)
+plt.imshow(generator())
+plt.show()
