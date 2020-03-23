@@ -4,6 +4,7 @@ import random
 from mashcima.GeneratorState import GeneratorState
 from mashcima.printing import *
 from mashcima import Mashcima
+from mashcima.transform_image import transform_image
 
 
 def fork(label: str, stay_probability: float):
@@ -61,6 +62,9 @@ def generate(mc: Mashcima) -> Tuple[np.ndarray, str]:
 
     # crop the result
     img = state.img[:, 0:state.head]
+
+    # randomly transform the image
+    img = transform_image(img)
 
     # clip and flip the result
     img = 1.0 - np.clip(img, 0.0, 1.0)
