@@ -52,5 +52,21 @@ def generator():
 
 
 #show_images([generator() for i in range(5)], row_length=1)
-plt.imshow(generator())
+#plt.imshow(generator())
+#plt.show()
+
+
+from mashcima.Canvas import Canvas
+
+canvas = Canvas(mc)
+for i in range(-6, 6):
+    canvas.append(
+        random.choice(mc.QUARTER_NOTES),
+        i,
+        beam=random.choice([1, 2]),
+        flip=False
+    )
+img = canvas.render()
+
+plt.imshow(img)
 plt.show()
