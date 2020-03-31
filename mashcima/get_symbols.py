@@ -133,7 +133,10 @@ def get_accidentals(mc: Mashcima) -> List[Accidental]:
             object_center_y
         )
         if len(components) == 0:
-            print("Skipping an accidental, having no components")
+            print(
+                "Skipping an accidental, having no components, in document:",
+                o.doc
+            )
             continue
 
         component_center_x, component_center_y = get_center_of_component(

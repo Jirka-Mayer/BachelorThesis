@@ -8,7 +8,7 @@ from mashcima.Accidental import Accidental
 from mashcima.debug import draw_cross
 
 
-DEBUG_RENDER = True
+DEBUG_RENDER = False
 
 
 class CanvasItem:
@@ -56,6 +56,14 @@ class CanvasItem:
 
         # is this item flipped (rotate 180 deg)
         self.is_flipped = False
+
+    @property
+    def is_note(self):
+        return self.note_head_sprite is not None
+
+    @property
+    def is_barline(self):
+        return False  # TODO
 
     def flipped(self):
         """Returns a flipped copy of this item"""

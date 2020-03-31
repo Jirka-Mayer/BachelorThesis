@@ -63,11 +63,12 @@ for i in range(-6, 6):
     canvas.append(
         random.choice(mc.QUARTER_NOTES),
         i,
-        beam=random.choice([1, 2]),
+        #beam=random.choice([1, 2]),
         flip=False,
-        accidental=random.choice(mc.ACCIDENTALS),
-        duration_dot=random.choice(mc.DOTS)
+        #accidental=random.choice(mc.ACCIDENTALS),
+        #duration_dot=random.choice(mc.DOTS)
     )
+canvas.add_slur(canvas.items[2], canvas.items[4])
 img = canvas.render()
 
 plt.imshow(img)

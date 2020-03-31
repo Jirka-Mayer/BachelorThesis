@@ -4,6 +4,7 @@ from mashcima import Mashcima
 from mashcima.CanvasItem import CanvasItem
 from mashcima.Accidental import Accidental
 from mashcima.Sprite import Sprite
+from mashcima.Slur import Slur
 import cv2
 import copy
 import random
@@ -17,6 +18,9 @@ class Canvas:
 
         # items on the canvas
         self.items: List[CanvasItem] = []
+
+        # slurs between items
+        self.slurs: List[Slur] = []
 
         # === state used for canvas rendering ===
 
@@ -50,6 +54,9 @@ class Canvas:
         cp.accidental = copy.deepcopy(accidental)
         cp.duration_dot = copy.deepcopy(duration_dot)
 
+    def add_slur(self, start_item: CanvasItem, end_item: CanvasItem):
+        self.slurs.append(Slur(start_item, end_item))
+
     def render(self):
         from mashcima.generate_staff_lines import generate_staff_lines
         self.img, self.note_positions = generate_staff_lines()
@@ -60,6 +67,9 @@ class Canvas:
             item.render(self.img)
 
         self._render_beams()
+
+        for s in self.slurs:
+            s.render(self.img)
 
         return self.img
 

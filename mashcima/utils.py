@@ -35,7 +35,7 @@ def get_connected_components_not_touching_image_border(
     for x in range(width):
         indices_to_remove.add(labels[0, x])
         indices_to_remove.add(labels[height - 1, x])
-    for y in range(width):
+    for y in range(height):
         indices_to_remove.add(labels[y, 0])
         indices_to_remove.add(labels[y, width - 1])
     indices = set(range(1, ret)) - indices_to_remove

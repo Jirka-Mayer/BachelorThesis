@@ -24,17 +24,26 @@ class Mashcima:
                 "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
             ]
 
+        # TODO: HACK: load all documents
+        # TODO: this will be the default in the future
+        # documents = [
+        #     os.path.join(CROP_OBJECT_DIRECTORY, f)
+        #     for f in os.listdir(CROP_OBJECT_DIRECTORY)
+        # ]
+
         ##############################
         # Load and prepare MUSCIMA++ #
         ##############################
 
         # all loaded crop object documents
-        self.DOCUMENTS = [
-            parse_cropobject_list(
-                os.path.join(CROP_OBJECT_DIRECTORY, doc)
+        self.DOCUMENTS = []
+        for i, doc in enumerate(documents):
+            print("Parsing document %d/%d ..." % (i + 1, len(documents)))
+            self.DOCUMENTS.append(
+                parse_cropobject_list(
+                    os.path.join(CROP_OBJECT_DIRECTORY, doc)
+                )
             )
-            for doc in documents
-        ]
 
         # names of the documents
         # (used for resolving document index from document name)
@@ -54,6 +63,8 @@ class Mashcima:
         # Prepare all symbols for printing #
         ####################################
 
+        print("Preparing symbols...")
+
         # prevents cyclic imports
         from mashcima.CompositeObject import CompositeObject
         from mashcima.get_symbols import get_whole_notes
@@ -71,3 +82,5 @@ class Mashcima:
         self.QUARTER_RESTS: List[CropObject] = get_quarter_rests(self)
         self.ACCIDENTALS: List[Accidental] = get_accidentals(self)
         self.DOTS: List[Sprite] = get_dots(self)
+
+        print("Mashcima loaded.")
