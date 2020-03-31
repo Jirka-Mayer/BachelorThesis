@@ -16,7 +16,11 @@ class Mashcima:
 
         # default documents to load
         if documents is None:
-            documents = ["CVC-MUSCIMA_W-01_N-19_D-ideal.xml"]
+            documents = [
+                "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
+                # "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
+                # "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+            ]
 
         ##############################
         # Load and prepare MUSCIMA++ #
@@ -46,9 +50,12 @@ class Mashcima:
         from mashcima.get_symbols import get_quarter_notes
         from mashcima.get_symbols import get_half_notes
         from mashcima.get_symbols import get_quarter_rests
+        from mashcima.get_symbols import get_accidentals
 
         # load all symbols
+        # TODO: fix typing - CanvasItem, not CropObject
         self.WHOLE_NOTES: List[CropObject] = get_whole_notes(self)
         self.QUARTER_NOTES: List[CompositeObject] = get_quarter_notes(self)
         self.HALF_NOTES: List[CompositeObject] = get_half_notes(self)
         self.QUARTER_RESTS: List[CropObject] = get_quarter_rests(self)
+        self.ACCIDENTALS: List[CropObject] = get_accidentals(self)

@@ -2,8 +2,10 @@ import numpy as np
 from typing import List, Dict
 from mashcima import Mashcima
 from mashcima.CanvasItem import CanvasItem
+from mashcima.Accidental import Accidental
 import cv2
 import copy
+import random
 
 
 class Canvas:
@@ -29,18 +31,21 @@ class Canvas:
     def append(
             self,
             item: CanvasItem,
-            note_position: int = -4,
+            note_position: int = 0,
             flip: bool = False,
-            beam: int = 0
+            beam: int = 0,
+            accidental: Accidental = None
     ):
         """Adds an item onto the canvas"""
         cp: CanvasItem = copy.deepcopy(item)
+        assert not cp.is_flipped
         if flip:
             cp = cp.flipped()
         self.items.append(cp)
 
         cp.note_position = note_position
         cp.beam = beam
+        cp.accidental = copy.deepcopy(accidental)
 
     def render(self):
         from mashcima.generate_staff_lines import generate_staff_lines
@@ -92,11 +97,15 @@ class Canvas:
     def _place_items(self):
         """Move items to proper places in the pixel space"""
         for item in self.items:
-            item.recalculate_bounding_box()
+            item.prepare_item_for_render()
+
+        def generate_padding():
+            return random.randint(5, 25)
 
         self.head = 0
         for i, item in enumerate(self.items):
-            self.head += 40
-            item.position_x = self.head
+            padding_left = generate_padding()
+            padding_right = generate_padding()
+            item.position_x = self.head + padding_left - item.left
             item.position_y = self.note_positions[item.note_position]
-            self.head += 40
+            self.head += padding_left + item.width + padding_right

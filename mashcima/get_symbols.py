@@ -1,9 +1,27 @@
 import numpy as np
 from mashcima.utils import has_outlink_to, get_outlink_to
-from mashcima.CompositeObject import CompositeObject
+from mashcima.utils import get_connected_components_not_touching_image_border
+from mashcima.utils import sort_components_by_proximity_to_point
+from mashcima.utils import get_center_of_component
 from mashcima import Mashcima
 from mashcima.CanvasItem import CanvasItem
 from mashcima.Sprite import Sprite
+from mashcima.Accidental import Accidental
+import cv2
+
+
+# TODO: some class names so that I can filter in the future:
+# (not all though)
+#
+# ['8th_flag', '8th_rest', 'beam', 'dynamics_text', 'g-clef',
+# 'glissando', 'grace-notehead-full', 'grace_strikethrough',
+# 'hairpin-cresc.', 'key_signature', 'ledger_line', 'letter_A',
+# 'letter_a', 'letter_d', 'letter_g', 'letter_i', 'letter_m',
+# 'letter_n', 'letter_o', 'letter_p', 'letter_r', 'letter_t',
+# 'measure_separator', 'natural', 'notehead-empty', 'notehead-full',
+# 'quarter_rest', 'sharp', 'slur', 'staff', 'staff_line', 'staff_space',
+# 'stem', 'tempo_text', 'thin_barline', 'tie', 'time_signature',
+# 'whole-time_mark']
 
 
 def _build_notehead_stem_pairs(noteheads, stems):
@@ -44,12 +62,16 @@ def _build_notehead_stem_pairs(noteheads, stems):
         item.stem_head_y = item.sprites[1].y
         item.stem_head_x = item.sprites[1].x + np.argmax(item.sprites[1].mask[0, :])
 
+        item.note_head_sprite = item.sprites[0]
+        item.note_stem_sprite = item.sprites[1]
+
         items.append(item)
 
     return items
 
 
 def get_quarter_rests(mc: Mashcima):
+    # TODO: convert to CanvasItem
     return [
         o for o in mc.CROP_OBJECTS
         if o.clsname == "quarter_rest"
@@ -85,3 +107,47 @@ def get_quarter_notes(mc: Mashcima):
     ]
     stems = [get_outlink_to(mc, o, "stem") for o in noteheads]
     return _build_notehead_stem_pairs(noteheads, stems)
+
+
+def get_accidentals(mc: Mashcima):
+    crop_objects = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname in ["sharp", "flat", "natural"]
+    ]
+    
+    accidentals = []
+    for o in crop_objects:
+        object_center_x, object_center_y = get_center_of_component(o.mask)
+
+        components = get_connected_components_not_touching_image_border(
+            1 - o.mask
+        )
+        components = sort_components_by_proximity_to_point(
+            components,
+            object_center_x,
+            object_center_y
+        )
+        if len(components) == 0:
+            print("Skipping an accidental, having no components")
+            continue
+
+        component_center_x, component_center_y = get_center_of_component(
+            components[0]
+        )
+        sprite = Sprite(
+            -component_center_x,
+            -component_center_y,
+            o.mask
+        )
+        a = Accidental(o.clsname, sprite)
+        accidentals.append(a)
+
+    # DEBUG: inspect accidentals
+    # from mashcima.debug import show_images, draw_cross
+    # show_images([
+    #     draw_cross(a.sprite.mask, -a.sprite.x, -a.sprite.y, 5, 1)
+    #     for a in accidentals
+    # ], 20)
+    # exit()
+
+    return accidentals

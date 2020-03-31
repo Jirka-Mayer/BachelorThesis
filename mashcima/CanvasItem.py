@@ -1,8 +1,10 @@
 import numpy as np
 import cv2
 import copy
+import random
 from typing import List
 from mashcima.Sprite import Sprite
+from mashcima.debug import draw_cross
 
 
 DEBUG_RENDER = True
@@ -29,6 +31,14 @@ class CanvasItem:
         # position in the note-pitch dimension
         self.note_position = 0
 
+        # === NOTE RELATED PROPERTIES ===
+
+        # sprite of the note head
+        self.note_head_sprite: Sprite = None
+
+        # sprite of the note stem
+        self.note_stem_sprite: Sprite = None
+
         # if the note has a stem, this is where the beam should be placed
         # (in local pixel coordinates)
         self.stem_head_x = None
@@ -36,6 +46,9 @@ class CanvasItem:
 
         # beam count (0, 1, 2 are the only options)
         self.beam = 0
+
+        # sharp, flat, natural, ... (symbol in front of the note)
+        self.accidental = None
 
         # is this item flipped (rotate 180 deg)
         self.is_flipped = False
@@ -58,43 +71,48 @@ class CanvasItem:
     def add_sprite(self, sprite: Sprite):
         self.sprites.append(sprite)
 
-    def recalculate_bounding_box(self):
-        self.left = min([s.x for s in self.sprites])
-        self.right = max([s.x + s.mask.shape[1] for s in self.sprites])
-        self.top = min([s.y for s in self.sprites])
-        self.bottom = max([s.y + s.mask.shape[0] for s in self.sprites])
+    def prepare_item_for_render(self):
+        """Called before rendering - recalculates positions of all important points"""
+        self._place_accidental()
+        self._recalculate_bounding_box()
+
+    def _place_accidental(self):
+        if self.accidental is None:
+            return
+        # Before this call, accidental is centered on origin
+        self.accidental.sprite.x -= self.note_head_sprite.width // 2
+        self.accidental.sprite.x -= self.accidental.sprite.width // 2
+        self.accidental.sprite.x -= random.randint(5, 25)
+
+    def _recalculate_bounding_box(self):
+        effective_sprites = self.sprites
+        if self.accidental is not None:
+            effective_sprites.append(self.accidental.sprite)
+        
+        self.left = min([s.x for s in effective_sprites])
+        self.right = max([s.x + s.mask.shape[1] for s in effective_sprites])
+        self.top = min([s.y for s in effective_sprites])
+        self.bottom = max([s.y + s.mask.shape[0] for s in effective_sprites])
         self.width = self.right - self.left
         self.height = self.bottom - self.top
 
     def render(self, img: np.ndarray):
         if DEBUG_RENDER:
-            self._render_cross(img, self.position_x, self.position_y, 15)
+            draw_cross(img, self.position_x, self.position_y, 15)
             self._render_bounding_box(img)
             if self.stem_head_x is not None:
-                self._render_cross(
+                draw_cross(
                     img,
                     self.position_x + self.stem_head_x,
                     self.position_y + self.stem_head_y,
                     5
                 )
+
         for sprite in self.sprites:
             sprite.render(img, self.position_x, self.position_y)
 
-    def _render_cross(self, img: np.ndarray, x, y, size: int):
-        cv2.line(
-            img,
-            (x - size, y + size),
-            (x + size, y - size),
-            thickness=2,
-            color=0.5
-        )
-        cv2.line(
-            img,
-            (x - size, y - size),
-            (x + size, y + size),
-            thickness=2,
-            color=0.5
-        )
+        if self.accidental is not None:
+            self.accidental.sprite.render(img, self.position_x, self.position_y)
 
     def _render_bounding_box(self, img: np.ndarray):
         cv2.rectangle(

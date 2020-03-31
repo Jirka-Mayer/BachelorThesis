@@ -1,10 +1,10 @@
 import numpy as np
 from mashcima.GeneratorState import GeneratorState
-from mashcima.utils import show_images
 from mashcima.printing import *
 from mashcima import Mashcima
 import matplotlib.pyplot as plt
 from mashcima.transform_image import transform_image
+from mashcima.debug import show_images
 
 """
 Symbols that need be generated:
@@ -64,7 +64,8 @@ for i in range(-6, 6):
         random.choice(mc.QUARTER_NOTES),
         i,
         beam=random.choice([1, 2]),
-        flip=False
+        flip=False,
+        accidental=random.choice(mc.ACCIDENTALS)
     )
 img = canvas.render()
 

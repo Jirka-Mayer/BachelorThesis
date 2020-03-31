@@ -3,12 +3,20 @@ import numpy as np
 
 class Sprite:
     def __init__(self, x: int, y: int, mask: np.ndarray):
-        # local position within a canvas item
+        # local position within a canvas item (upper left corner of the mask)
         self.x = x
         self.y = y
 
         # the actual mask to be printed (image data)
-        self.mask = mask
+        self.mask = mask.astype(dtype=np.float32)
+
+    @property
+    def width(self):
+        return self.mask.shape[1]
+
+    @property
+    def height(self):
+        return self.mask.shape[0]
 
     def flip(self):
         self.x = -self.x - self.mask.shape[1]
@@ -48,4 +56,7 @@ class Sprite:
             mask = mask[:(mask.shape[0] - (y_to - img.shape[0])), :]
             y_to = img.shape[0]
 
-        img[y_from:y_to, x_from:x_to] += (1 - img[y_from:y_to, x_from:x_to]) * mask
+        try:
+            img[y_from:y_to, x_from:x_to] += (1 - img[y_from:y_to, x_from:x_to]) * mask
+        except ValueError:
+            print("Image does not fit inside the canvas")

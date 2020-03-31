@@ -1,5 +1,8 @@
 from muscima.io import CropObject
 from mashcima import Mashcima
+import cv2
+import numpy as np
+from typing import List, Tuple
 
 
 def get_outlink_to(mc: Mashcima, obj: CropObject, clsname: str) -> CropObject:
@@ -16,21 +19,55 @@ def has_outlink_to(mc: Mashcima, obj: CropObject, clsname: str) -> bool:
     return False
 
 
-def show_images(images, row_length=5):
-    """For debugging - shows many images in a single plot"""
-    import matplotlib.pyplot as plt
+def get_connected_components_not_touching_image_border(
+        mask: np.ndarray
+) -> List[np.ndarray]:
+    """
+    Takes a binary image and finds all components (areas with value 1)
+    that don't touch the image border.
+    """
+    height, width = mask.shape
+    ret, labels = cv2.connectedComponents(mask)
 
-    n_total = len(images)
-    n_rows = n_total // row_length + 1
-    n_cols = min(n_total, row_length)
-    fig = plt.figure()
-    for i, img in enumerate(images):
-        plt.subplot(n_rows, n_cols, i+1)
-        plt.imshow(img, cmap='gray', interpolation='nearest')
-    # Let's remove the axis labels, they clutter the image.
-    for ax in fig.axes:
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
-        ax.set_yticks([])
-        ax.set_xticks([])
-    plt.show()
+    indices_to_remove = set()
+    for x in range(width):
+        indices_to_remove.add(labels[0, x])
+        indices_to_remove.add(labels[height - 1, x])
+    for y in range(width):
+        indices_to_remove.add(labels[y, 0])
+        indices_to_remove.add(labels[y, width - 1])
+    indices = set(range(1, ret)) - indices_to_remove
+
+    out_masks: List[np.ndarray] = []
+    for i in indices:
+        out_masks.append(labels == i)
+    return out_masks
+
+
+def get_center_of_component(mask: np.ndarray) -> Tuple[int, int]:
+    m = cv2.moments(mask.astype(np.uint8))
+    x = int(m["m10"] / m["m00"])
+    y = int(m["m01"] / m["m00"])
+    return x, y
+
+
+def point_distance_squared(ax: int, ay: int, bx: int, by: int) -> int:
+    """Returns distance between two points squared"""
+    return (ax - bx) ** 2 + (ay - by) ** 2
+
+
+def sort_components_by_proximity_to_point(
+        components: List[np.ndarray], x: int, y: int
+) -> List[np.ndarray]:
+    with_distances = [
+        {
+            "component": c,
+            "distanceSqr": point_distance_squared(
+                *get_center_of_component(c),
+                x, y
+            )
+        }
+        for c in components
+    ]
+    with_distances.sort(key=lambda x: x["distanceSqr"])
+    return [x["component"] for x in with_distances]
