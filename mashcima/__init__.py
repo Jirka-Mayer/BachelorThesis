@@ -1,7 +1,7 @@
 import os
 from muscima.io import parse_cropobject_list, CropObject
 import itertools
-from typing import List
+from typing import List, Dict
 
 
 # where should muscima++ crop objects be loaded from
@@ -18,8 +18,8 @@ class Mashcima:
         if documents is None:
             documents = [
                 "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
-                # "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
-                # "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+                "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
+                "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
             ]
 
         ##############################
@@ -34,11 +34,19 @@ class Mashcima:
             for doc in documents
         ]
 
-        # all loaded crop objects
+        # names of the documents
+        # (used for resolving document index from document name)
+        self.DOCUMENT_NAMES = [doc[0].doc for doc in self.DOCUMENTS]
+
+        # all loaded crop objects in one list
         self.CROP_OBJECTS = list(itertools.chain(*self.DOCUMENTS))
 
-        # dictionary of loaded crop objects
-        self.CROP_OBJECT_DICT = {c.objid: c for c in self.CROP_OBJECTS}
+        # for each document name create an objid lookup dictionary
+        # (to make resolving outlinks easier)
+        self.CROP_OBJECT_LOOKUP_DICTS: Dict[str, Dict[int, CropObject]] = {
+            self.DOCUMENT_NAMES[i]: {c.objid: c for c in doc}
+            for i, doc in enumerate(self.DOCUMENTS)
+        }
 
         ####################################
         # Prepare all symbols for printing #
