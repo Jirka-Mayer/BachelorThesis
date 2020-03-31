@@ -29,10 +29,10 @@ import cv2
 # 'whole-time_mark', 'whole_rest']
 
 
-def _build_notehead_stem_pairs(noteheads, stems):
+def _build_notehead_stem_pairs(generic_annotation, noteheads, stems):
     """
-        Combines list of noteheads and a list of stems into a list of
-        can vas items. Handles flipping when stem points down.
+    Combines list of noteheads and a list of stems into a list of
+    canvas items. Handles flipping when stem points down.
     """
     items = []
     for i, h in enumerate(noteheads):
@@ -48,7 +48,7 @@ def _build_notehead_stem_pairs(noteheads, stems):
         flip = stem_center_y > notehead_center_y
 
         # place sprites (notehead and stem)
-        item = CanvasItem()
+        item = CanvasItem(generic_annotation)
         item.add_sprite(Sprite(
             h.left - notehead_center_x,
             h.top - notehead_center_y,
@@ -75,25 +75,47 @@ def _build_notehead_stem_pairs(noteheads, stems):
     return items
 
 
-def get_quarter_rests(mc: Mashcima):
-    # TODO: convert to CanvasItem
-    return [
+def get_quarter_rests(mc: Mashcima) -> List[CanvasItem]:
+    crop_objects = [
         o for o in mc.CROP_OBJECTS
         if o.clsname == "quarter_rest"
     ]
 
+    items = []
+    for o in crop_objects:
+        item = CanvasItem("qr")
+        item.add_sprite(Sprite(
+            -o.width // 2,
+            -o.height // 2,
+            o.mask
+        ))
+        items.append(item)
 
-def get_whole_notes(mc: Mashcima):
-    empty_noteheads = [
+    return items
+
+
+def get_whole_notes(mc: Mashcima) -> List[CanvasItem]:
+    crop_objects = [
         o for o in mc.CROP_OBJECTS
         if o.clsname == "notehead-empty"
         and not has_outlink_to(mc, o, "ledger_line")
     ]
 
-    return empty_noteheads
+    items = []
+    for o in crop_objects:
+        item = CanvasItem("w")
+        item.add_sprite(Sprite(
+            -o.width // 2,
+            -o.height // 2,
+            o.mask
+        ))
+        item.note_head_sprite = item.sprites[0]
+        items.append(item)
+
+    return items
 
 
-def get_half_notes(mc: Mashcima):
+def get_half_notes(mc: Mashcima) -> List[CanvasItem]:
     noteheads = [
         o for o in mc.CROP_OBJECTS
         if o.clsname == "notehead-empty"
@@ -101,17 +123,17 @@ def get_half_notes(mc: Mashcima):
         and not has_outlink_to(mc, o, "ledger_line")
     ]
     stems = [get_outlink_to(mc, o, "stem") for o in noteheads]
-    return _build_notehead_stem_pairs(noteheads, stems)
+    return _build_notehead_stem_pairs("h", noteheads, stems)
 
 
-def get_quarter_notes(mc: Mashcima):
+def get_quarter_notes(mc: Mashcima) -> List[CanvasItem]:
     noteheads = [
         o for o in mc.CROP_OBJECTS
         if o.clsname == "notehead-full"
         and has_outlink_to(mc, o, "stem")
     ]
     stems = [get_outlink_to(mc, o, "stem") for o in noteheads]
-    return _build_notehead_stem_pairs(noteheads, stems)
+    return _build_notehead_stem_pairs("q", noteheads, stems)
 
 
 def get_accidentals(mc: Mashcima) -> List[Accidental]:

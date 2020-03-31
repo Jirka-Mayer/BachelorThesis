@@ -5,6 +5,7 @@ from mashcima.CanvasItem import CanvasItem
 from mashcima.Accidental import Accidental
 from mashcima.Sprite import Sprite
 from mashcima.Slur import Slur
+from mashcima.utils import fork
 import cv2
 import copy
 import random
@@ -32,6 +33,51 @@ class Canvas:
 
         # item placing head (x coordinate)
         self.head = 0
+
+    ##################
+    # High level API #
+    ##################
+
+    def _generate_note_position(self):
+        # TODO: dummy helper
+        return random.randint(-5, 5)
+
+    def _generate_accidental(self):
+        if fork("Has accidental", 0.3):
+            return random.choice(self.mc.ACCIDENTALS)
+        return None
+
+    def add_quarter_note(self):
+        pos = self._generate_note_position()
+        self.append(
+            random.choice(self.mc.QUARTER_NOTES),
+            note_position=pos,
+            flip=pos > 0,
+            accidental=self._generate_accidental()
+        )
+
+    def add_quarter_rest(self):
+        self.append(random.choice(self.mc.QUARTER_RESTS))
+
+    def add_half_note(self):
+        pos = self._generate_note_position()
+        self.append(
+            random.choice(self.mc.HALF_NOTES),
+            note_position=pos,
+            flip=pos > 0,
+            accidental=self._generate_accidental()
+        )
+
+    def add_whole_note(self):
+        self.append(
+            random.choice(self.mc.WHOLE_NOTES),
+            note_position=self._generate_note_position(),
+            accidental=self._generate_accidental()
+        )
+
+    #################
+    # Low level API #
+    #################
 
     def append(
             self,
@@ -70,6 +116,9 @@ class Canvas:
 
         for s in self.slurs:
             s.render(self.img)
+
+        # crop the result
+        self.img = self.img[:, 0:self.head]
 
         return self.img
 
@@ -122,3 +171,9 @@ class Canvas:
             item.position_x = self.head + padding_left - item.left
             item.position_y = self.note_positions[item.note_position]
             self.head += padding_left + item.width + padding_right
+
+    def get_annotations(self) -> List[str]:
+        out: List[str] = []
+        for item in self.items:
+            out += item.get_annotations()
+        return out

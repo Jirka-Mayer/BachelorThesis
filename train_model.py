@@ -11,7 +11,7 @@ generator = lambda: generate(mc)
 train_dataset = GeneratedDataset(size=2500, generator=generator)
 dev_dataset = GeneratedDataset(size=100, generator=generator)
 
-# train_dataset.check_dataset_visually()
+# dev_dataset.check_dataset_visually()
 # exit()
 
 # build the network

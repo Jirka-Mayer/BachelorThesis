@@ -1,75 +1,69 @@
 import numpy as np
 from typing import Tuple
 import random
-from mashcima.GeneratorState import GeneratorState
-from mashcima.printing import *
+from mashcima.Canvas import Canvas
 from mashcima import Mashcima
 from mashcima.transform_image import transform_image
+from mashcima.utils import fork
 
 
-def fork(label: str, stay_probability: float):
-    """Helper for random binary splitting"""
-    return random.random() <= stay_probability
-
-
-def _generate_note_position(state: GeneratorState):
+def _generate_note_position():
     return random.randint(-5, 5)
 
 
-def _generate_time_1(state: GeneratorState):
-    if fork("Rest or note", 0.3):
-        print_quarter_rest(state)
-    else:
-        print_quarter_note(state, _generate_note_position(state))
+# def _generate_beamed_group(canvas: Canvas, beams: int = 1, notes: int = 2):
+#     for _ in range(notes):
+#         canvas.add_quarter_note(beam=beams)
 
 
-def _generate_time_2(state: GeneratorState):
-    if fork("Split time in half", 0.7):
-        _generate_time_1(state)
-        _generate_time_1(state)
+def _generate_time_1_over_2(canvas: Canvas):
+    pass
+
+
+def _generate_time_1(canvas: Canvas):
+    # if fork("Subdivide time", 0.4):
+    #     _generate_beamed_group(canvas, beams=1, notes=2)
+    # else:
+    if fork("Rest", 0.3):
+        canvas.add_quarter_rest()
     else:
-        print_half_note(state, _generate_note_position(state))
+        canvas.add_quarter_note()
+
+
+def _generate_time_2(canvas: Canvas):
+    if fork("Subdivide time", 0.7):
+        _generate_time_1(canvas)
+        _generate_time_1(canvas)
+    else:
+        canvas.add_half_note()
         # print_half_rest(state) TODO
 
 
-def _generate_time_4(state: GeneratorState):
-    if fork("Split time in half", 0.8):
-        _generate_time_2(state)
-        _generate_time_2(state)
+def _generate_time_4(canvas: Canvas):
+    if fork("Subdivide time", 0.8):
+        _generate_time_2(canvas)
+        _generate_time_2(canvas)
     else:
-        print_whole_note(state, _generate_note_position(state))
+        canvas.add_whole_note()
         # print_whole_rest(state) TODO
 
 
 def generate(mc: Mashcima) -> Tuple[np.ndarray, str]:
     """Generates a pair of image and annotation"""
-    state = GeneratorState(mc)
+    canvas = Canvas(mc)
 
     # generate
-    _generate_time_4(state)  # TODO: currently simplified for bootstrap
-    for _ in range(random.choice([1, 2])):
-        # print_quarter_note(state, _generate_note_position(state))
-        pass
-        #print_quarter_note(state, random.choice([-4, -3, -2, -1, 0, 1, 2, 3, 4]))
-        # print_quarter_note(state, random.choice([-4, -2, 0, 2, 4]))
-        # print_quarter_note(state, random.choice([-4, 4]))
-        # _generate_time_1(state)
-        
-        # if fork("rest or note", 0.5):
-        #     print_quarter_note(state, 0)
-        # else:
-        #     print_quarter_rest(state)
+    _generate_time_4(canvas)
+    _generate_time_4(canvas)
+    _generate_time_4(canvas)
 
-    # crop the result
-    img = state.img[:, 0:state.head]
+    # render
+    img = canvas.render()
 
     # randomly transform the image
     img = transform_image(img)
 
-    # clip and flip the result
-    img = 1.0 - np.clip(img, 0.0, 1.0)
-
-    # glue the annotation into a string
-    annotation = " ".join(state.annotation)
+    # glue the annotations into a string
+    annotation = " ".join(canvas.get_annotations())
 
     return img, annotation

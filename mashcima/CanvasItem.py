@@ -13,7 +13,7 @@ DEBUG_RENDER = False
 
 class CanvasItem:
     """An item that can be placed onto the canvas"""
-    def __init__(self):
+    def __init__(self, generic_annotation: str):
         # position of this symbol in canvas pixel coordinates
         self.position_x = 0
         self.position_y = 0
@@ -31,6 +31,9 @@ class CanvasItem:
 
         # position in the note-pitch dimension
         self.note_position = 0
+
+        # generic annotation (note without pitch / rest / barline)
+        self.generic_annotation = generic_annotation
 
         # === NOTE RELATED PROPERTIES ===
 
@@ -149,3 +152,17 @@ class CanvasItem:
             color=0.5,
             thickness=1
         )
+
+    def get_annotations(self) -> List[str]:
+        # handle notes
+        if self.generic_annotation in ["w", "h", "q", "e", "s", "t"]:
+            out = [self.generic_annotation + str(self.note_position)]
+            if self.accidental is not None:
+                out = [self.accidental.annotation + str(self.note_position)] + out
+            return out
+
+        # handle rests
+        if self.generic_annotation in ["wr", "hr", "qr", "er", "sr", "tr"]:
+            return [self.generic_annotation]
+
+        raise Exception("Given annotation type not implemented")

@@ -4,6 +4,7 @@ import cv2
 import datetime
 from typing import List
 from app.sparse_tensor_from_sequences import sparse_tensor_from_sequences
+from app.vocabulary import decode_annotation_list
 
 
 class Network:
@@ -419,7 +420,12 @@ class Network:
                 ok = "[ok]" if label == pred else "[err]"
                 if label == pred:
                     right_items += 1
-                print(ok, label, "->", pred)
+                print(
+                    ok,
+                    decode_annotation_list(label),
+                    "->",
+                    decode_annotation_list(pred)
+                )
                 offset += l
                 if label != pred:
                     wrong_examples.append((label, pred))
@@ -438,7 +444,11 @@ class Network:
         if word_accuracy >= 10: # do not show completely terrible results
             print("Some wrong examples:")
             for i in range(min(10, len(wrong_examples))):
-                print(wrong_examples[i][0], "->", wrong_examples[i][1])
+                print(
+                    decode_annotation_list(wrong_examples[i][0]),
+                    "->",
+                    decode_annotation_list(wrong_examples[i][1])
+                )
 
         # save validation loss and edit distance to summaries
         if self._has_summaries:

@@ -3,6 +3,12 @@ from mashcima import Mashcima
 import cv2
 import numpy as np
 from typing import List, Tuple
+import random
+
+
+def fork(label: str, stay_probability: float):
+    """Helper for random binary splitting"""
+    return random.random() <= stay_probability
 
 
 def get_outlink_to(mc: Mashcima, obj: CropObject, clsname: str) -> CropObject:

@@ -1,6 +1,13 @@
 from mashcima.Sprite import Sprite
 
 
+ANNOTATION_LOOKUP = {
+    "sharp": "#",
+    "flat": "b",
+    "natural": "N"
+}
+
+
 class Accidental:
     def __init__(self, accidental_type: str, sprite: Sprite):
         # type of the accidental
@@ -10,3 +17,5 @@ class Accidental:
 
         # the sprite to render
         self.sprite = sprite
+
+        self.annotation = ANNOTATION_LOOKUP[self.accidental_type]
