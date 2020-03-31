@@ -2,6 +2,8 @@ import os
 from muscima.io import parse_cropobject_list, CropObject
 import itertools
 from typing import List, Dict
+from mashcima.Accidental import Accidental
+from mashcima.Sprite import Sprite
 
 
 # where should muscima++ crop objects be loaded from
@@ -59,6 +61,7 @@ class Mashcima:
         from mashcima.get_symbols import get_half_notes
         from mashcima.get_symbols import get_quarter_rests
         from mashcima.get_symbols import get_accidentals
+        from mashcima.get_symbols import get_dots
 
         # load all symbols
         # TODO: fix typing - CanvasItem, not CropObject
@@ -66,4 +69,5 @@ class Mashcima:
         self.QUARTER_NOTES: List[CompositeObject] = get_quarter_notes(self)
         self.HALF_NOTES: List[CompositeObject] = get_half_notes(self)
         self.QUARTER_RESTS: List[CropObject] = get_quarter_rests(self)
-        self.ACCIDENTALS: List[CropObject] = get_accidentals(self)
+        self.ACCIDENTALS: List[Accidental] = get_accidentals(self)
+        self.DOTS: List[Sprite] = get_dots(self)

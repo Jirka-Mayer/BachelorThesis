@@ -65,7 +65,8 @@ for i in range(-6, 6):
         i,
         beam=random.choice([1, 2]),
         flip=False,
-        accidental=random.choice(mc.ACCIDENTALS)
+        accidental=random.choice(mc.ACCIDENTALS),
+        duration_dot=random.choice(mc.DOTS)
     )
 img = canvas.render()
 

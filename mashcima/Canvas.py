@@ -3,6 +3,7 @@ from typing import List, Dict
 from mashcima import Mashcima
 from mashcima.CanvasItem import CanvasItem
 from mashcima.Accidental import Accidental
+from mashcima.Sprite import Sprite
 import cv2
 import copy
 import random
@@ -34,7 +35,8 @@ class Canvas:
             note_position: int = 0,
             flip: bool = False,
             beam: int = 0,
-            accidental: Accidental = None
+            accidental: Accidental = None,
+            duration_dot: Sprite = None
     ):
         """Adds an item onto the canvas"""
         cp: CanvasItem = copy.deepcopy(item)
@@ -46,6 +48,7 @@ class Canvas:
         cp.note_position = note_position
         cp.beam = beam
         cp.accidental = copy.deepcopy(accidental)
+        cp.duration_dot = copy.deepcopy(duration_dot)
 
     def render(self):
         from mashcima.generate_staff_lines import generate_staff_lines

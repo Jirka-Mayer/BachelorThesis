@@ -7,21 +7,26 @@ from mashcima import Mashcima
 from mashcima.CanvasItem import CanvasItem
 from mashcima.Sprite import Sprite
 from mashcima.Accidental import Accidental
+from typing import List
 import cv2
 
 
 # TODO: some class names so that I can filter in the future:
 # (not all though)
 #
-# ['8th_flag', '8th_rest', 'beam', 'dynamics_text', 'g-clef',
-# 'glissando', 'grace-notehead-full', 'grace_strikethrough',
-# 'hairpin-cresc.', 'key_signature', 'ledger_line', 'letter_A',
-# 'letter_a', 'letter_d', 'letter_g', 'letter_i', 'letter_m',
-# 'letter_n', 'letter_o', 'letter_p', 'letter_r', 'letter_t',
-# 'measure_separator', 'natural', 'notehead-empty', 'notehead-full',
-# 'quarter_rest', 'sharp', 'slur', 'staff', 'staff_line', 'staff_space',
-# 'stem', 'tempo_text', 'thin_barline', 'tie', 'time_signature',
-# 'whole-time_mark']
+# ['8th_flag', '8th_rest', 'accent', 'arpeggio_"wobble"', 'beam',
+# 'duration-dot', 'dynamics_text', 'f-clef', 'flat', 'g-clef', 'glissando',
+# 'grace-notehead-full', 'grace_strikethrough', 'hairpin-cresc.',
+# 'hairpin-decr.', 'half_rest', 'instrument_specific', 'key_signature',
+# 'ledger_line', 'letter_A', 'letter_P', 'letter_T', 'letter_a', 'letter_c',
+# 'letter_d', 'letter_e', 'letter_f', 'letter_g', 'letter_i', 'letter_l',
+# 'letter_m', 'letter_n', 'letter_o', 'letter_p', 'letter_r', 'letter_s',
+# 'letter_t', 'letter_u', 'measure_separator', 'multi-staff_brace', 'natural',
+# 'notehead-empty', 'notehead-full', 'numeral_3', 'numeral_6', 'numeral_7',
+# 'other-dot', 'other_text', 'quarter_rest', 'sharp', 'slur', 'staccato-dot',
+# 'staff', 'staff_grouping', 'staff_line', 'staff_space', 'stem', 'tempo_text',
+# 'thin_barline', 'tie', 'time_signature', 'tuple', 'tuple_bracket/line',
+# 'whole-time_mark', 'whole_rest']
 
 
 def _build_notehead_stem_pairs(noteheads, stems):
@@ -109,7 +114,7 @@ def get_quarter_notes(mc: Mashcima):
     return _build_notehead_stem_pairs(noteheads, stems)
 
 
-def get_accidentals(mc: Mashcima):
+def get_accidentals(mc: Mashcima) -> List[Accidental]:
     crop_objects = [
         o for o in mc.CROP_OBJECTS
         if o.clsname in ["sharp", "flat", "natural"]
@@ -145,9 +150,35 @@ def get_accidentals(mc: Mashcima):
     # DEBUG: inspect accidentals
     # from mashcima.debug import show_images, draw_cross
     # show_images([
-    #     draw_cross(a.sprite.mask, -a.sprite.x, -a.sprite.y, 5, 1)
+    #     draw_cross(a.sprite.mask, -a.sprite.x, -a.sprite.y, size=5, 1)
     #     for a in accidentals
     # ], 20)
     # exit()
 
     return accidentals
+
+
+def get_dots(mc: Mashcima) -> List[Sprite]:
+    crop_objects = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname in ["duration-dot", "staccato-dot", "other-dot"]
+    ]
+
+    dots = []
+    for o in crop_objects:
+        object_center_x, object_center_y = get_center_of_component(o.mask)
+        dots.append(Sprite(
+            -object_center_x,
+            -object_center_y,
+            o.mask
+        ))
+
+    # DEBUG: inspect dots
+    # from mashcima.debug import show_images, draw_cross
+    # show_images([
+    #     draw_cross(d .mask, -d .x, -d .y, size=3, thickness=1)
+    #     for d in dots
+    # ], 20)
+    # exit()
+
+    return dots
