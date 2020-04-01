@@ -48,8 +48,9 @@ class CanvasItem:
         self.stem_head_x = None
         self.stem_head_y = None
 
-        # beam count (0, 1, 2 are the only options)
-        self.beam = 0
+        # beam count on either side
+        self.beams_left = 0
+        self.beams_right = 0
 
         # sharp, flat, natural, ... (symbol in front of the note)
         self.accidental: Accidental = None
@@ -63,6 +64,10 @@ class CanvasItem:
     @property
     def is_note(self):
         return self.note_head_sprite is not None
+
+    @property
+    def is_beamed(self):
+        return self.beams_left > 0 or self.beams_right > 0
 
     @property
     def is_barline(self):
@@ -156,9 +161,24 @@ class CanvasItem:
     def get_annotations(self) -> List[str]:
         # handle notes
         if self.generic_annotation in ["w", "h", "q", "e", "s", "t"]:
-            out = [self.generic_annotation + str(self.note_position)]
+            # update apparent generic annotation for beamed notes
+            generic_annotation = self.generic_annotation
+            if self.is_beamed:
+                beams = max(self.beams_left, self.beams_right)
+                LETTER_LOOKUP = {1: "e", 2: "s"}
+                generic_annotation = LETTER_LOOKUP[beams]
+                if self.beams_left == beams:
+                    generic_annotation = "=" + generic_annotation
+                if self.beams_right == beams:
+                    generic_annotation += "="
+
+            # turn generic annotation to a concrete one
+            out = [generic_annotation + str(self.note_position)]
+
+            # prepend accidental
             if self.accidental is not None:
                 out = [self.accidental.annotation + str(self.note_position)] + out
+
             return out
 
         # handle rests

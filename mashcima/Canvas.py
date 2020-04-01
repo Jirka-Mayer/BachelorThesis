@@ -6,9 +6,13 @@ from mashcima.Accidental import Accidental
 from mashcima.Sprite import Sprite
 from mashcima.Slur import Slur
 from mashcima.utils import fork
+import app.vocabulary
 import cv2
 import copy
 import random
+
+
+PITCH_RANGE = app.vocabulary.HIGHEST_POSITION
 
 
 class Canvas:
@@ -40,12 +44,33 @@ class Canvas:
 
     def _generate_note_position(self):
         # TODO: dummy helper
-        return random.randint(-5, 5)
+        return random.randint(-PITCH_RANGE, PITCH_RANGE)
 
     def _generate_accidental(self):
         if fork("Has accidental", 0.3):
             return random.choice(self.mc.ACCIDENTALS)
         return None
+
+    def add_beamed_group(
+            self,
+            beams: int = 1,
+            notes: int = 2,
+            border_beams: int = 0
+    ):
+        PITCH_CENTER_SPRED = 5
+        PITCH_SPRED = 3
+        assert PITCH_CENTER_SPRED + PITCH_SPRED <= PITCH_RANGE
+
+        pitch_center = random.randint(-PITCH_CENTER_SPRED, PITCH_CENTER_SPRED)
+        for i in range(notes):
+            self.append(
+                random.choice(self.mc.QUARTER_NOTES),
+                note_position=pitch_center + random.randint(-PITCH_SPRED, PITCH_SPRED),
+                flip=pitch_center > 0,
+                beams_left=(border_beams if i == 0 else beams),
+                beams_right=(border_beams if i == notes - 1 else beams),
+                accidental=self._generate_accidental()
+            )
 
     def add_quarter_note(self):
         pos = self._generate_note_position()
@@ -84,7 +109,8 @@ class Canvas:
             item: CanvasItem,
             note_position: int = 0,
             flip: bool = False,
-            beam: int = 0,
+            beams_left: int = 0,
+            beams_right: int = 0,
             accidental: Accidental = None,
             duration_dot: Sprite = None
     ):
@@ -96,7 +122,8 @@ class Canvas:
         self.items.append(cp)
 
         cp.note_position = note_position
-        cp.beam = beam
+        cp.beams_left = beams_left
+        cp.beams_right = beams_right
         cp.accidental = copy.deepcopy(accidental)
         cp.duration_dot = copy.deepcopy(duration_dot)
 
@@ -128,7 +155,7 @@ class Canvas:
         for i in range(len(self.items) - 1):
             this = self.items[i]
             next = self.items[i + 1]
-            if this.beam <= 0 or next.beam <= 0:
+            if this.beams_right <= 0 or next.beams_left <= 0:
                 continue
 
             # render the whole first beam
@@ -142,17 +169,17 @@ class Canvas:
                 return (a[0], a[1] + sp), (b[0], b[1] + sp), (m[0], m[1] + sp)
 
             # render whole second beam
-            if this.beam >= 2 and next.beam >= 2:
+            if this.beams_right >= 2 and next.beams_left >= 2:
                 a, b, m = step_down(a, b, m, this.is_flipped)
                 cv2.line(self.img, a, b, thickness=beam_thickness, color=1)
 
             # render first part of second beam
-            if this.beam >= 2 and next.beam == 1:
+            if this.beams_right >= 2 and next.beams_left == 1:
                 a, b, m = step_down(a, b, m, this.is_flipped)
                 cv2.line(self.img, a, m, thickness=beam_thickness, color=1)
 
             # render second part of second beam
-            if this.beam == 1 and next.beam >= 2:
+            if this.beams_right == 1 and next.beams_left >= 2:
                 a, b, m = step_down(a, b, m, next.is_flipped)
                 cv2.line(self.img, m, b, thickness=beam_thickness, color=1)
 

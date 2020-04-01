@@ -423,7 +423,7 @@ class Network:
                 print(
                     ok,
                     decode_annotation_list(label),
-                    "->",
+                    " ==> ",
                     decode_annotation_list(pred)
                 )
                 offset += l
@@ -446,7 +446,7 @@ class Network:
             for i in range(min(10, len(wrong_examples))):
                 print(
                     decode_annotation_list(wrong_examples[i][0]),
-                    "->",
+                    " ==> ",
                     decode_annotation_list(wrong_examples[i][1])
                 )
 

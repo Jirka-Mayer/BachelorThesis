@@ -7,27 +7,18 @@ from mashcima.transform_image import transform_image
 from mashcima.utils import fork
 
 
-def _generate_note_position():
-    return random.randint(-5, 5)
-
-
-# def _generate_beamed_group(canvas: Canvas, beams: int = 1, notes: int = 2):
-#     for _ in range(notes):
-#         canvas.add_quarter_note(beam=beams)
-
-
 def _generate_time_1_over_2(canvas: Canvas):
     pass
 
 
 def _generate_time_1(canvas: Canvas):
-    # if fork("Subdivide time", 0.4):
-    #     _generate_beamed_group(canvas, beams=1, notes=2)
-    # else:
-    if fork("Rest", 0.3):
-        canvas.add_quarter_rest()
+    if fork("Subdivide time", 0.4):
+        canvas.add_beamed_group(beams=1, notes=2, border_beams=0)
     else:
-        canvas.add_quarter_note()
+        if fork("Rest", 0.3):
+            canvas.add_quarter_rest()
+        else:
+            canvas.add_quarter_note()
 
 
 def _generate_time_2(canvas: Canvas):
