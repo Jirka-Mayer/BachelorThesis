@@ -2,13 +2,15 @@ import numpy as np
 
 
 class Sprite:
-    def __init__(self, x: int, y: int, mask: np.ndarray):
+    def __init__(self, x: int, y: int, mask: np.ndarray, print_render_warnings: bool = True):
         # local position within a canvas item (upper left corner of the mask)
         self.x = x
         self.y = y
 
         # the actual mask to be printed (image data)
         self.mask = mask.astype(dtype=np.float32)
+
+        self.print_render_warnings = print_render_warnings
 
     @property
     def width(self):
@@ -37,26 +39,31 @@ class Sprite:
         x_to = x + mask.shape[1]
 
         if x_from < 0:
-            print("Image does not fit horizontally")
+            if self.print_render_warnings:
+                print("Image does not fit horizontally")
             mask = mask[:, abs(x_from):]
             x_from = 0
 
         if x_to > img.shape[1]:
-            print("Image does not fit horizontally")
+            if self.print_render_warnings:
+                print("Image does not fit horizontally")
             mask = mask[:, :(mask.shape[1] - (x_to - img.shape[1]))]
             x_to = img.shape[1]
 
         if y_from < 0:
-            print("Image does not fit vertically")
+            if self.print_render_warnings:
+                print("Image does not fit vertically")
             mask = mask[abs(y_from):, :]
             y_from = 0
 
         if y_to > img.shape[0]:
-            print("Image does not fit vertically")
+            if self.print_render_warnings:
+                print("Image does not fit vertically")
             mask = mask[:(mask.shape[0] - (y_to - img.shape[0])), :]
             y_to = img.shape[0]
 
         try:
             img[y_from:y_to, x_from:x_to] += (1 - img[y_from:y_to, x_from:x_to]) * mask
         except ValueError:
-            print("Image does not fit inside the canvas")
+            # NOTE: this is not a warning, this is bad, so print always
+            print("Image does not fit inside the canvas at all")

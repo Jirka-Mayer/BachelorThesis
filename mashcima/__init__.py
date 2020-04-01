@@ -75,6 +75,7 @@ class Mashcima:
         from mashcima.get_symbols import get_accidentals
         from mashcima.get_symbols import get_dots
         from mashcima.get_symbols import get_ledger_lines
+        from mashcima.get_symbols import get_bar_lines
 
         # load all symbols
         self.WHOLE_NOTES: List[CanvasItem] = get_whole_notes(self)
@@ -84,5 +85,6 @@ class Mashcima:
         self.ACCIDENTALS: List[Accidental] = get_accidentals(self)
         self.DOTS: List[Sprite] = get_dots(self)
         self.LEDGER_LINES: List[Sprite] = get_ledger_lines(self)
+        self.BAR_LINES: List[CanvasItem] = get_bar_lines(self)
 
         print("Mashcima loaded.")

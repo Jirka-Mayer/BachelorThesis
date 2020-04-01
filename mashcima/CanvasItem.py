@@ -185,4 +185,8 @@ class CanvasItem:
         if self.generic_annotation in ["wr", "hr", "qr", "er", "sr", "tr"]:
             return [self.generic_annotation]
 
+        # handle bar lines
+        if self.generic_annotation == "|":
+            return ["|"]
+
         raise Exception("Given annotation type not implemented")

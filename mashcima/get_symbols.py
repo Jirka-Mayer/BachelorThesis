@@ -233,3 +233,31 @@ def get_ledger_lines(mc: Mashcima) -> List[Sprite]:
     # exit()
 
     return lines
+
+
+def get_bar_lines(mc: Mashcima) -> List[CanvasItem]:
+    crop_objects = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname in ["thin_barline"]
+    ]
+
+    items = []
+    for o in crop_objects:
+        item = CanvasItem("|")
+        item.add_sprite(Sprite(
+            -o.width // 2,
+            -o.height // 2,
+            o.mask,
+            print_render_warnings=(False if o.height > 350 else True)
+        ))
+        items.append(item)
+
+    # DEBUG: inspect lines
+    # from mashcima.debug import show_images, draw_cross
+    # show_images([
+    #     o.mask
+    #     for o in crop_objects
+    # ], 20)
+    # exit()
+
+    return items

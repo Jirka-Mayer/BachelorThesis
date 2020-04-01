@@ -100,6 +100,9 @@ class Canvas:
             accidental=self._generate_accidental()
         )
 
+    def add_bar_line(self):
+        self.append(random.choice(self.mc.BAR_LINES))
+
     #################
     # Low level API #
     #################

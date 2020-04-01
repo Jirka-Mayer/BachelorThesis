@@ -6,10 +6,10 @@ from mashcima import Mashcima
 
 
 # build the dataset
-mc = Mashcima()
-generator = lambda: generate(mc)
-train_dataset = GeneratedDataset(size=2500, generator=generator)
-dev_dataset = GeneratedDataset(size=100, generator=generator)
+train_mc = Mashcima()
+train_dataset = GeneratedDataset(size=2500, generator=lambda: generate(train_mc))
+dev_mc = Mashcima()
+dev_dataset = GeneratedDataset(size=100, generator=lambda: generate(dev_mc))
 
 # dev_dataset.check_dataset_visually()
 # exit()

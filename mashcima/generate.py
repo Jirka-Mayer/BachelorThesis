@@ -45,7 +45,9 @@ def generate(mc: Mashcima) -> Tuple[np.ndarray, str]:
 
     # generate
     _generate_time_4(canvas)
+    canvas.add_bar_line()
     _generate_time_4(canvas)
+    canvas.add_bar_line()
     _generate_time_4(canvas)
 
     # render
