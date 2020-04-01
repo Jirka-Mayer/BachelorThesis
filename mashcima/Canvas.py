@@ -137,6 +137,7 @@ class Canvas:
         self._place_items()
 
         for item in self.items:
+            self._render_ledger_lines(item)
             item.render(self.img)
 
         self._render_beams()
@@ -148,6 +149,17 @@ class Canvas:
         self.img = self.img[:, 0:self.head]
 
         return self.img
+
+    def _render_ledger_lines(self, item: CanvasItem):
+        if abs(item.note_position) < 6:
+            return
+        negate = 1 if item.note_position > 0 else -1
+        for i in range(6, abs(item.note_position) + 1):
+            if i % 2 == 1:
+                continue  # odd positions are holes, not lines
+            pos_y = self.note_positions[i * negate]
+            sprite = random.choice(self.mc.LEDGER_LINES)
+            sprite.render(self.img, item.position_x, pos_y)
 
     def _render_beams(self):
         beam_thickness = 4

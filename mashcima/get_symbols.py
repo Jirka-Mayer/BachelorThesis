@@ -201,9 +201,35 @@ def get_dots(mc: Mashcima) -> List[Sprite]:
     # DEBUG: inspect dots
     # from mashcima.debug import show_images, draw_cross
     # show_images([
-    #     draw_cross(d .mask, -d .x, -d .y, size=3, thickness=1)
+    #     draw_cross(d.mask, -d .x, -d .y, size=3, thickness=1)
     #     for d in dots
     # ], 20)
     # exit()
 
     return dots
+
+
+def get_ledger_lines(mc: Mashcima) -> List[Sprite]:
+    crop_objects = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname in ["ledger_line"]
+    ]
+
+    lines = []
+    for o in crop_objects:
+        object_center_x, object_center_y = get_center_of_component(o.mask)
+        lines.append(Sprite(
+            -object_center_x,
+            -object_center_y,
+            o.mask
+        ))
+
+    # DEBUG: inspect lines
+    # from mashcima.debug import show_images, draw_cross
+    # show_images([
+    #     draw_cross(l.mask, -l.x, -l.y, size=3, thickness=1)
+    #     for l in lines
+    # ], 20)
+    # exit()
+
+    return lines

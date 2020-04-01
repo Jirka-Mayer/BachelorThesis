@@ -7,7 +7,6 @@ from mashcima.generate import *
 
 """
 Symbols that need be generated:
-- ledger lines !!!
 - rests
     - whole
     - half
@@ -19,10 +18,11 @@ Symbols that need be generated:
     + quarter
     - eight
     - sixteenth
++ ledger lines
 - beamed notes
-    - eighth
+    + eighth
     - sixteenth
-- accidentals
++ accidentals
     + sharp
     + flat
     + natural
