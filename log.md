@@ -204,3 +204,19 @@ Takže jsem ho přidal na RNN vrstvy a výsledkem je:
 - navýšení počtu tříd už funguje
 - konvergence je pomalejší, ale konzistentní
     (už se nezasekáváme v lokálním minimu)
+    
+    
+## 2020-03-22 ... 2020-04-01
+
+Psaní generátoru dat.
+
+
+## 2020-04-04
+
+Příprava obrázků z CVC muscimy -- detekce řádek a jejich ořezávání.
+Příprava na validaci na reálných datech.
+
+
+## 2020-04-06
+
+Ukládání modelu a implementace validace na CVC muscimě pro přepisovatele 1.

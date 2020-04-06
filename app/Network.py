@@ -19,9 +19,18 @@ class Network:
     IMAGE_HEIGHT = 64  # fixed by the CNN block architecture
     NETWORK_SCOPE = "network"
 
-    def __init__(self, continual_saving=False, name=None, threads=1, num_classes=None):
+    def __init__(
+            self,
+            name: str = None,
+            num_classes: int = None,
+            continual_saving: bool = False,
+            create_logdir: bool = False,
+            threads: int = 1,
+    ):
         # name of the model (for continual saving)
-        self.name = name
+        self.name: str = name
+        if self.name is None:
+            raise Exception("Network name has to be specified")
 
         # number of output classes
         self.num_classes: int = num_classes
@@ -29,10 +38,10 @@ class Network:
             raise Exception("Number of output classes need to be specified")
 
         # does the network save itself on improvement during dev evaluation?
-        self.continual_saving = continual_saving
+        self.continual_saving: bool = continual_saving
 
         # whether summaries are logged or not
-        self._has_summaries = False
+        self._has_summaries: bool = create_logdir
 
         # Create an empty graph and a session
         self.graph = tf.Graph()
@@ -43,6 +52,23 @@ class Network:
                 intra_op_parallelism_threads=threads
             )
         )
+
+        # List fields that will be initialized during network construction
+        self.images = None
+        self.image_widths = None
+        self.labels = None
+        self.is_training = None
+        self.learning_rate = None
+
+        self.training = None
+        self.reset_metrics = None
+        self.saver = None
+
+        # Construct the network
+        logdir = None
+        if create_logdir:
+            logdir = Network.create_logdir(self.name)
+        self.construct(logdir=logdir)
 
     ################################
     # Network structure definition #
@@ -110,9 +136,7 @@ class Network:
 
             # === summaries, metrics and others part ===
 
-            if logdir is not None:
-                self._construct_summaries(losses, logdir)
-                self._has_summaries = True
+            self._construct_metrics(losses, logdir)
 
             self.reset_metrics = tf.variables_initializer(
                 tf.get_collection(tf.GraphKeys.METRIC_VARIABLES)
@@ -136,12 +160,12 @@ class Network:
         # list of parameters for the layers
         kernel_vals = [5, 5, 5, 3, 3, 3]
         feature_vals = [1, 16, 32, 64, 128, 128, 256]
-        stride_vals = pool_vals = [(2,2), (2,2), (2,1), (2,1), (2,1), (2,1)]
-        numLayers = len(stride_vals)
+        stride_vals = pool_vals = [(2, 2), (2, 2), (2, 1), (2, 1), (2, 1), (2, 1)]
+        num_layers = len(stride_vals)
 
         # create layers
         pool = cnn_in_4d # input to the first CNN layer
-        for i in range(numLayers):
+        for i in range(num_layers):
             kernel = tf.Variable(
                 tf.truncated_normal(
                     [
@@ -157,7 +181,7 @@ class Network:
                 pool,
                 kernel,
                 padding="SAME",
-                strides=(1,1,1,1)
+                strides=(1, 1, 1, 1)
             )
 
             # TODO: possible batch normalization here
@@ -292,11 +316,16 @@ class Network:
         #     name="training"
         # )
 
-    def _construct_summaries(self, losses, logdir):
+    def _construct_metrics(self, losses, logdir):
         """Creates summaries"""
         self.current_edit_distance, self.update_edit_distance = tf.metrics.mean(self.edit_distance)
         self.current_greedy_edit_distance, self.update_greedy_edit_distance = tf.metrics.mean(self.greedy_edit_distance)
         self.current_loss, self.update_loss = tf.metrics.mean(losses)
+
+        # the following code handles logging
+        # so continue only if we have a logdir specified
+        if logdir is None:
+            return
 
         summary_writer = tf.contrib.summary.create_file_writer(logdir, flush_millis=10 * 1000)
 
@@ -456,7 +485,7 @@ class Network:
 
         # perform continual saving
         if self.continual_saving:
-            self.save_if_better(self.name, edit_distance)
+            self.save_if_better(edit_distance)
 
         # return loss and edit distance
         return loss, edit_distance
@@ -479,7 +508,9 @@ class Network:
             self.dropout: 0.0
         })
 
-        return predictions.values
+        annotation: str = decode_annotation_list(predictions.values)
+
+        return annotation
 
     def get_global_step(self):
         """Returns value of the global step"""
@@ -498,4 +529,69 @@ class Network:
     # Model persistence #
     #####################
 
-    # TODO: continue here
+    """
+        Models are persisted in the following files:
+        - trained-models/{model-name}/model.index
+        - trained-models/{model-name}/model.meta
+        - trained-models/{model-name}/model.data-...
+        - trained-models/{model-name}/checkpoint
+        - trained-models/{model-name}/model.edit-distance
+    """
+
+    def load(self):
+        """Loads the model of a given name"""
+        self.saver.restore(
+            self.session,
+            self._get_model_path(self.name)
+        )
+
+    def save(self, edit_distance=None):
+        """Saves the model and also saves edit distance if provided"""
+        dirname = self._get_model_directory(self.name)
+        if not os.path.exists(dirname):
+            os.mkdir(dirname)
+
+        self.saver.save(
+            self.session,
+            self._get_model_path(self.name)
+        )
+
+        if edit_distance is not None:
+            self._save_edit_distance(self.name, edit_distance)
+
+    def _save_edit_distance(self, model_name: str, edit_distance: float):
+        """Saves the edit distance"""
+        dirname = self._get_model_directory(model_name)
+        if not os.path.exists(dirname):
+            os.mkdir(dirname)
+
+        with open(self._get_model_path(model_name) + ".edit_distance", "w") as file:
+            file.write(str(edit_distance))
+
+    def save_if_better(self, edit_distance):
+        """Saves the model only if it has smaller edit distance, than the saved"""
+        if self._get_saved_edit_distance(self.name) > edit_distance:
+            print("Saving...")
+            self.save(edit_distance)
+
+    def _get_saved_edit_distance(self, model_name: str) -> float:
+        """Returns edit distance of the saved model"""
+        if not self._exists(model_name):
+            return float("inf")
+
+        with open(self._get_model_path(model_name) + ".edit_distance", "r") as file:
+            ed = float(file.read())
+        return ed
+
+    def _exists(self, model_name: str) -> bool:
+        """Returns true if a given model exists"""
+        return os.path.isdir(self._get_model_directory(model_name))
+
+    def _get_model_directory(self, model_name: str) -> str:
+        """Returns directory path of a given model name"""
+        return os.path.dirname(os.path.realpath(__file__)) + \
+            "/../trained-models/" + model_name
+
+    def _get_model_path(self, model_name: str) -> str:
+        """Returns path for tensorflow saver to save the model to"""
+        return self._get_model_directory(model_name) + "/model"

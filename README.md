@@ -1,8 +1,21 @@
 # Automatický přepis notových zápisů pomocí hlubokých neuronových sítí
 
-Cílem bakalářské práce je převést vstupní obrázek notového zápisu
-(foto nebo scan) do formátu MusicXML, se kterým umí pracovat
-nástroje pro zápis not (Sibelius, Finale, MuseScore).
+## Zadání
+
+Automatický přepis (rozpoznávání) notových zápisů (Optical Music
+Recognition) je úloha, při níž je obrazový vstup obsahující notový
+zápis (tištěný nebo ručně psaný) automaticky převeden do strojově
+čitelné, strukturované podoby, která umožňuje další zpracování, jako
+např. přehrání zaznamenané hudby, editaci zápisu, vysázení apod. Výzkum
+i v této oblasti v poslední době ovlivnilo využití hlubokých
+neuronových sítí. Většina metod, je ale založena na rozdělení úlohy na
+podčásti, které jsou řešeny postupně (binarizace, odstranění osnov,
+detekce objektů, rozpoznání jejich typů a dalších parametrů, syntéza
+získané informace, zápis v požadovaném formátu). Cílem práce je
+prozkoumat a implemetovat alternativní, tzv. end-to-end přístup, kdy se
+celá úloha bude řešit najednou, vstupem bude jeden řádek notového
+zápisu, výstupem jeho přepis do formátu musicXML. V práci budou použita
+data MUSCIMA++.
 
 
 ## Přehled
@@ -33,20 +46,3 @@ Tady je dokumentace jednotlivých větších komponent:
 
 - [Dataset a generování dat](docs/dataset-generation.md)
 - [Kód definice neuronové sítě `Network.py`](docs/network.md)
-
-
-## Jiné poznámky
-
-Normalizovat výšku: 64px je ideální, 32px pro základní symboly projde
-
-
-## Teď pracuj na / pokračuj s
-
-Naprogramuj vícekanálový CTC výstup. (zatím pro jednoduché vstupy)
-
-Vymysli nějakou lepší reprezentaci not (třída `Symbol`).
-
-Vyčisti zdrojové kódy.
-
-Přidej *trainer* - nějakou třídu, co provede postupné trénování sítě.
-(a s tím souvisí perzistence sítě (automaticky ulož při zlepšení))
