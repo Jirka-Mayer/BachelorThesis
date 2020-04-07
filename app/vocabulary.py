@@ -10,6 +10,8 @@ POSITIONS = [str(pos) for pos in reversed(range(LOWEST_POSITION, HIGHEST_POSITIO
 # symbolic vocabulary representation
 SYMBOLIC = [
     "|",  # barline
+    "|:",  # repeat start
+    ":|",  # repeat end
     "fermata",  # fermata above the note
 
     "clef.C4",
@@ -40,10 +42,11 @@ SYMBOLIC = [
     "b{position}",  # flat
     "N{position}",  # natural
 
-    "({position}",  # slur start
-    "){position}",  # slur end
-    ".{position}",  # staccato dot
-    "*{position}",  # duration dot
+    "(",  # slur start
+    ")",  # slur end
+    ".",  # staccato dot
+    "*",  # duration dot
+    "**",  # duration double dot
 
     "wr",  # whole rest
     "hr",  # half rest

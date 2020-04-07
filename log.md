@@ -220,3 +220,15 @@ Příprava na validaci na reálných datech.
 ## 2020-04-06
 
 Ukládání modelu a implementace validace na CVC muscimě pro přepisovatele 1.
+
+
+## 2020-04-07
+
+Kreslení legát.
+
+Pozn. legáto se váže na notu nebo taktovou čáru. Problém je, že když první
+nota na řádku má legáto z předchozího řádku, tak tam není žádná taktová
+čára na kterou by se chytla. Takže tam vygeneruju taktovou čáru, která nebude
+mít žádný sprite a `generic_annotation` bude mít `None`. Tím pádem se ani
+nevykreslí, ani se pro ní nevygeneruje anotace. A legáto tím pádem nepoleze
+až na začátek řádku do kolíče a předznamenání.

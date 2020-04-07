@@ -35,6 +35,16 @@ class CanvasItem:
         # generic annotation (note without pitch / rest / barline)
         self.generic_annotation = generic_annotation
 
+        # should the item not render and annotate?
+        # (but take up space and interact normally)
+        self.is_invisible = False
+
+        # === SLUR RELATED PROPERTIES ===
+
+        # whether a slur starts or ends here (can do both)
+        self.slur_starts = False
+        self.slur_ends = False
+
         # === NOTE RELATED PROPERTIES ===
 
         # sprite of the note head
@@ -71,7 +81,7 @@ class CanvasItem:
 
     @property
     def is_barline(self):
-        return False  # TODO
+        return self.generic_annotation in ["|", ":|", "|:"]
 
     def flipped(self):
         """Returns a flipped copy of this item"""
@@ -125,10 +135,22 @@ class CanvasItem:
         self.right = max([s.x + s.mask.shape[1] for s in effective_sprites])
         self.top = min([s.y for s in effective_sprites])
         self.bottom = max([s.y + s.mask.shape[0] for s in effective_sprites])
+
+        # add additional space for slurs
+        SLUR_SPACE = 20
+        if self.slur_starts:
+            self.right += SLUR_SPACE
+        if self.slur_ends:
+            self.left -= SLUR_SPACE
+
+        # calculate with and height
         self.width = self.right - self.left
         self.height = self.bottom - self.top
 
     def render(self, img: np.ndarray):
+        if self.is_invisible:
+            return
+
         if DEBUG_RENDER:
             draw_cross(img, self.position_x, self.position_y, 15)
             self._render_bounding_box(img)
@@ -159,6 +181,10 @@ class CanvasItem:
         )
 
     def get_annotations(self) -> List[str]:
+        # handle invisible symbols (e.g. invisible bar lines for starting slurs)
+        if self.is_invisible:
+            return []
+
         # handle notes
         if self.generic_annotation in ["w", "h", "q", "e", "s", "t"]:
             # update apparent generic annotation for beamed notes
@@ -175,9 +201,21 @@ class CanvasItem:
             # turn generic annotation to a concrete one
             out = [generic_annotation + str(self.note_position)]
 
+            # prepend ending slur
+            if self.slur_ends:
+                out = [")"] + out
+
             # prepend accidental
             if self.accidental is not None:
                 out = [self.accidental.annotation + str(self.note_position)] + out
+
+            # TODO: append staccato dot
+
+            # TODO: append duration dot(s)
+
+            # append starting slur
+            if self.slur_starts:
+                out += ["("]
 
             return out
 
@@ -186,7 +224,7 @@ class CanvasItem:
             return [self.generic_annotation]
 
         # handle bar lines
-        if self.generic_annotation == "|":
-            return ["|"]
+        if self.generic_annotation in ["|", "|:", ":|"]:
+            return [self.generic_annotation]
 
         raise Exception("Given annotation type not implemented")

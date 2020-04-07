@@ -20,12 +20,16 @@ from mashcima import Mashcima
 # dev_dataset = GeneratedDataset(size=100, generator=lambda: generate(dev_mc))
 
 # simple datasets for testing logic around training
-mc = Mashcima(["CVC-MUSCIMA_W-01_N-10_D-ideal.xml"])
-train_dataset = GeneratedDataset(size=2500, generator=lambda: generate(mc))
+mc = Mashcima([
+    "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
+    "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
+    "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+])
+#train_dataset = GeneratedDataset(size=2500, generator=lambda: generate(mc))
 dev_dataset = GeneratedDataset(size=100, generator=lambda: generate(mc))
 
-# dev_dataset.check_dataset_visually()
-# exit()
+dev_dataset.check_dataset_visually()
+exit()
 
 # build the network
 network = Network(
@@ -35,6 +39,7 @@ network = Network(
     create_logdir=True,
     threads=4
 )
+network.load()
 
 # train network
 network.train(

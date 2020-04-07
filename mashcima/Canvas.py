@@ -72,36 +72,41 @@ class Canvas:
                 accidental=self._generate_accidental()
             )
 
-    def add_quarter_note(self):
+    def add_quarter_note(self) -> CanvasItem:
         pos = self._generate_note_position()
-        self.append(
+        return self.append(
             random.choice(self.mc.QUARTER_NOTES),
             note_position=pos,
             flip=pos > 0,
             accidental=self._generate_accidental()
         )
 
-    def add_quarter_rest(self):
-        self.append(random.choice(self.mc.QUARTER_RESTS))
+    def add_quarter_rest(self) -> CanvasItem:
+        return self.append(random.choice(self.mc.QUARTER_RESTS))
 
-    def add_half_note(self):
+    def add_half_note(self) -> CanvasItem:
         pos = self._generate_note_position()
-        self.append(
+        return self.append(
             random.choice(self.mc.HALF_NOTES),
             note_position=pos,
             flip=pos > 0,
             accidental=self._generate_accidental()
         )
 
-    def add_whole_note(self):
-        self.append(
+    def add_whole_note(self) -> CanvasItem:
+        return self.append(
             random.choice(self.mc.WHOLE_NOTES),
             note_position=self._generate_note_position(),
             accidental=self._generate_accidental()
         )
 
-    def add_bar_line(self):
-        self.append(random.choice(self.mc.BAR_LINES))
+    def add_bar_line(self) -> CanvasItem:
+        return self.append(random.choice(self.mc.BAR_LINES))
+
+    def add_invisible_barline(self) -> CanvasItem:
+        item = self.add_bar_line()
+        item.is_invisible = True
+        return item
 
     #################
     # Low level API #
@@ -116,7 +121,7 @@ class Canvas:
             beams_right: int = 0,
             accidental: Accidental = None,
             duration_dot: Sprite = None
-    ):
+    ) -> CanvasItem:
         """Adds an item onto the canvas"""
         cp: CanvasItem = copy.deepcopy(item)
         assert not cp.is_flipped
@@ -130,8 +135,12 @@ class Canvas:
         cp.accidental = copy.deepcopy(accidental)
         cp.duration_dot = copy.deepcopy(duration_dot)
 
+        return cp
+
     def add_slur(self, start_item: CanvasItem, end_item: CanvasItem):
         self.slurs.append(Slur(start_item, end_item))
+        start_item.slur_starts = True
+        end_item.slur_ends = True
 
     def render(self):
         from mashcima.generate_staff_lines import generate_staff_lines

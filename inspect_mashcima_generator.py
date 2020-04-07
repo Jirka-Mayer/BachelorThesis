@@ -5,54 +5,163 @@ from mashcima.Canvas import Canvas
 import random
 from mashcima.generate import *
 
-"""
-Symbols that need be generated:
-- rests
-    - whole
-    - half
-    + quarter
-    - eight
-- simple notes
-    + whole
-    + half
-    + quarter
-    - eight
-    - sixteenth
-+ ledger lines
-- beamed notes
-    + eighth
-    - sixteenth
-+ accidentals
-    + sharp
-    + flat
-    + natural
-- dots
-    - staccato dot
-    - duration dot
-- slurs
-- barline
-- fermata
-- clefs
-    - G clef
-"""
 
-mc = Mashcima()
+mc = Mashcima([
+    "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
+    "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
+    "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+])
 
-canvas = Canvas(mc)
 
-for i in range(-8, 8):
-    canvas.append(
-        random.choice(mc.QUARTER_NOTES),
-        i,
-        beams_left=random.choice([0, 1, 2]),
-        beams_right=random.choice([0, 1, 2]),
-        flip=False,
-        #accidental=random.choice(mc.ACCIDENTALS),
-        #duration_dot=random.choice(mc.DOTS)
-    )
-canvas.add_slur(canvas.items[2], canvas.items[4])
+def inspect(generator, samples=10):
+    for _ in range(samples):
+        canvas = Canvas(mc)
 
-img = canvas.render()
+        generator(canvas)
 
-plt.imshow(img)
-plt.show()
+        img = canvas.render()
+        annotation = " ".join(canvas.get_annotations())
+
+        print(annotation)
+        plt.imshow(img)
+        plt.show()
+
+
+###############
+# INSPECTIONS #
+###############
+
+
+def whole_notes(canvas):
+    for i in range(-8, 9):
+        canvas.append(random.choice(mc.WHOLE_NOTES), i, flip=False)
+
+
+def half_notes(canvas):
+    for i in range(-8, 9):
+        canvas.append(random.choice(mc.HALF_NOTES), i, flip=False)
+    for i in range(-8, 9):
+        canvas.append(random.choice(mc.HALF_NOTES), i, flip=True)
+
+
+def quarter_notes(canvas):
+    for i in range(-8, 9):
+        canvas.append(random.choice(mc.QUARTER_NOTES), i, flip=False)
+    for i in range(-8, 9):
+        canvas.append(random.choice(mc.QUARTER_NOTES), i, flip=True)
+
+
+def high_level_quarter_notes(canvas):
+    for i in range(20):
+        canvas.add_quarter_note()
+
+
+def rests(canvas):
+    for _ in range(4):
+        canvas.add_quarter_rest()
+    # TODO: half, whole, eight, thirty-two rests
+
+
+def accidentals(canvas):
+    for _ in range(10):
+        canvas.append(
+            random.choice(mc.QUARTER_NOTES),
+            0,
+            flip=False,
+            accidental=random.choice(mc.ACCIDENTALS)
+        )
+
+
+def simple_slurs(canvas):
+    a = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=False)
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=False)
+    canvas.add_slur(a, b)
+
+    a = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=True)
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=True)
+    canvas.add_slur(a, b)
+
+    a = canvas.append(random.choice(mc.QUARTER_NOTES), -4, flip=False)
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=False)
+    canvas.add_slur(a, b)
+
+    a = canvas.append(random.choice(mc.QUARTER_NOTES), 4, flip=False)
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=False)
+    canvas.add_slur(a, b)
+
+    a = canvas.append(random.choice(mc.QUARTER_NOTES), -4, flip=False)
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), 4, flip=True)
+    canvas.add_slur(a, b)
+
+    a = canvas.append(random.choice(mc.QUARTER_NOTES), 4, flip=True)
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), -4, flip=False)
+    canvas.add_slur(a, b)
+
+    a = canvas.append(random.choice(mc.QUARTER_NOTES), 4, flip=True)
+    b = canvas.add_bar_line()
+    canvas.add_slur(a, b)
+
+    a = canvas.add_bar_line()
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), -4, flip=False)
+    canvas.add_slur(a, b)
+
+
+def joined_slurs(canvas):
+    a = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
+    c = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
+    d = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
+    canvas.add_slur(a, b)
+    canvas.add_slur(b, c)
+    canvas.add_slur(c, d)
+
+    a = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
+    c = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
+    d = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
+    canvas.add_slur(a, d)
+
+
+def staff_begining_slur(canvas):
+    canvas.add_quarter_rest()
+    a = canvas.add_invisible_barline()
+    b = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
+    canvas.add_slur(a, b)
+
+
+def bar_lines(canvas):
+    # TODO bar lines that stretch only up or only down
+    # TODO repeat bar lines
+    # TODO double bar lines
+    # TODO thick bar lines
+    for _ in range(20):
+        canvas.add_bar_line()
+
+
+########
+# MAIN #
+########
+
+# inspect(whole_notes, 1)
+# inspect(half_notes, 1)
+# inspect(quarter_notes, 1)
+# inspect(high_level_quarter_notes, 1)
+# TODO: eight notes (with flag)
+# TODO: sixteenth notes (with flag)
+# TODO: thirty-second notes (with flag)
+# inspect(rests, 1)
+# inspect(bar_lines, 1)
+# TODO: clefs
+# TODO: time signature
+# TODO: key signature
+# inspect(accidentals, 1)
+# TODO: note duration dots (one, two) -> update slur attachment points
+# TODO: rest duration dots (one, two) -> update slur attachment points
+# TODO: staccato -> update slur attachment points
+# TODO: tenuto ? -> update slur attachment points
+# inspect(lambda c: c.add_beamed_group(), 10) # TODO all sorts of beamed groups
+inspect(simple_slurs, 1)
+inspect(joined_slurs, 1)
+inspect(staff_begining_slur, 1)
+
+# TODO: fermata
