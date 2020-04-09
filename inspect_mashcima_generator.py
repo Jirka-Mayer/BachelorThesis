@@ -1,8 +1,19 @@
+
+# TODO: working on generating data from primus
+# -> continue with turning mashcima annotations to images
+
+from mashcima.primus_adapter import load_primus_as_mashcima_annotations
+print(load_primus_as_mashcima_annotations(100))
+exit()
+
+
+
 import numpy as np
 from mashcima import Mashcima
 import matplotlib.pyplot as plt
 from mashcima.Canvas import Canvas
 import random
+from mashcima.annotation_to_image import annotation_to_canvas
 from mashcima.generate import *
 
 
@@ -122,7 +133,7 @@ def joined_slurs(canvas):
     canvas.add_slur(a, d)
 
 
-def staff_begining_slur(canvas):
+def staff_beginning_slur(canvas):
     canvas.add_quarter_rest()
     a = canvas.add_invisible_barline()
     b = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
@@ -138,9 +149,9 @@ def bar_lines(canvas):
         canvas.add_bar_line()
 
 
-########
-# MAIN #
-########
+########################################
+# Inspections of canvas high-level API #
+########################################
 
 # inspect(whole_notes, 1)
 # inspect(half_notes, 1)
@@ -160,8 +171,20 @@ def bar_lines(canvas):
 # TODO: staccato -> update slur attachment points
 # TODO: tenuto ? -> update slur attachment points
 # inspect(lambda c: c.add_beamed_group(), 10) # TODO all sorts of beamed groups
-inspect(simple_slurs, 1)
-inspect(joined_slurs, 1)
-inspect(staff_begining_slur, 1)
+# inspect(simple_slurs, 1)
+# inspect(joined_slurs, 1)
+# inspect(staff_beginning_slur, 1)
 
 # TODO: fermata
+
+
+#################################################
+# Inspections of annotation to image conversion #
+#################################################
+
+#inspect(lambda c: annotation_to_canvas(c, "w0 w4 w-6"), 1)
+#inspect(lambda c: annotation_to_canvas(c, "h0 h4 h-6"), 1)
+
+#inspect(lambda c: annotation_to_canvas(c, "clef.C4 #0 h0 ("), 1)
+
+

@@ -46,7 +46,9 @@ class Canvas:
         # TODO: dummy helper
         return random.randint(-PITCH_RANGE, PITCH_RANGE)
 
-    def _generate_accidental(self):
+    def _generate_accidental(self, accidental: str):
+        assert accidental in ["#", "b", "N"]
+        # TODO: generate properly
         if fork("Has accidental", 0.3):
             return random.choice(self.mc.ACCIDENTALS)
         return None
@@ -84,20 +86,20 @@ class Canvas:
     def add_quarter_rest(self) -> CanvasItem:
         return self.append(random.choice(self.mc.QUARTER_RESTS))
 
-    def add_half_note(self) -> CanvasItem:
-        pos = self._generate_note_position()
+    def add_half_note(self, pitch: int = None, accidental: str = None) -> CanvasItem:
+        pos = self._generate_note_position() if pitch is None else pitch
         return self.append(
             random.choice(self.mc.HALF_NOTES),
             note_position=pos,
             flip=pos > 0,
-            accidental=self._generate_accidental()
+            #accidental=self._generate_accidental()
         )
 
-    def add_whole_note(self) -> CanvasItem:
+    def add_whole_note(self, pitch: int = None, accidental: str = None) -> CanvasItem:
         return self.append(
             random.choice(self.mc.WHOLE_NOTES),
-            note_position=self._generate_note_position(),
-            accidental=self._generate_accidental()
+            note_position=self._generate_note_position() if pitch is None else pitch,
+            #accidental=self._generate_accidental()
         )
 
     def add_bar_line(self) -> CanvasItem:

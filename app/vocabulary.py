@@ -1,8 +1,8 @@
 from typing import List
 
 
-LOWEST_POSITION = -8  # second additional line below
-HIGHEST_POSITION = 8  # second additional line above
+LOWEST_POSITION = -8  # second ledger line below
+HIGHEST_POSITION = 8  # second ledger line above
 
 # all possible positions
 POSITIONS = [str(pos) for pos in reversed(range(LOWEST_POSITION, HIGHEST_POSITION + 1))]
@@ -51,14 +51,14 @@ SYMBOLIC = [
     "wr",  # whole rest
     "hr",  # half rest
     "qr",  # quarter rest
-    "er",  # eight rest
+    "er",  # eighth rest
     "sr",  # sixteenth rest
     "tr",  # thirty-two rest
 
     "w{position}",  # whole note
     "h{position}",  # half note
     "q{position}",  # quarter note
-    "e{position}",  # eight note
+    "e{position}",  # eighth note
     "s{position}",  # sixteenth note
     "t{position}",  # thirty-second note
 
@@ -69,6 +69,10 @@ SYMBOLIC = [
     "=s{position}",  # beamed left sixteenth note
     "=s={position}",  # beamed both sixteenth note
     "s={position}",  # beamed left sixteenth note
+
+    "=t{position}",  # beamed left thirty-second note
+    "=t={position}",  # beamed both thirty-second note
+    "t={position}",  # beamed left thirty-second note
 ]
 
 # build actual vocabulary
