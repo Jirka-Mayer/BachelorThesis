@@ -4,9 +4,6 @@ import random
 
 
 class QuarterNote(StemNote):
-    def __init__(self, pitch: int, flipped: bool):
-        super().__init__(pitch, flipped)
-
     def get_annotation_tokens(self):
         return ["q" + str(self.pitch)]
 

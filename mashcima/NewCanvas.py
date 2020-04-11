@@ -2,6 +2,8 @@ import numpy as np
 from typing import List, Dict
 from mashcima import Mashcima
 from mashcima.canvas_items.CanvasItem import CanvasItem
+from mashcima.canvas_items.SlurableItem import SlurableItem
+from mashcima.canvas_items.InvisibleSlurEnd import InvisibleSlurEnd
 from mashcima.Accidental import Accidental
 from mashcima.Sprite import Sprite
 from mashcima.Slur import Slur
@@ -16,8 +18,16 @@ class Canvas:
     def __init__(self):
         # items on the canvas
         self.items: List[CanvasItem] = []
+
+        # slurs between items
+        self.slurs: List[Slur] = []
+
+        # was the construction finished or not
+        self._construction_finished = False
         
     def add(self, item: CanvasItem):
+        if self._construction_finished:
+            raise Exception("Cannot add item, construction has been finished")
         self.items.append(item)
 
     def get_annotations(self) -> List[str]:
@@ -26,7 +36,56 @@ class Canvas:
             out += item.get_annotation_tokens()
         return out
 
+    def finish_construction(self):
+        """Creates additional data structures around canvas items"""
+        if self._construction_finished:
+            raise Exception("Construction has been already finished")
+
+        self._create_slurs()
+
+    def _create_slurs(self):
+        slur_stack: List[SlurableItem] = []
+
+        def add_slur(start: SlurableItem, end: SlurableItem):
+            self.slurs.append(Slur(start, end))
+
+        def create_invisible_slur_end(at_index: int, start_here: bool) -> SlurableItem:
+            ise = InvisibleSlurEnd(
+                slur_end=not start_here,
+                slur_start=start_here
+            )
+            self.items.insert(at_index, ise)
+            return ise
+
+        # iterate over slurable items
+        i = 0
+        while i < len(self.items):
+            item = self.items[i]
+            if isinstance(item, SlurableItem):
+
+                if item.slur_end:
+                    if len(slur_stack) == 0:  # slur ending out of nowhere
+                        slur_stack.append(create_invisible_slur_end(i, True))
+                        i += 1
+                    add_slur(slur_stack.pop(), item)
+
+                if item.slur_start:
+                    slur_stack.append(item)
+
+                pass  # here do something
+
+            i += 1
+
+        # slurs not ending anywhere
+        while len(slur_stack) != 0:
+            start = slur_stack.pop()
+            end = create_invisible_slur_end(self.items.index(start) + 1, False)
+            add_slur(start, end)
+
     def render(self, mc: Mashcima):
+        if not self._construction_finished:
+            self.finish_construction()
+
         for item in self.items:
             item.select_sprites(mc)
 
@@ -41,9 +100,8 @@ class Canvas:
         print("TODO: render beams")
         #self._render_beams()
 
-        print("TODO: render slurs")
-        # for s in self.slurs:
-        #     s.render(self.img)
+        for s in self.slurs:
+            s.render(img)
 
         # crop the result
         img = img[:, 0:head]

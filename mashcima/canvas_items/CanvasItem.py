@@ -7,7 +7,7 @@ from mashcima.debug import draw_cross
 
 
 class CanvasItem:
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.sprites: SpriteGroup = SpriteGroup()
 
         self.DEBUG_RENDER = True
@@ -19,7 +19,14 @@ class CanvasItem:
         self.sprites = SpriteGroup()  # clear the sprite list
 
     def place_sprites(self):
+        self.contribute_to_padding()
         self.sprites.recalculate_bounding_box()
+
+    def contribute_to_padding(self):
+        self.sprites.padding_bottom = 0
+        self.sprites.padding_top = 0
+        self.sprites.padding_left = 0
+        self.sprites.padding_right = 0
 
     def place_item(self, head: int, pitch_positions: Dict[int, int]) -> int:
         self.sprites.position_x = head - self.sprites.left

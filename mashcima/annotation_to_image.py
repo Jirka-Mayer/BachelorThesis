@@ -1,7 +1,13 @@
 import numpy as np
 from typing import List
 from mashcima import Mashcima
-from mashcima.Canvas import Canvas
+from mashcima.NewCanvas import Canvas
+
+from mashcima.canvas_items.Barline import Barline
+from mashcima.canvas_items.WholeNote import WholeNote
+from mashcima.canvas_items.HalfNote import HalfNote
+from mashcima.canvas_items.QuarterNote import QuarterNote
+from mashcima.canvas_items.QuarterRest import QuarterRest
 
 
 def _to_generic(annotation: str):
@@ -77,14 +83,14 @@ class Item:
 
     def print_to_canvas(self, canvas: Canvas):
         if self.generic_annotation == "|":
-            canvas.add_bar_line(
+            canvas.add(Barline(
                 slur_start=self.slur_start,
                 slur_end=self.slur_end
-            )
+            ))
         elif self.generic_annotation == "qr":
-            canvas.add_quarter_rest()
+            canvas.add(QuarterRest())
         elif self.generic_annotation == "sr":
-            canvas.add_quarter_rest()
+            canvas.add(QuarterRest())
             print("TODO: print sr instead of qr")
         else:
             raise Exception("Cannot print to canvas: " + self.annotation)
@@ -116,17 +122,20 @@ class NoteItem(Item):
         super().handle_attached_symbol_after(symbol)
 
     def print_to_canvas(self, canvas: Canvas):
+        constructor_kwargs = {
+            "pitch": self.pitch,
+            "flipped": self.pitch > 0,
+            "accidental": self.accidental,
+            "slur_start": self.slur_start,
+            "slur_end": self.slur_end
+        }
+
         if self.generic_annotation == "w":
-            canvas.add_whole_note(pitch=self.pitch, accidental=self.accidental)
+            canvas.add(WholeNote(**constructor_kwargs))
         elif self.generic_annotation == "h":
-            canvas.add_half_note(pitch=self.pitch, accidental=self.accidental)
+            canvas.add(HalfNote(**constructor_kwargs))
         elif self.generic_annotation == "q":
-            canvas.add_quarter_note(
-                pitch=self.pitch,
-                accidental=self.accidental,
-                slur_start=self.slur_start,
-                slur_end=self.slur_end
-            )
+            canvas.add(QuarterNote(**constructor_kwargs))
         elif self.generic_annotation in ["e=", "=e", "=e="]:
             canvas.add_quarter_note(
                 pitch=self.pitch,
@@ -181,11 +190,11 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
 
 def annotation_to_image(mc: Mashcima, annotation: str) -> np.ndarray:
     """Generates an image from an annotation string"""
-    canvas = Canvas(mc)
+    canvas = Canvas()
 
     annotation_to_canvas(canvas, annotation)
 
-    img = canvas.render()
+    img = canvas.render(mc)
 
     # glue the annotations into a string and verify equality
     generated_annotation = " ".join(canvas.get_annotations())

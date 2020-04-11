@@ -4,9 +4,6 @@ import random
 
 
 class HalfNote(StemNote):
-    def __init__(self, pitch: int, flipped: bool):
-        super().__init__(pitch, flipped)
-
     def get_annotation_tokens(self):
         return ["h" + str(self.pitch)]
 

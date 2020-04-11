@@ -1,11 +1,11 @@
 import numpy as np
 from mashcima import Mashcima
 import matplotlib.pyplot as plt
-from mashcima.Canvas import Canvas
+from mashcima.NewCanvas import Canvas
 import random
 from mashcima.annotation_to_image import annotation_to_canvas
 from mashcima.primus_adapter import load_primus_as_mashcima_annotations
-from mashcima.generate import *
+# from mashcima.generate import *
 
 
 mc = Mashcima([
@@ -17,11 +17,11 @@ mc = Mashcima([
 
 def inspect(generator, samples=10):
     for _ in range(samples):
-        canvas = Canvas(mc)
+        canvas = Canvas()
 
         generator(canvas)
 
-        img = canvas.render()
+        img = canvas.render(mc)
         annotation = " ".join(canvas.get_annotations())
 
         print(annotation)
@@ -69,7 +69,7 @@ def simple_slurs(canvas):
     annotation_to_canvas(
         canvas,
         " q-4 ( ) q-4 " + " q4 ( ) q4 " + " q-8 ( ) q-4 " + " q-4 ( ) q-8 " +
-        " q-4 ( ) q4 " + " q4 ( ) q-4 " + " q4 ( ) | " + " | ( ) q-4"
+        " q-4 ( ) q4 " + " q4 ( ) q-4 " + " q4 ( ) | " + " qr " + " | ( ) q-4"
     )
 
 
@@ -81,10 +81,14 @@ def joined_slurs(canvas):
     )
 
 
+def nested_slurs(canvas):
+    annotation_to_canvas(canvas, "q-4 ( q-2 ( ) q-2 ) q-4")
+
+
 def staff_beginning_slur(canvas):
     annotation_to_canvas(
         canvas,
-        "qr ) q-2"
+        "qr ) q-2 q2 ( qr qr"
     )
 
 
@@ -92,7 +96,7 @@ def staff_beginning_slur(canvas):
 # Inspections of canvas high-level API #
 ########################################
 
-inspect(whole_notes, 1)
+# inspect(whole_notes, 1)
 # inspect(half_notes, 1)
 # inspect(quarter_notes, 1)
 # TODO: eight notes (with flag)
@@ -110,21 +114,7 @@ inspect(whole_notes, 1)
 # inspect(lambda c: c.add_beamed_group(), 10) # TODO all sorts of beamed groups
 # inspect(simple_slurs, 1)
 # inspect(joined_slurs, 1)
+# inspect(nested_slurs, 1)
 # inspect(staff_beginning_slur, 1)
 
 # TODO: fermata
-
-
-#################################################
-# Inspections of annotation to image conversion #
-#################################################
-
-#inspect(lambda c: annotation_to_canvas(c, "w0 w4 w-6"), 1)
-#inspect(lambda c: annotation_to_canvas(c, "h0 h4 h-6"), 1)
-
-#inspect(lambda c: annotation_to_canvas(c, "clef.C4 #0 h0 ("), 1)
-
-# annotataions = load_primus_as_mashcima_annotations(10)
-# for a in annotataions:
-#     print(annotataions)
-#     inspect(lambda c: annotation_to_canvas(c, a), 1)

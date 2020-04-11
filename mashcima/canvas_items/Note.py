@@ -1,14 +1,14 @@
 from mashcima import Mashcima
-from mashcima.canvas_items.CanvasItem import CanvasItem
+from mashcima.canvas_items.SlurableItem import SlurableItem
 from mashcima.Sprite import Sprite
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import numpy as np
 import random
 
 
-class Note(CanvasItem):
-    def __init__(self, pitch: int):
-        super().__init__()
+class Note(SlurableItem):
+    def __init__(self, pitch: int, **kwargs):
+        super().__init__(**kwargs)
 
         # note pitch
         self.pitch = pitch
@@ -60,3 +60,39 @@ class Note(CanvasItem):
             if i % 2 == 1:
                 continue  # odd positions are holes, not lines
             yield i * negate
+
+    ##########################
+    # Slur attachment points #
+    ##########################
+
+    def get_slur_start_attachment_point(self, slur) -> Tuple[int, int]:
+        if slur.tail_to_tail:
+            return self._get_slur_after_note_attachment_point()
+        else:
+            return self._get_slur_below_note_attachment_point(slur)
+
+    def get_slur_end_attachment_point(self, slur) -> Tuple[int, int]:
+        if slur.tail_to_tail:
+            return self._get_slur_before_note_attachment_point()
+        else:
+            return self._get_slur_below_note_attachment_point(slur)
+
+    def _get_slur_after_note_attachment_point(self):
+        return (
+            self.sprites.position_x + (self.sprites.sprite("notehead").width // 2 + 8),
+            self.sprites.position_y
+        )
+
+    def _get_slur_before_note_attachment_point(self):
+        return (
+            self.sprites.position_x - (self.sprites.sprite("notehead").width // 2 + 8),
+            self.sprites.position_y
+        )
+
+    def _get_slur_below_note_attachment_point(self, slur):
+        """Below or above if the note is flipped"""
+        sign = (-1 if slur.flipped else 1)
+        return (
+            self.sprites.position_x,
+            self.sprites.position_y + sign * (self.sprites.sprite("notehead").height // 2 + 8)
+        )
