@@ -20,6 +20,22 @@ class Sprite:
     def height(self):
         return self.mask.shape[0]
 
+    @property
+    def left(self):
+        return self.x
+
+    @property
+    def top(self):
+        return self.y
+
+    @property
+    def right(self):
+        return self.x + self.width
+
+    @property
+    def bottom(self):
+        return self.y + self.height
+
     def flip(self):
         self.x = -self.x - self.mask.shape[1]
         self.y = -self.y - self.mask.shape[0]

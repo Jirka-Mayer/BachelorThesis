@@ -92,7 +92,7 @@ def staff_beginning_slur(canvas):
 # Inspections of canvas high-level API #
 ########################################
 
-# inspect(whole_notes, 1)
+inspect(whole_notes, 1)
 # inspect(half_notes, 1)
 # inspect(quarter_notes, 1)
 # TODO: eight notes (with flag)
@@ -126,4 +126,5 @@ def staff_beginning_slur(canvas):
 
 # annotataions = load_primus_as_mashcima_annotations(10)
 # for a in annotataions:
+#     print(annotataions)
 #     inspect(lambda c: annotation_to_canvas(c, a), 1)
