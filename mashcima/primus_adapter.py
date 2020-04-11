@@ -33,7 +33,7 @@ def load_primus_as_mashcima_annotations(take=None):
     print("Taking: ", take)
 
     mashcima_annotations = []
-    for path in incipit_paths[:take]:
+    for path in incipit_paths:
         with open(path) as f:
             primus_annotation = f.readline()
             converted = convert_primus_annotation_to_mashcima_annotation(
@@ -43,6 +43,8 @@ def load_primus_as_mashcima_annotations(take=None):
                 ignored_count += 1
                 continue
             mashcima_annotations.append(converted)
+        if len(mashcima_annotations) >= take:
+            break
 
     print("Ignored incipits: ", ignored_count)
     print("Loaded incipits: ", len(mashcima_annotations))

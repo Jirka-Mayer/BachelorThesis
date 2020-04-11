@@ -1,19 +1,10 @@
-
-# TODO: working on generating data from primus
-# -> continue with turning mashcima annotations to images
-
-from mashcima.primus_adapter import load_primus_as_mashcima_annotations
-print(load_primus_as_mashcima_annotations(100))
-exit()
-
-
-
 import numpy as np
 from mashcima import Mashcima
 import matplotlib.pyplot as plt
 from mashcima.Canvas import Canvas
 import random
 from mashcima.annotation_to_image import annotation_to_canvas
+from mashcima.primus_adapter import load_primus_as_mashcima_annotations
 from mashcima.generate import *
 
 
@@ -44,100 +35,22 @@ def inspect(generator, samples=10):
 
 
 def whole_notes(canvas):
-    for i in range(-8, 9):
-        canvas.append(random.choice(mc.WHOLE_NOTES), i, flip=False)
+    annotation_to_canvas(canvas, " ".join(["w" + str(i) for i in range(-8, 9)]))
 
 
 def half_notes(canvas):
-    for i in range(-8, 9):
-        canvas.append(random.choice(mc.HALF_NOTES), i, flip=False)
-    for i in range(-8, 9):
-        canvas.append(random.choice(mc.HALF_NOTES), i, flip=True)
+    annotation_to_canvas(canvas, " ".join(["h" + str(i) for i in range(-8, 9)]))
+    annotation_to_canvas(canvas, " ".join(["h0" for _ in range(6)]))
 
 
 def quarter_notes(canvas):
-    for i in range(-8, 9):
-        canvas.append(random.choice(mc.QUARTER_NOTES), i, flip=False)
-    for i in range(-8, 9):
-        canvas.append(random.choice(mc.QUARTER_NOTES), i, flip=True)
-
-
-def high_level_quarter_notes(canvas):
-    for i in range(20):
-        canvas.add_quarter_note()
+    annotation_to_canvas(canvas, " ".join(["q" + str(i) for i in range(-8, 9)]))
+    annotation_to_canvas(canvas, " ".join(["q0" for _ in range(6)]))
 
 
 def rests(canvas):
-    for _ in range(4):
-        canvas.add_quarter_rest()
+    annotation_to_canvas(canvas, " ".join(["qr" for _ in range(6)]))
     # TODO: half, whole, eight, thirty-two rests
-
-
-def accidentals(canvas):
-    for _ in range(10):
-        canvas.append(
-            random.choice(mc.QUARTER_NOTES),
-            0,
-            flip=False,
-            accidental=random.choice(mc.ACCIDENTALS)
-        )
-
-
-def simple_slurs(canvas):
-    a = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=False)
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=False)
-    canvas.add_slur(a, b)
-
-    a = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=True)
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=True)
-    canvas.add_slur(a, b)
-
-    a = canvas.append(random.choice(mc.QUARTER_NOTES), -4, flip=False)
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=False)
-    canvas.add_slur(a, b)
-
-    a = canvas.append(random.choice(mc.QUARTER_NOTES), 4, flip=False)
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), 0, flip=False)
-    canvas.add_slur(a, b)
-
-    a = canvas.append(random.choice(mc.QUARTER_NOTES), -4, flip=False)
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), 4, flip=True)
-    canvas.add_slur(a, b)
-
-    a = canvas.append(random.choice(mc.QUARTER_NOTES), 4, flip=True)
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), -4, flip=False)
-    canvas.add_slur(a, b)
-
-    a = canvas.append(random.choice(mc.QUARTER_NOTES), 4, flip=True)
-    b = canvas.add_bar_line()
-    canvas.add_slur(a, b)
-
-    a = canvas.add_bar_line()
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), -4, flip=False)
-    canvas.add_slur(a, b)
-
-
-def joined_slurs(canvas):
-    a = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
-    c = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
-    d = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
-    canvas.add_slur(a, b)
-    canvas.add_slur(b, c)
-    canvas.add_slur(c, d)
-
-    a = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
-    c = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
-    d = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
-    canvas.add_slur(a, d)
-
-
-def staff_beginning_slur(canvas):
-    canvas.add_quarter_rest()
-    a = canvas.add_invisible_barline()
-    b = canvas.append(random.choice(mc.QUARTER_NOTES), -2, flip=False)
-    canvas.add_slur(a, b)
 
 
 def bar_lines(canvas):
@@ -145,8 +58,34 @@ def bar_lines(canvas):
     # TODO repeat bar lines
     # TODO double bar lines
     # TODO thick bar lines
-    for _ in range(20):
-        canvas.add_bar_line()
+    annotation_to_canvas(canvas, " ".join(["|" for _ in range(20)]))
+
+
+def accidentals(canvas):
+    annotation_to_canvas(canvas, "#-4 q-4 b-2 q-2 N0 q0 | #-4 q-4 b-2 q-2 N0 q0")
+
+
+def simple_slurs(canvas):
+    annotation_to_canvas(
+        canvas,
+        " q-4 ( ) q-4 " + " q4 ( ) q4 " + " q-8 ( ) q-4 " + " q-4 ( ) q-8 " +
+        " q-4 ( ) q4 " + " q4 ( ) q-4 " + " q4 ( ) | " + " | ( ) q-4"
+    )
+
+
+def joined_slurs(canvas):
+    annotation_to_canvas(
+        canvas,
+        "q-2 ( ) q-2 ( ) q-2 ( ) q-2 " +
+        " q-2 ( q-2 q-2 ) q-2"
+    )
+
+
+def staff_beginning_slur(canvas):
+    annotation_to_canvas(
+        canvas,
+        "qr ) q-2"
+    )
 
 
 ########################################
@@ -156,7 +95,6 @@ def bar_lines(canvas):
 # inspect(whole_notes, 1)
 # inspect(half_notes, 1)
 # inspect(quarter_notes, 1)
-# inspect(high_level_quarter_notes, 1)
 # TODO: eight notes (with flag)
 # TODO: sixteenth notes (with flag)
 # TODO: thirty-second notes (with flag)
@@ -169,7 +107,6 @@ def bar_lines(canvas):
 # TODO: note duration dots (one, two) -> update slur attachment points
 # TODO: rest duration dots (one, two) -> update slur attachment points
 # TODO: staccato -> update slur attachment points
-# TODO: tenuto ? -> update slur attachment points
 # inspect(lambda c: c.add_beamed_group(), 10) # TODO all sorts of beamed groups
 # inspect(simple_slurs, 1)
 # inspect(joined_slurs, 1)
@@ -187,4 +124,6 @@ def bar_lines(canvas):
 
 #inspect(lambda c: annotation_to_canvas(c, "clef.C4 #0 h0 ("), 1)
 
-
+# annotataions = load_primus_as_mashcima_annotations(10)
+# for a in annotataions:
+#     inspect(lambda c: annotation_to_canvas(c, a), 1)

@@ -4,8 +4,8 @@ from mashcima import Mashcima
 from mashcima.Canvas import Canvas
 
 
-def _to_generic(piece: str):
-    return piece.rstrip("-0123456789")
+def _to_generic(annotation: str):
+    return annotation.rstrip("-0123456789")
 
 
 def _is_attachment(annotation: str):
@@ -15,12 +15,20 @@ def _is_attachment(annotation: str):
 
 def _is_note(annotation: str):
     generic = _to_generic(annotation)
-    return generic in ["w", "h", "q", "e", "t"]
+    return generic in [
+        "w", "h", "q", "e", "s", "t",
+        "=e", "=e=", "e=",
+        "=s", "=s=", "s=",
+        "=t", "=t=", "t=",
+    ]
 
 
 def _is_simple_item(annotation: str):
     generic = _to_generic(annotation)
-    return generic in ["wr", "hr", "qr", "er", "tr"]
+    return generic in [
+        "|",
+        "wr", "hr", "qr", "er", "sr", "tr"
+    ]
 
 
 def _matches(annotation: str, pattern: str):
@@ -29,9 +37,9 @@ def _matches(annotation: str, pattern: str):
     return generic == pat
 
 
-def _get_pitch(piece: str) -> int:
-    generic = piece.rstrip("-0123456789")
-    return int(piece[len(generic):])
+def _get_pitch(annotation: str) -> int:
+    generic = annotation.rstrip("-0123456789")
+    return int(annotation[len(generic):])
 
 
 class Item:
@@ -40,27 +48,46 @@ class Item:
         self.generic_annotation = _to_generic(annotation)
         self.index = index
 
+        self.slur_end = False
+        self.slur_start = False
+
     def __repr__(self):
         return "Item(" + self.annotation + ")"
 
-    def load_attachments(self, pieces: List[str]):
+    def load_attachments(self, tokens: List[str]):
         # attached symbols before
         i = self.index - 1
-        while i >= 0 and _is_attachment(pieces[i]):
-            self.handle_attached_symbol_before(pieces[i])
+        while i >= 0 and _is_attachment(tokens[i]):
+            self.handle_attached_symbol_before(tokens[i])
             i -= 1
 
         # attached symbols after
         i = self.index + 1
-        while i < len(pieces) and _is_attachment(pieces[i]):
-            self.handle_attached_symbol_before(pieces[i])
+        while i < len(tokens) and _is_attachment(tokens[i]):
+            self.handle_attached_symbol_after(tokens[i])
             i += 1
 
     def handle_attached_symbol_before(self, symbol: str):
-        pass
+        if _matches(symbol, ")"):
+            self.slur_end = True
 
     def handle_attached_symbol_after(self, symbol: str):
-        pass
+        if _matches(symbol, "("):
+            self.slur_start = True
+
+    def print_to_canvas(self, canvas: Canvas):
+        if self.generic_annotation == "|":
+            canvas.add_bar_line(
+                slur_start=self.slur_start,
+                slur_end=self.slur_end
+            )
+        elif self.generic_annotation == "qr":
+            canvas.add_quarter_rest()
+        elif self.generic_annotation == "sr":
+            canvas.add_quarter_rest()
+            print("TODO: print sr instead of qr")
+        else:
+            raise Exception("Cannot print to canvas: " + self.annotation)
 
 
 class NoteItem(Item):
@@ -70,8 +97,6 @@ class NoteItem(Item):
         self.pitch = _get_pitch(annotation)
 
         self.accidental = None
-        self.slur_end = False
-        self.slur_start = False
 
     def __repr__(self):
         return "NoteItem(accidental=%s, slur_end=%s, slur_start=%s, %s)" % (
@@ -82,15 +107,39 @@ class NoteItem(Item):
         )
 
     def handle_attached_symbol_before(self, symbol: str):
+        super().handle_attached_symbol_before(symbol)
         for acc in ["#", "b", "N"]:
             if _matches(symbol, acc + "{p}") and _get_pitch(symbol) == self.pitch:
                 self.accidental = acc
-        if _matches(symbol, ")"):
-            self.slur_end = True
 
     def handle_attached_symbol_after(self, symbol: str):
-        if _matches(symbol, "("):
-            self.slur_start = True
+        super().handle_attached_symbol_after(symbol)
+
+    def print_to_canvas(self, canvas: Canvas):
+        if self.generic_annotation == "w":
+            canvas.add_whole_note(pitch=self.pitch, accidental=self.accidental)
+        elif self.generic_annotation == "h":
+            canvas.add_half_note(pitch=self.pitch, accidental=self.accidental)
+        elif self.generic_annotation == "q":
+            canvas.add_quarter_note(
+                pitch=self.pitch,
+                accidental=self.accidental,
+                slur_start=self.slur_start,
+                slur_end=self.slur_end
+            )
+        elif self.generic_annotation in ["e=", "=e", "=e="]:
+            canvas.add_quarter_note(
+                pitch=self.pitch,
+                accidental=self.accidental,
+                slur_start=self.slur_start,
+                slur_end=self.slur_end
+            )
+            print("TODO: implement beamed notes")
+        elif self.generic_annotation in ["s=", "=s", "=s="]:
+            canvas.add_quarter_note(pitch=self.pitch, accidental=self.accidental)
+            print("TODO: implement beamed notes")
+        else:
+            raise Exception("Cannot print to canvas: " + self.annotation)
 
 
 class Parser:
@@ -98,40 +147,30 @@ class Parser:
         # canvas to draw on
         self.canvas = canvas
 
-        # annotation pieces
-        self.pieces = annotation.split()
+        # annotation tokens
+        self.annotation = annotation
+        self.tokens = annotation.split()
 
         # individual "canvas" items
         self.items: List[Item] = []
 
     def run(self):
-        for i, p in enumerate(self.pieces):
+        """Main method that appends items to canvas based on the annotation"""
+        for i, p in enumerate(self.tokens):
             if _is_note(p):
                 self.items.append(NoteItem(p, i))
             if _is_simple_item(p):
                 self.items.append(Item(p, i))
 
         for i in self.items:
-            i.load_attachments(self.pieces)
+            i.load_attachments(self.tokens)
+
+        print(self.annotation)
 
         print(self.items)
-        exit()
 
-        # while len(self.pieces) > 0:
-        #     self._parse_symbol()
-
-    def _parse_symbol(self):
-        if _matches(self.pieces[0], "w{p}"):
-            pitch = _get_pitch(self.pieces[0])
-            self.canvas.add_whole_note(pitch=pitch)
-            del self.pieces[0]
-            return
-        if _matches(self.pieces[0], "h{p}"):
-            pitch = _get_pitch(self.pieces[0])
-            self.canvas.add_half_note(pitch=pitch)
-            del self.pieces[0]
-            return
-        raise Exception("Unknown annotation: " + " ".join(self.pieces))
+        for i in self.items:
+            i.print_to_canvas(self.canvas)
 
 
 def annotation_to_canvas(canvas: Canvas, annotation: str):

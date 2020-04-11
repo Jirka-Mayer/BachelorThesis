@@ -232,3 +232,15 @@ nota na řádku má legáto z předchozího řádku, tak tam není žádná takt
 mít žádný sprite a `generic_annotation` bude mít `None`. Tím pádem se ani
 nevykreslí, ani se pro ní nevygeneruje anotace. A legáto tím pádem nepoleze
 až na začátek řádku do kolíče a předznamenání.
+
+
+## 2020-04-09
+
+Načítání anotací z datasetu Primus.
+
+Základ generování obrázku z mashcima anotace.
+
+
+## 2020-04-11
+
+Generování obrázku z mashcima anotace.

@@ -38,6 +38,9 @@ class Canvas:
         # item placing head (x coordinate)
         self.head = 0
 
+        # canvas item from which a slur is being dragged (when appending)
+        self.dragging_slur_from = None
+
     ##################
     # High level API #
     ##################
@@ -47,11 +50,12 @@ class Canvas:
         return random.randint(-PITCH_RANGE, PITCH_RANGE)
 
     def _generate_accidental(self, accidental: str):
+        if accidental is None:
+            return None
         assert accidental in ["#", "b", "N"]
-        # TODO: generate properly
-        if fork("Has accidental", 0.3):
-            return random.choice(self.mc.ACCIDENTALS)
-        return None
+        return random.choice(list(
+            filter(lambda a: a.annotation == accidental, self.mc.ACCIDENTALS)
+        ))
 
     def add_beamed_group(
             self,
@@ -74,13 +78,42 @@ class Canvas:
                 accidental=self._generate_accidental()
             )
 
-    def add_quarter_note(self) -> CanvasItem:
-        pos = self._generate_note_position()
+    def add_beamed_note(
+            self,
+            pitch: int,
+            beam_count: int,
+            beam_left: bool,
+            beam_right: bool,
+            slur_end: bool = False,
+            slur_start: bool = False,
+            accidental: str = None
+    ):
+        self.append(
+            random.choice(self.mc.QUARTER_NOTES),
+            note_position=pitch,
+            flip=pitch > 0,
+            beams_left=beam_count if beam_left else 0,
+            beams_right=beam_count if beam_right else 0,
+            accidental=self._generate_accidental(accidental),
+            slur_start=slur_start,
+            slur_end=slur_end
+        )
+
+    def add_quarter_note(
+            self,
+            pitch: int = None,
+            accidental: str = None,
+            slur_end: bool = False,
+            slur_start: bool = False,
+    ) -> CanvasItem:
+        pos = self._generate_note_position() if pitch is None else pitch
         return self.append(
             random.choice(self.mc.QUARTER_NOTES),
             note_position=pos,
             flip=pos > 0,
-            accidental=self._generate_accidental()
+            accidental=self._generate_accidental(accidental=accidental),
+            slur_start=slur_start,
+            slur_end=slur_end
         )
 
     def add_quarter_rest(self) -> CanvasItem:
@@ -92,18 +125,22 @@ class Canvas:
             random.choice(self.mc.HALF_NOTES),
             note_position=pos,
             flip=pos > 0,
-            #accidental=self._generate_accidental()
+            accidental=self._generate_accidental(accidental=accidental)
         )
 
     def add_whole_note(self, pitch: int = None, accidental: str = None) -> CanvasItem:
         return self.append(
             random.choice(self.mc.WHOLE_NOTES),
             note_position=self._generate_note_position() if pitch is None else pitch,
-            #accidental=self._generate_accidental()
+            accidental=self._generate_accidental(accidental=accidental)
         )
 
-    def add_bar_line(self) -> CanvasItem:
-        return self.append(random.choice(self.mc.BAR_LINES))
+    def add_bar_line(self, slur_start=False, slur_end=False) -> CanvasItem:
+        return self.append(
+            random.choice(self.mc.BAR_LINES),
+            slur_start=slur_start,
+            slur_end=slur_end
+        )
 
     def add_invisible_barline(self) -> CanvasItem:
         item = self.add_bar_line()
@@ -122,9 +159,14 @@ class Canvas:
             beams_left: int = 0,
             beams_right: int = 0,
             accidental: Accidental = None,
-            duration_dot: Sprite = None
+            duration_dot: Sprite = None,
+            slur_end: bool = False,
+            slur_start: bool = False,
     ) -> CanvasItem:
         """Adds an item onto the canvas"""
+        if slur_end and self.dragging_slur_from is None:
+            self.dragging_slur_from = self.add_invisible_barline()
+
         cp: CanvasItem = copy.deepcopy(item)
         assert not cp.is_flipped
         if flip:
@@ -136,6 +178,14 @@ class Canvas:
         cp.beams_right = beams_right
         cp.accidental = copy.deepcopy(accidental)
         cp.duration_dot = copy.deepcopy(duration_dot)
+
+        if slur_end:
+            self.add_slur(self.dragging_slur_from, cp)
+            self.dragging_slur_from = None
+        if slur_start:
+            if self.dragging_slur_from is not None:
+                raise Exception("Opening slur when one is already being dragged")
+            self.dragging_slur_from = cp
 
         return cp
 
