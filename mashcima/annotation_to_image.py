@@ -1,191 +1,133 @@
 import numpy as np
-from typing import List
+from typing import Optional
 from mashcima import Mashcima
 from mashcima.NewCanvas import Canvas
-
 from mashcima.canvas_items.Barline import Barline
+from mashcima.canvas_items.QuarterRest import QuarterRest
 from mashcima.canvas_items.WholeNote import WholeNote
 from mashcima.canvas_items.HalfNote import HalfNote
 from mashcima.canvas_items.QuarterNote import QuarterNote
-from mashcima.canvas_items.QuarterRest import QuarterRest
+from mashcima.canvas_items.BeamedNote import BeamedNote
 
 
 def _to_generic(annotation: str):
     return annotation.rstrip("-0123456789")
 
 
-def _is_attachment(annotation: str):
-    generic = _to_generic(annotation)
-    return generic in ["(", ")", "#", "b", "N", ".", "*"]
-
-
-def _is_note(annotation: str):
-    generic = _to_generic(annotation)
-    return generic in [
-        "w", "h", "q", "e", "s", "t",
-        "=e", "=e=", "e=",
-        "=s", "=s=", "s=",
-        "=t", "=t=", "t=",
-    ]
-
-
-def _is_simple_item(annotation: str):
-    generic = _to_generic(annotation)
-    return generic in [
-        "|",
-        "wr", "hr", "qr", "er", "sr", "tr"
-    ]
-
-
-def _matches(annotation: str, pattern: str):
-    generic = _to_generic(annotation)
-    pat = pattern[:-3] if pattern.endswith("{p}") else pattern
-    return generic == pat
-
-
-def _get_pitch(annotation: str) -> int:
+def _get_pitch(annotation: str) -> Optional[int]:
     generic = annotation.rstrip("-0123456789")
-    return int(annotation[len(generic):])
+    pitch_string = annotation[len(generic):]
+    if pitch_string == "":
+        return None
+    return int(pitch_string)
 
 
-class Item:
-    def __init__(self, annotation: str, index: int):
-        self.annotation = annotation
-        self.generic_annotation = _to_generic(annotation)
-        self.index = index
+BEFORE_ATTACHMENTS = [
+    "fermata",
+    "#", "b", "N",
+    ")"
+]
+AFTER_ATTACHMENTS = [
+    "(", ".", "*", "**"
+]
+ITEM_CONSTRUCTORS = {
+    "|": Barline,
 
-        self.slur_end = False
-        self.slur_start = False
+    "w": WholeNote,
+    "h": HalfNote,
+    "q": QuarterNote,
 
-    def __repr__(self):
-        return "Item(" + self.annotation + ")"
+    "qr": QuarterRest,
 
-    def load_attachments(self, tokens: List[str]):
-        # attached symbols before
-        i = self.index - 1
-        while i >= 0 and _is_attachment(tokens[i]):
-            self.handle_attached_symbol_before(tokens[i])
-            i -= 1
+    "e=": lambda **kwargs: BeamedNote(beams=1, left_beamed=False, right_beamed=True, **kwargs),
+    "=e=": lambda **kwargs: BeamedNote(beams=1, left_beamed=True, right_beamed=True, **kwargs),
+    "=e": lambda **kwargs: BeamedNote(beams=1, left_beamed=True, right_beamed=False, **kwargs),
 
-        # attached symbols after
-        i = self.index + 1
-        while i < len(tokens) and _is_attachment(tokens[i]):
-            self.handle_attached_symbol_after(tokens[i])
-            i += 1
+    "s=": lambda **kwargs: BeamedNote(beams=2, left_beamed=False, right_beamed=True, **kwargs),
+    "=s=": lambda **kwargs: BeamedNote(beams=2, left_beamed=True, right_beamed=True, **kwargs),
+    "=s": lambda **kwargs: BeamedNote(beams=2, left_beamed=True, right_beamed=False, **kwargs),
 
-    def handle_attached_symbol_before(self, symbol: str):
-        if _matches(symbol, ")"):
-            self.slur_end = True
-
-    def handle_attached_symbol_after(self, symbol: str):
-        if _matches(symbol, "("):
-            self.slur_start = True
-
-    def print_to_canvas(self, canvas: Canvas):
-        if self.generic_annotation == "|":
-            canvas.add(Barline(
-                slur_start=self.slur_start,
-                slur_end=self.slur_end
-            ))
-        elif self.generic_annotation == "qr":
-            canvas.add(QuarterRest())
-        elif self.generic_annotation == "sr":
-            canvas.add(QuarterRest())
-            print("TODO: print sr instead of qr")
-        else:
-            raise Exception("Cannot print to canvas: " + self.annotation)
-
-
-class NoteItem(Item):
-    def __init__(self, annotation: str, index: int):
-        super().__init__(annotation, index)
-
-        self.pitch = _get_pitch(annotation)
-
-        self.accidental = None
-
-    def __repr__(self):
-        return "NoteItem(accidental=%s, slur_end=%s, slur_start=%s, %s)" % (
-            self.accidental,
-            self.slur_end,
-            self.slur_start,
-            self.annotation
-        )
-
-    def handle_attached_symbol_before(self, symbol: str):
-        super().handle_attached_symbol_before(symbol)
-        for acc in ["#", "b", "N"]:
-            if _matches(symbol, acc + "{p}") and _get_pitch(symbol) == self.pitch:
-                self.accidental = acc
-
-    def handle_attached_symbol_after(self, symbol: str):
-        super().handle_attached_symbol_after(symbol)
-
-    def print_to_canvas(self, canvas: Canvas):
-        constructor_kwargs = {
-            "pitch": self.pitch,
-            "flipped": self.pitch > 0,
-            "accidental": self.accidental,
-            "slur_start": self.slur_start,
-            "slur_end": self.slur_end
-        }
-
-        if self.generic_annotation == "w":
-            canvas.add(WholeNote(**constructor_kwargs))
-        elif self.generic_annotation == "h":
-            canvas.add(HalfNote(**constructor_kwargs))
-        elif self.generic_annotation == "q":
-            canvas.add(QuarterNote(**constructor_kwargs))
-        elif self.generic_annotation in ["e=", "=e", "=e="]:
-            canvas.add_quarter_note(
-                pitch=self.pitch,
-                accidental=self.accidental,
-                slur_start=self.slur_start,
-                slur_end=self.slur_end
-            )
-            print("TODO: implement beamed notes")
-        elif self.generic_annotation in ["s=", "=s", "=s="]:
-            canvas.add_quarter_note(pitch=self.pitch, accidental=self.accidental)
-            print("TODO: implement beamed notes")
-        else:
-            raise Exception("Cannot print to canvas: " + self.annotation)
-
-
-class Parser:
-    def __init__(self, canvas: Canvas, annotation: str):
-        # canvas to draw on
-        self.canvas = canvas
-
-        # annotation tokens
-        self.annotation = annotation
-        self.tokens = annotation.split()
-
-        # individual "canvas" items
-        self.items: List[Item] = []
-
-    def run(self):
-        """Main method that appends items to canvas based on the annotation"""
-        for i, p in enumerate(self.tokens):
-            if _is_note(p):
-                self.items.append(NoteItem(p, i))
-            if _is_simple_item(p):
-                self.items.append(Item(p, i))
-
-        for i in self.items:
-            i.load_attachments(self.tokens)
-
-        print(self.annotation)
-
-        print(self.items)
-
-        for i in self.items:
-            i.print_to_canvas(self.canvas)
+    "t=": lambda **kwargs: BeamedNote(beams=3, left_beamed=False, right_beamed=True, **kwargs),
+    "=t=": lambda **kwargs: BeamedNote(beams=3, left_beamed=True, right_beamed=True, **kwargs),
+    "=t": lambda **kwargs: BeamedNote(beams=3, left_beamed=True, right_beamed=False, **kwargs),
+}
+ACCIDENTALS = ["#", "b", "N"]
+NOTES = [
+    "w", "h", "q", "e", "s", "t",
+    "=e", "=e=", "e=",
+    "=s", "=s=", "s=",
+    "=t", "=t=", "t=",
+]
 
 
 def annotation_to_canvas(canvas: Canvas, annotation: str):
     """Appends symbols in annotation to the canvas"""
-    parser = Parser(canvas, annotation)
-    parser.run()
+    before_attachments = []
+    after_attachments = []
+    item = None
+
+    def _should_key_signature_be_created() -> bool:
+        accidentals = [b for b in before_attachments if _to_generic(b) in ACCIDENTALS]
+        if len(accidentals) > 1:
+            return True
+        if _to_generic(item) not in NOTES:
+            return True
+        if len(accidentals) == 0:  # no accidentals present
+            return False
+        # now we have one accidental in front of a note -> create key signature
+        # if this accidental has different pitch than the note
+        if _get_pitch(accidentals[0]) != _get_pitch(item):
+            return True
+        # otherwise it's just an accidental, no big deal
+        return False
+
+    def _create_key_signature():
+        accidentals = [b for b in before_attachments if _to_generic(b) in ACCIDENTALS]
+        # TODO: actually create a KeySignature canvas item
+        print("TODO: create key signature with: ", " ".join(accidentals))
+
+    def _get_accidental():
+        accidentals = [b for b in before_attachments if _to_generic(b) in ACCIDENTALS]
+        if len(accidentals) == 0:
+            return None
+        return _to_generic(accidentals[0])  # pull out the accidental
+
+    def _construct_item():
+        key_signature_was_created = False
+        if _should_key_signature_be_created():
+            _create_key_signature()
+            key_signature_was_created = True
+        canvas.add(ITEM_CONSTRUCTORS[_to_generic(item)](**{
+            "pitch": _get_pitch(item),
+            "accidental": _get_accidental() if not key_signature_was_created else None,
+            "slur_start": "(" in after_attachments,
+            "slur_end": ")" in before_attachments,
+        }))
+
+    for token in annotation.split():
+        generic_token = _to_generic(token)
+
+        # when we have an item found, we wait for another item or
+        # a before attachment to fire the item we have off and start
+        # tracking the next item
+        if item is not None:
+            if (generic_token in BEFORE_ATTACHMENTS)\
+                    or (generic_token not in AFTER_ATTACHMENTS):
+                _construct_item()
+                before_attachments = []
+                after_attachments = []
+                item = None
+
+        if generic_token in BEFORE_ATTACHMENTS:
+            before_attachments.append(token)
+        elif generic_token in AFTER_ATTACHMENTS:
+            after_attachments.append(token)
+        else:
+            item = token
+
+    # we ran to the end, now construct the last item
+    if item is not None:
+        _construct_item()
 
 
 def annotation_to_image(mc: Mashcima, annotation: str) -> np.ndarray:

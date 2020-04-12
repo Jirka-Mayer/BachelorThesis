@@ -4,11 +4,11 @@ import numpy as np
 
 
 class StemNote(Note):
-    def __init__(self, pitch: int, flipped: bool, **kwargs):
+    def __init__(self, pitch: int, **kwargs):
         super().__init__(pitch, **kwargs)
 
         # is the note flipped upside-down?
-        self.flipped = flipped
+        self.flipped = pitch > 0
 
     @property
     def stem_head_x(self):

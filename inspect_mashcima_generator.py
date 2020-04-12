@@ -107,8 +107,11 @@ def staff_beginning_slur(canvas):
 
 
 
+def single_beam_group(canvas):
+    annotation_to_canvas(canvas, "e=-4 =e-4 | e=-4 =e=-4 =e=-4 =e-4")
 
 
+inspect(single_beam_group, 1)
 
 
 
@@ -123,7 +126,7 @@ def staff_beginning_slur(canvas):
 # TODO: clefs
 # TODO: time signature
 # TODO: key signature
-# inspect(accidentals, 1)
+# inspect(accidentals, 1)  # TODO: make sure proper annotations are generated
 # TODO: note duration dots (one, two) -> update slur attachment points
 # TODO: rest duration dots (one, two) -> update slur attachment points
 # TODO: staccato -> update slur attachment points

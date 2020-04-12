@@ -7,11 +7,14 @@ import random
 
 
 class Note(SlurableItem):
-    def __init__(self, pitch: int, **kwargs):
+    def __init__(self, pitch: int, accidental: str, **kwargs):
         super().__init__(**kwargs)
 
         # note pitch
         self.pitch = pitch
+
+        # accidental attachment type
+        self.accidental = accidental  # TODO: display accidentals
 
         # ledger lines
         self._ledger_line_sprites: List[Sprite] = None
