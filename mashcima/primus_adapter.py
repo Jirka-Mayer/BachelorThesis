@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 
 
 PRIMUS_DIRECTORY = os.path.join(
@@ -27,6 +28,7 @@ def load_primus_as_mashcima_annotations(take=None):
     incipit_paths = incipit_paths_aa + incipit_paths_ab
 
     ignored_count = 0
+    invalid_count = 0
     if take is None:
         take = len(incipit_paths)
 
@@ -42,11 +44,20 @@ def load_primus_as_mashcima_annotations(take=None):
             if converted is None:
                 ignored_count += 1
                 continue
-            mashcima_annotations.append(converted)
+            if not validate_mashcima_annotation(converted)[0]:
+                ignored_count += 1
+                invalid_count += 1
+                continue
+            mashcima_annotations.append({
+                "path": path,
+                "primus": primus_annotation,
+                "mashcima": converted
+            })
         if len(mashcima_annotations) >= take:
             break
 
     print("Ignored incipits: ", ignored_count)
+    print("Invalid incipits: ", invalid_count)
     print("Loaded incipits: ", len(mashcima_annotations))
 
     return mashcima_annotations
@@ -78,7 +89,7 @@ PRIMUS_TO_MASHCIMA_GENERIC_LOOKUP_TABLE = {
     "accidental.natural": "N",
 
     "slur.start": "(",
-    "slur.end": "(",
+    "slur.end": ")",
     "staccato_dot": ".",
     "duration_dot": "*",
     # double dots are joined manually
@@ -155,7 +166,7 @@ ANNOTATIONS_WITHOUT_PITCH = [
     "rest.whole",
     "rest.half",
     "rest.quarter",
-    "rest.eight",
+    "rest.eighth",
     "rest.sixteenth",
     "rest.thirty_second",
 ]
@@ -285,3 +296,39 @@ def convert_primus_annotation_to_mashcima_annotation(primus_annotation: str):
             i += 1
 
     return " ".join(mashcima_annotation)
+
+
+def validate_mashcima_annotation(annotation: str) -> Tuple[bool, str]:
+    result, message = mashcima_annotation_has_valid_beams(annotation)
+    if not result:
+        return result, message
+    return True, "everything OK"
+
+
+def mashcima_annotation_has_valid_beams(annotation: str) -> Tuple[bool, str]:
+    tokens = annotation.split()
+    in_beam = False
+    for t in tokens:
+
+        # skip non-note tokens
+        if ("e" not in t) and ("s" not in t) and ("t" not in t):
+            continue
+
+        # skip rests -> those are ok
+        if t == "er" or t == "sr" or t == "tr":
+            continue
+
+        g = t.rstrip("-0123456789")
+        s = g.startswith("=")
+        e = g.endswith("=")
+
+        if in_beam:
+            if not s:
+                return False, "Non-finished beam: 'x= x' at: " + t
+        else:
+            if s:
+                return False, "Non-started beam: 'x =x' at: " + t
+
+        in_beam = e
+
+    return True, "everything ok"

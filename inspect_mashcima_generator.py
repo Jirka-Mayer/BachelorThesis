@@ -5,7 +5,6 @@ from mashcima.NewCanvas import Canvas
 import random
 from mashcima.annotation_to_image import annotation_to_canvas
 from mashcima.primus_adapter import load_primus_as_mashcima_annotations
-# from mashcima.generate import *
 
 
 mc = Mashcima([
@@ -95,6 +94,23 @@ def staff_beginning_slur(canvas):
 ########################################
 # Inspections of canvas high-level API #
 ########################################
+
+# TODO: CONTINUE WITH !!!!!!!!!!!!!!!!!!!
+# generate beamed notes -> add beams -> render beams
+# class BeamedNote(QuarterNote, beam_count=2)
+# -> covert into "beam-left" "beam-right"
+# -> update sprites (stem lengths) before render
+
+# for d in load_primus_as_mashcima_annotations(10):
+#     print(d["path"])
+#     print(d["mashcima"])
+
+
+
+
+
+
+
 
 # inspect(whole_notes, 1)
 # inspect(half_notes, 1)
