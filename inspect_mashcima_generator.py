@@ -74,6 +74,14 @@ def clefs(canvas):
     )
 
 
+def time_signature(canvas):
+    annotation_to_canvas(
+        canvas,
+        "time.C time.C/ time.0 time.1 time.2 time.3 time.4 time.5 time.6 " +
+        "time.7 time.8 time.9"
+    )
+
+
 def accidentals(canvas):
     annotation_to_canvas(canvas, "#-4 q-4 b-2 q-2 N0 q0 | #-4 q-4 b-2 q-2 N0 q0")
 
@@ -188,6 +196,7 @@ def staff_beginning_slur(canvas):
 
 # inspect(bar_lines, 1)
 # inspect(clefs, 1)
+# inspect(time_signature, 1)
 # TODO: time signature
 # TODO: key signature
 

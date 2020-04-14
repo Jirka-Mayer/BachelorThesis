@@ -6,7 +6,7 @@ from mashcima.utils import get_center_of_component
 from mashcima import Mashcima
 from mashcima.Sprite import Sprite
 from mashcima.SpriteGroup import SpriteGroup
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 
 # TODO: some class names so that I can filter in the future:
@@ -309,5 +309,55 @@ def get_c_clefs(mc: Mashcima) -> List[SpriteGroup]:
             o.mask
         ))
         items.append(item)
+
+    return items
+
+
+def get_time_marks(mc: Mashcima) -> Dict[str, List[SpriteGroup]]:
+    crop_objects = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname in ["time_signature"]
+    ]
+
+    KEY_MAP = {
+        "numeral_0": "time_0",
+        "numeral_1": "time_1",
+        "numeral_2": "time_2",
+        "numeral_3": "time_3",
+        "numeral_4": "time_4",
+        "numeral_5": "time_5",
+        "numeral_6": "time_6",
+        "numeral_7": "time_7",
+        "numeral_8": "time_8",
+        "numeral_9": "time_9",
+        "whole-time_mark": "time_c",
+    }
+
+    items = {
+        "time_0": [],
+        "time_1": [],
+        "time_2": [],
+        "time_3": [],
+        "time_4": [],
+        "time_5": [],
+        "time_6": [],
+        "time_7": [],
+        "time_8": [],
+        "time_9": [],
+        "time_c": [],
+    }
+
+    for o in crop_objects:
+        for l in o.outlinks:
+            outlink = mc.CROP_OBJECT_LOOKUP_DICTS[o.doc][l]
+            if outlink.clsname == "staff":
+                continue
+            item = SpriteGroup()
+            item.add("symbol", Sprite(
+                -outlink.width // 2,
+                -outlink.height // 2,
+                outlink.mask
+            ))
+            items[KEY_MAP[outlink.clsname]].append(item)
 
     return items

@@ -9,6 +9,8 @@ from mashcima.canvas_items.WholeNote import WholeNote
 from mashcima.canvas_items.HalfNote import HalfNote
 from mashcima.canvas_items.QuarterNote import QuarterNote
 from mashcima.canvas_items.BeamedNote import BeamedNote
+from mashcima.canvas_items.WholeTimeSignature import WholeTimeSignature
+from mashcima.canvas_items.TimeSignature import TimeSignature
 
 
 def _to_generic(annotation: str):
@@ -37,6 +39,9 @@ ITEM_CONSTRUCTORS = {
     "clef.G": lambda **kwargs: Clef(clef="G", **kwargs),
     "clef.F": lambda **kwargs: Clef(clef="F", **kwargs),
     "clef.C": lambda **kwargs: Clef(clef="C", **kwargs),
+
+    "time.C": lambda **kwargs: WholeTimeSignature(crossed=False, **kwargs),
+    "time.C/": lambda **kwargs: WholeTimeSignature(crossed=True, **kwargs),
 
     "w": WholeNote,
     "h": HalfNote,
@@ -117,8 +122,29 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
             "slur_end": ")" in before_attachments,
         }))
 
-    for token in annotation.split():
+    tokens = annotation.split()
+    skip_next = False
+    for i in range(len(tokens)):
+        if skip_next:
+            skip_next = False
+            continue
+
+        token = tokens[i]
         generic_token = _to_generic(token)
+
+        # handle time signature
+        if token.startswith("time."):
+            if token in ["time.C", "time.C/"]:
+                canvas.add(WholeTimeSignature(crossed=("/" in token)))
+                continue
+            if (i == len(tokens) - 1) or (not tokens[i + 1].startswith("time.")):
+                print("Skipping un-paired time signature:", token)
+                continue
+            first = int(token[len("time."):])
+            second = int(tokens[i + 1][len("time."):])
+            canvas.add(TimeSignature(top=first, bottom=second))
+            skip_next = True
+            continue
 
         # when we have an item found, we wait for another item or
         # a before attachment to fire the item we have off and start

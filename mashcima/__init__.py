@@ -21,17 +21,11 @@ class Mashcima:
         # default documents to load
         if documents is None:
             documents = [
-                "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
-                "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
-                "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+                os.path.join(CROP_OBJECT_DIRECTORY, f)
+                for f in os.listdir(CROP_OBJECT_DIRECTORY)
             ]
-
-        # TODO: HACK: load all documents
-        # TODO: this will be the default in the future
-        # documents = [
-        #     os.path.join(CROP_OBJECT_DIRECTORY, f)
-        #     for f in os.listdir(CROP_OBJECT_DIRECTORY)
-        # ]
+            # TODO: HACK: Limit document count
+            documents = documents[:10]
 
         ##############################
         # Load and prepare MUSCIMA++ #
@@ -79,6 +73,7 @@ class Mashcima:
         from mashcima.get_symbols import get_g_clefs
         from mashcima.get_symbols import get_f_clefs
         from mashcima.get_symbols import get_c_clefs
+        from mashcima.get_symbols import get_time_marks
 
         # load all symbols
         self.WHOLE_NOTES: List[SpriteGroup] = get_whole_notes(self)
@@ -95,14 +90,20 @@ class Mashcima:
         self.G_CLEFS: List[SpriteGroup] = get_g_clefs(self)
         self.F_CLEFS: List[SpriteGroup] = get_f_clefs(self)
         self.C_CLEFS: List[SpriteGroup] = get_c_clefs(self)
+        self.TIME_MARKS: Dict[str, List[SpriteGroup]] = get_time_marks(self)
 
         # load default symbols if needed
         if len(self.F_CLEFS) == 0:
-            self.F_CLEFS.append(SpriteGroup().add("clef", _load_default_sprite("clef_f")))
+            self.F_CLEFS.append(_load_default_sprite_group("clef", "clef_f"))
         if len(self.G_CLEFS) == 0:
-            self.G_CLEFS.append(SpriteGroup().add("clef", _load_default_sprite("clef_g")))
+            self.G_CLEFS.append(_load_default_sprite_group("clef", "clef_g"))
         if len(self.C_CLEFS) == 0:
-            self.C_CLEFS.append(SpriteGroup().add("clef", _load_default_sprite("clef_c")))
+            self.C_CLEFS.append(_load_default_sprite_group("clef", "clef_c"))
+        for key in self.TIME_MARKS:
+            if len(self.TIME_MARKS[key]) == 0:
+                self.TIME_MARKS[key].append(
+                    _load_default_sprite_group("symbol", key)
+                )
 
         # validate there is no empty list
         assert len(self.WHOLE_NOTES) > 0
@@ -118,8 +119,14 @@ class Mashcima:
         assert len(self.G_CLEFS) > 0
         assert len(self.F_CLEFS) > 0
         assert len(self.C_CLEFS) > 0
+        for key in self.TIME_MARKS:
+            assert len(self.TIME_MARKS[key]) > 0
 
         print("Mashcima loaded.")
+
+
+def _load_default_sprite_group(sprite_name: str, file_name: str) -> SpriteGroup:
+    return SpriteGroup().add(sprite_name, _load_default_sprite(file_name))
 
 
 def _load_default_sprite(name: str) -> Sprite:
@@ -127,6 +134,8 @@ def _load_default_sprite(name: str) -> Sprite:
     dir = os.path.join(os.path.dirname(__file__), "default_symbols")
     img_path = os.path.join(dir, name + ".png")
     center_path = os.path.join(dir, name + ".txt")
+    if not os.path.isfile(img_path):
+        raise Exception("Cannot load default sprite: " + name)
     img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) / 255
     x = -img.shape[1] // 2
     y = -img.shape[0] // 2
