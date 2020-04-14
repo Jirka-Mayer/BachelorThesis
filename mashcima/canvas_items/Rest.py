@@ -1,5 +1,6 @@
 from mashcima.canvas_items.CanvasItem import CanvasItem
 from typing import Optional
+import copy
 
 
 class Rest(CanvasItem):

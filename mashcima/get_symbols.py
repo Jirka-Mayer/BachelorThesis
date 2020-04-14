@@ -4,11 +4,9 @@ from mashcima.utils import get_connected_components_not_touching_image_border
 from mashcima.utils import sort_components_by_proximity_to_point
 from mashcima.utils import get_center_of_component
 from mashcima import Mashcima
-from mashcima.CanvasItem import CanvasItem
 from mashcima.Sprite import Sprite
-from mashcima.Accidental import Accidental
-from typing import List
-import cv2
+from mashcima.SpriteGroup import SpriteGroup
+from typing import List, Tuple
 
 
 # TODO: some class names so that I can filter in the future:
@@ -29,7 +27,7 @@ import cv2
 # 'whole-time_mark', 'whole_rest']
 
 
-def _build_notehead_stem_pairs(generic_annotation, noteheads, stems):
+def _build_notehead_stem_pairs(noteheads, stems):
     """
     Combines list of noteheads and a list of stems into a list of
     canvas items. Handles flipping when stem points down.
@@ -48,34 +46,33 @@ def _build_notehead_stem_pairs(generic_annotation, noteheads, stems):
         flip = stem_center_y > notehead_center_y
 
         # place sprites (notehead and stem)
-        item = CanvasItem(generic_annotation)
-        item.add_sprite(Sprite(
+        item = SpriteGroup()
+        item.add("notehead", Sprite(
             h.left - notehead_center_x,
             h.top - notehead_center_y,
             h.mask
         ))
-        item.add_sprite(Sprite(
+        item.add("stem", Sprite(
             stems[i].left - notehead_center_x,
             stems[i].top - notehead_center_y,
             stems[i].mask
         ))
 
         if flip:
-            item = item.flipped()
-            item.is_flipped = False  # flip the item, but into the proper orientation
+            item = item.create_flipped_copy()
 
-        item.stem_head_y = item.sprites[1].y
-        item.stem_head_x = item.sprites[1].x + np.argmax(item.sprites[1].mask[0, :])
-
-        item.note_head_sprite = item.sprites[0]
-        item.note_stem_sprite = item.sprites[1]
+        stem_sprite = item.sprite("stem")
+        item.add_point("stem_head", (
+            stem_sprite.x + np.argmax(stem_sprite.mask[0, :]),
+            stem_sprite.y
+        ))
 
         items.append(item)
 
     return items
 
 
-def get_quarter_rests(mc: Mashcima) -> List[CanvasItem]:
+def get_quarter_rests(mc: Mashcima) -> List[SpriteGroup]:
     crop_objects = [
         o for o in mc.CROP_OBJECTS
         if o.clsname == "quarter_rest"
@@ -83,8 +80,8 @@ def get_quarter_rests(mc: Mashcima) -> List[CanvasItem]:
 
     items = []
     for o in crop_objects:
-        item = CanvasItem("qr")
-        item.add_sprite(Sprite(
+        item = SpriteGroup()
+        item.add("rest", Sprite(
             -o.width // 2,
             -o.height // 2,
             o.mask
@@ -94,7 +91,7 @@ def get_quarter_rests(mc: Mashcima) -> List[CanvasItem]:
     return items
 
 
-def get_whole_notes(mc: Mashcima) -> List[CanvasItem]:
+def get_whole_notes(mc: Mashcima) -> List[SpriteGroup]:
     crop_objects = [
         o for o in mc.CROP_OBJECTS
         if o.clsname == "notehead-empty"
@@ -103,19 +100,18 @@ def get_whole_notes(mc: Mashcima) -> List[CanvasItem]:
 
     items = []
     for o in crop_objects:
-        item = CanvasItem("w")
-        item.add_sprite(Sprite(
+        item = SpriteGroup()
+        item.add("notehead", Sprite(
             -o.width // 2,
             -o.height // 2,
             o.mask
         ))
-        item.note_head_sprite = item.sprites[0]
         items.append(item)
 
     return items
 
 
-def get_half_notes(mc: Mashcima) -> List[CanvasItem]:
+def get_half_notes(mc: Mashcima) -> List[SpriteGroup]:
     noteheads = [
         o for o in mc.CROP_OBJECTS
         if o.clsname == "notehead-empty"
@@ -123,26 +119,29 @@ def get_half_notes(mc: Mashcima) -> List[CanvasItem]:
         and not has_outlink_to(mc, o, "ledger_line")
     ]
     stems = [get_outlink_to(mc, o, "stem") for o in noteheads]
-    return _build_notehead_stem_pairs("h", noteheads, stems)
+    return _build_notehead_stem_pairs(noteheads, stems)
 
 
-def get_quarter_notes(mc: Mashcima) -> List[CanvasItem]:
+def get_quarter_notes(mc: Mashcima) -> List[SpriteGroup]:
     noteheads = [
         o for o in mc.CROP_OBJECTS
         if o.clsname == "notehead-full"
         and has_outlink_to(mc, o, "stem")
     ]
     stems = [get_outlink_to(mc, o, "stem") for o in noteheads]
-    return _build_notehead_stem_pairs("q", noteheads, stems)
+    return _build_notehead_stem_pairs(noteheads, stems)
 
 
-def get_accidentals(mc: Mashcima) -> List[Accidental]:
+def get_accidentals(mc: Mashcima) -> Tuple[List[Sprite], List[Sprite], List[Sprite]]:
     crop_objects = [
         o for o in mc.CROP_OBJECTS
         if o.clsname in ["sharp", "flat", "natural"]
     ]
+
+    sharps = []
+    flats = []
+    naturals = []
     
-    accidentals = []
     for o in crop_objects:
         object_center_x, object_center_y = get_center_of_component(o.mask)
 
@@ -169,18 +168,22 @@ def get_accidentals(mc: Mashcima) -> List[Accidental]:
             -component_center_y,
             o.mask
         )
-        a = Accidental(o.clsname, sprite)
-        accidentals.append(a)
+        if o.clsname == "sharp":
+            sharps.append(sprite)
+        elif o.clsname == "flat":
+            flats.append(sprite)
+        elif o.clsname == "natural":
+            naturals.append(sprite)
 
     # DEBUG: inspect accidentals
     # from mashcima.debug import show_images, draw_cross
     # show_images([
-    #     draw_cross(a.sprite.mask, -a.sprite.x, -a.sprite.y, size=5, 1)
-    #     for a in accidentals
+    #     draw_cross(a.mask, -a.x, -a.y, size=5, 1)
+    #     for a in (sharps + flats + naturals)
     # ], 20)
     # exit()
 
-    return accidentals
+    return sharps, flats, naturals
 
 
 def get_dots(mc: Mashcima) -> List[Sprite]:
@@ -235,7 +238,7 @@ def get_ledger_lines(mc: Mashcima) -> List[Sprite]:
     return lines
 
 
-def get_bar_lines(mc: Mashcima) -> List[CanvasItem]:
+def get_bar_lines(mc: Mashcima) -> List[SpriteGroup]:
     crop_objects = [
         o for o in mc.CROP_OBJECTS
         if o.clsname in ["thin_barline"]
@@ -243,8 +246,8 @@ def get_bar_lines(mc: Mashcima) -> List[CanvasItem]:
 
     items = []
     for o in crop_objects:
-        item = CanvasItem("|")
-        item.add_sprite(Sprite(
+        item = SpriteGroup()
+        item.add("barline", Sprite(
             -o.width // 2,
             -o.height // 2,
             o.mask,

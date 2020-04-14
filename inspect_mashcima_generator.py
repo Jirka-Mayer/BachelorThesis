@@ -1,7 +1,7 @@
 import numpy as np
 from mashcima import Mashcima
 import matplotlib.pyplot as plt
-from mashcima.NewCanvas import Canvas
+from mashcima.Canvas import Canvas
 import random
 from mashcima.annotation_to_image import annotation_to_canvas
 from mashcima.primus_adapter import load_primus_as_mashcima_annotations

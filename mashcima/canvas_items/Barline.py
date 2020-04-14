@@ -1,6 +1,7 @@
 from mashcima import Mashcima
 from mashcima.canvas_items.SlurableItem import SlurableItem
 import random
+import copy
 
 
 class Barline(SlurableItem):
@@ -8,5 +9,5 @@ class Barline(SlurableItem):
         return "|"
 
     def select_sprites(self, mc: Mashcima):
+        self.sprites = copy.deepcopy(random.choice(mc.BAR_LINES))
         super().select_sprites(mc)
-        self.sprites.add("barline", random.choice(mc.BAR_LINES).sprites[0])

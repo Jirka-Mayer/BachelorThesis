@@ -108,8 +108,15 @@ class Note(SlurableItem):
     def _select_accidental_sprite(self, mc: Mashcima):
         if self.accidental is None:
             return
-        sprites = [a.sprite for a in mc.ACCIDENTALS if a.annotation == self.accidental]
-        self.sprites.add("accidental", copy.deepcopy(random.choice(sprites)))
+        sprite = None
+        if self.accidental == "#":
+            sprite = copy.deepcopy(random.choice(mc.SHARPS))
+        if self.accidental == "b":
+            sprite = copy.deepcopy(random.choice(mc.FLATS))
+        if self.accidental == "N":
+            sprite = copy.deepcopy(random.choice(mc.NATURALS))
+        assert sprite is not None
+        self.sprites.add("accidental", sprite)
 
     def _place_accidental(self):
         if self.accidental is None:

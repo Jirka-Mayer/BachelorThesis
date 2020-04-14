@@ -1,6 +1,7 @@
 import random
 from mashcima import Mashcima
 from mashcima.canvas_items.Rest import Rest
+import copy
 
 
 class QuarterRest(Rest):
@@ -8,5 +9,5 @@ class QuarterRest(Rest):
         return "qr"
 
     def select_sprites(self, mc: Mashcima):
+        self.sprites = copy.deepcopy(random.choice(mc.QUARTER_RESTS))
         super().select_sprites(mc)
-        self.sprites.add("rest", random.choice(mc.QUARTER_RESTS).sprites[0])

@@ -2,9 +2,8 @@ import os
 from muscima.io import parse_cropobject_list, CropObject
 import itertools
 from typing import List, Dict
-from mashcima.Accidental import Accidental
 from mashcima.Sprite import Sprite
-from mashcima.CanvasItem import CanvasItem
+from mashcima.SpriteGroup import SpriteGroup
 
 
 # where should muscima++ crop objects be loaded from
@@ -78,13 +77,28 @@ class Mashcima:
         from mashcima.get_symbols import get_bar_lines
 
         # load all symbols
-        self.WHOLE_NOTES: List[CanvasItem] = get_whole_notes(self)
-        self.QUARTER_NOTES: List[CanvasItem] = get_quarter_notes(self)
-        self.HALF_NOTES: List[CanvasItem] = get_half_notes(self)
-        self.QUARTER_RESTS: List[CanvasItem] = get_quarter_rests(self)
-        self.ACCIDENTALS: List[Accidental] = get_accidentals(self)
+        self.WHOLE_NOTES: List[SpriteGroup] = get_whole_notes(self)
+        self.QUARTER_NOTES: List[SpriteGroup] = get_quarter_notes(self)
+        self.HALF_NOTES: List[SpriteGroup] = get_half_notes(self)
+        self.QUARTER_RESTS: List[SpriteGroup] = get_quarter_rests(self)
+        self.FLATS: List[Sprite] = []
+        self.SHARPS: List[Sprite] = []
+        self.NATURALS: List[Sprite] = []
+        self.FLATS, self.SHARPS, self.NATURALS = get_accidentals(self)
         self.DOTS: List[Sprite] = get_dots(self)
         self.LEDGER_LINES: List[Sprite] = get_ledger_lines(self)
-        self.BAR_LINES: List[CanvasItem] = get_bar_lines(self)
+        self.BAR_LINES: List[SpriteGroup] = get_bar_lines(self)
+
+        # validate there is no empty list
+        assert len(self.WHOLE_NOTES) > 0
+        assert len(self.QUARTER_NOTES) > 0
+        assert len(self.HALF_NOTES) > 0
+        assert len(self.QUARTER_RESTS) > 0
+        assert len(self.FLATS) > 0
+        assert len(self.SHARPS) > 0
+        assert len(self.NATURALS) > 0
+        assert len(self.DOTS) > 0
+        assert len(self.LEDGER_LINES) > 0
+        assert len(self.BAR_LINES) > 0
 
         print("Mashcima loaded.")

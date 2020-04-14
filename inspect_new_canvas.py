@@ -1,5 +1,5 @@
 from mashcima import Mashcima
-from mashcima.NewCanvas import Canvas
+from mashcima.Canvas import Canvas
 from mashcima.canvas_items.WholeNote import WholeNote
 from mashcima.canvas_items.QuarterRest import QuarterRest
 from mashcima.canvas_items.HalfNote import HalfNote

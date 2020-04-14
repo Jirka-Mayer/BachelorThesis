@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Optional
 from mashcima import Mashcima
-from mashcima.NewCanvas import Canvas
+from mashcima.Canvas import Canvas
 from mashcima.canvas_items.Barline import Barline
 from mashcima.canvas_items.QuarterRest import QuarterRest
 from mashcima.canvas_items.WholeNote import WholeNote
@@ -68,12 +68,12 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
 
     def _should_key_signature_be_created() -> bool:
         accidentals = [b for b in before_attachments if _to_generic(b) in ACCIDENTALS]
+        if len(accidentals) == 0:  # no accidentals present
+            return False
         if len(accidentals) > 1:
             return True
         if _to_generic(item) not in NOTES:
             return True
-        if len(accidentals) == 0:  # no accidentals present
-            return False
         # now we have one accidental in front of a note -> create key signature
         # if this accidental has different pitch than the note
         if _get_pitch(accidentals[0]) != _get_pitch(item):

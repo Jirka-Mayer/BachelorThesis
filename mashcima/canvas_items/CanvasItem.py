@@ -27,7 +27,7 @@ class CanvasItem:
         return []
 
     def select_sprites(self, mc: Mashcima):
-        self.sprites = SpriteGroup()  # clear the sprite list
+        pass
 
     def place_sprites(self):
         self.contribute_to_padding()
