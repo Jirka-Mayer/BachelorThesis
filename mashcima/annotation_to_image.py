@@ -11,6 +11,7 @@ from mashcima.canvas_items.QuarterNote import QuarterNote
 from mashcima.canvas_items.BeamedNote import BeamedNote
 from mashcima.canvas_items.WholeTimeSignature import WholeTimeSignature
 from mashcima.canvas_items.TimeSignature import TimeSignature
+from mashcima.canvas_items.KeySignature import KeySignature
 
 
 def _to_generic(annotation: str):
@@ -93,8 +94,9 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
 
     def _create_key_signature():
         accidentals = [b for b in before_attachments if _to_generic(b) in ACCIDENTALS]
-        # TODO: actually create a KeySignature canvas item
-        print("TODO: create key signature with: ", " ".join(accidentals))
+        types = [_to_generic(a) for a in accidentals]
+        pitches = [_get_pitch(a) for a in accidentals]
+        canvas.add(KeySignature(types, pitches))
 
     def _get_accidental():
         accidentals = [b for b in before_attachments if _to_generic(b) in ACCIDENTALS]
@@ -167,6 +169,13 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
     # we ran to the end, now construct the last item
     if item is not None:
         _construct_item()
+        before_attachments = []
+        after_attachments = []
+        item = None
+
+    # there was no last item, but maybe there was a key signature
+    if _should_key_signature_be_created():
+        _create_key_signature()
 
     # make sure the canvas produced what it was supposed to produce
     given_annotation = " ".join(annotation.split())

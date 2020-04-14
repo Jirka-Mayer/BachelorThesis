@@ -80,10 +80,10 @@ class Mashcima:
         self.QUARTER_NOTES: List[SpriteGroup] = get_quarter_notes(self)
         self.HALF_NOTES: List[SpriteGroup] = get_half_notes(self)
         self.QUARTER_RESTS: List[SpriteGroup] = get_quarter_rests(self)
-        self.FLATS: List[Sprite] = []
         self.SHARPS: List[Sprite] = []
+        self.FLATS: List[Sprite] = []
         self.NATURALS: List[Sprite] = []
-        self.FLATS, self.SHARPS, self.NATURALS = get_accidentals(self)
+        self.SHARPS, self.FLATS, self.NATURALS = get_accidentals(self)
         self.DOTS: List[Sprite] = get_dots(self)
         self.LEDGER_LINES: List[Sprite] = get_ledger_lines(self)
         self.BAR_LINES: List[SpriteGroup] = get_bar_lines(self)

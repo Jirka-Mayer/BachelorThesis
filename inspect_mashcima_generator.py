@@ -82,6 +82,13 @@ def time_signature(canvas):
     )
 
 
+def key_signature(canvas):
+    annotation_to_canvas(
+        canvas,
+        "#-4 b-2 N0 | #-4 b-2 N0 | b-1 b2 b-2 b1"
+    )
+
+
 def accidentals(canvas):
     annotation_to_canvas(canvas, "#-4 q-4 b-2 q-2 N0 q0 | #-4 q-4 b-2 q-2 N0 q0")
 
@@ -197,8 +204,7 @@ def staff_beginning_slur(canvas):
 # inspect(bar_lines, 1)
 # inspect(clefs, 1)
 # inspect(time_signature, 1)
-# TODO: time signature
-# TODO: key signature
+# inspect(key_signature, 1)
 
 # inspect(accidentals, 1)
 # inspect(note_duration_dots, 1)
