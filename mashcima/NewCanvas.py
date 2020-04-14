@@ -1,16 +1,11 @@
-import numpy as np
-from typing import List, Dict
+from typing import List
 from mashcima import Mashcima
 from mashcima.canvas_items.CanvasItem import CanvasItem
 from mashcima.canvas_items.SlurableItem import SlurableItem
 from mashcima.canvas_items.InvisibleSlurEnd import InvisibleSlurEnd
-from mashcima.Accidental import Accidental
-from mashcima.Sprite import Sprite
+from mashcima.canvas_items.BeamedNote import BeamedNote
 from mashcima.Slur import Slur
-from mashcima.utils import fork
-import app.vocabulary
-import cv2
-import copy
+from mashcima.Beam import Beam
 import random
 
 
@@ -18,6 +13,9 @@ class Canvas:
     def __init__(self):
         # items on the canvas
         self.items: List[CanvasItem] = []
+
+        # beams between beamed notes
+        self.beams: List[Beam] = []
 
         # slurs between items
         self.slurs: List[Slur] = []
@@ -41,9 +39,36 @@ class Canvas:
         if self._construction_finished:
             raise Exception("Construction has been already finished")
 
+        self._create_beams()
         self._create_slurs()
 
+    def _create_beams(self):
+        self.beams = []
+
+        in_beam = False
+        beam_items = []
+        for i in self.items:
+            if not isinstance(i, BeamedNote):
+                continue
+
+            if in_beam:
+                # append item to a built beam
+                beam_items.append(i)
+
+                # end the beam
+                if not i.right_beamed:
+                    self.beams.append(Beam(beam_items))
+                    in_beam = False
+                    beam_items = []
+
+            else:
+                # start new beam
+                if i.right_beamed:
+                    beam_items.append(i)
+                    in_beam = True
+
     def _create_slurs(self):
+        self.slurs = []
         slur_stack: List[SlurableItem] = []
 
         def add_slur(start: SlurableItem, end: SlurableItem):
@@ -86,19 +111,26 @@ class Canvas:
         if not self._construction_finished:
             self.finish_construction()
 
+        # select sprites
         for item in self.items:
             item.select_sprites(mc)
 
         from mashcima.generate_staff_lines import generate_staff_lines
         img, pitch_positions = generate_staff_lines()
 
+        # place sprites and place items
         head = self._place_items(pitch_positions)
 
+        # place beams
+        for b in self.beams:
+            b.place()
+
+        # render
         for item in self.items:
             item.render(img)
 
-        print("TODO: render beams")
-        #self._render_beams()
+        for b in self.beams:
+            b.render(img)
 
         for s in self.slurs:
             s.render(img)
@@ -122,37 +154,3 @@ class Canvas:
             head += item.place_item(head, pitch_positions)
             head += generate_padding()  # right padding
         return head
-
-    # def _render_beams(self):
-    #     beam_thickness = 4
-    #     beam_spacing = 16
-    #     for i in range(len(self.items) - 1):
-    #         this = self.items[i]
-    #         next = self.items[i + 1]
-    #         if this.beams_right <= 0 or next.beams_left <= 0:
-    #             continue
-    #
-    #         # render the whole first beam
-    #         a = (this.position_x + this.stem_head_x, this.position_y + this.stem_head_y)
-    #         b = (next.position_x + next.stem_head_x, next.position_y + next.stem_head_y)
-    #         m = ((a[0] + b[0]) // 2, (a[1] + b[1]) // 2)
-    #         cv2.line(self.img, a, b, thickness=beam_thickness, color=1)
-    #
-    #         def step_down(a, b, m, flip):
-    #             sp = -beam_spacing if flip else beam_spacing
-    #             return (a[0], a[1] + sp), (b[0], b[1] + sp), (m[0], m[1] + sp)
-    #
-    #         # render whole second beam
-    #         if this.beams_right >= 2 and next.beams_left >= 2:
-    #             a, b, m = step_down(a, b, m, this.is_flipped)
-    #             cv2.line(self.img, a, b, thickness=beam_thickness, color=1)
-    #
-    #         # render first part of second beam
-    #         if this.beams_right >= 2 and next.beams_left == 1:
-    #             a, b, m = step_down(a, b, m, this.is_flipped)
-    #             cv2.line(self.img, a, m, thickness=beam_thickness, color=1)
-    #
-    #         # render second part of second beam
-    #         if this.beams_right == 1 and next.beams_left >= 2:
-    #             a, b, m = step_down(a, b, m, next.is_flipped)
-    #             cv2.line(self.img, m, b, thickness=beam_thickness, color=1)

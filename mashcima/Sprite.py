@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 
 
 class Sprite:
@@ -40,6 +41,13 @@ class Sprite:
         self.x = -self.x - self.mask.shape[1]
         self.y = -self.y - self.mask.shape[0]
         self.mask = np.rot90(np.rot90(self.mask))
+
+    def stretch_height(self, target_height: int):
+        self.mask = cv2.resize(
+            self.mask,
+            (self.width, target_height),
+            interpolation=cv2.INTER_NEAREST
+        )
 
     def render(self, img: np.ndarray, parent_x: int, parent_y: int):
         x = self.x + parent_x

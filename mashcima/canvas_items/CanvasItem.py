@@ -10,7 +10,7 @@ class CanvasItem:
     def __init__(self, **kwargs):
         self.sprites: SpriteGroup = SpriteGroup()
 
-        self.DEBUG_RENDER = True
+        self.DEBUG_RENDER = False
 
     def get_annotation_tokens(self):
         return []

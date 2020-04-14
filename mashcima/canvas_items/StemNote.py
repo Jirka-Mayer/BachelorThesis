@@ -1,3 +1,4 @@
+from mashcima import Mashcima
 from mashcima.canvas_items.Note import Note
 from mashcima.debug import draw_cross
 import numpy as np
@@ -8,7 +9,8 @@ class StemNote(Note):
         super().__init__(pitch, **kwargs)
 
         # is the note flipped upside-down?
-        self.flipped = pitch > 0
+        # decided in select_sprites(...)
+        self.flipped = False
 
     @property
     def stem_head_x(self):
@@ -17,6 +19,12 @@ class StemNote(Note):
     @property
     def stem_head_y(self):
         return self.sprites.point("stem_head")[1]
+
+    def select_sprites(self, mc: Mashcima):
+        super().select_sprites(mc)
+
+        # decide flip
+        self.flipped = self.pitch > 0
 
     def place_sprites(self):
         if self.flipped:

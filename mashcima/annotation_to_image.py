@@ -129,6 +129,9 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
     if item is not None:
         _construct_item()
 
+    # make sure the canvas produced what it was supposed to produce
+    assert " ".join(canvas.get_annotations()) == " ".join(annotation.split())
+
 
 def annotation_to_image(mc: Mashcima, annotation: str) -> np.ndarray:
     """Generates an image from an annotation string"""
