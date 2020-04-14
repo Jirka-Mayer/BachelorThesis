@@ -161,8 +161,8 @@ def staff_beginning_slur(canvas):
 # Running individual inspections #
 ##################################
 
-# for d in load_primus_as_mashcima_annotations(10):
-#     print(d["path"])
+# for d in load_primus_as_mashcima_annotations(100):
+#     # print(d["path"])
 #     print(d["mashcima"])
 
 

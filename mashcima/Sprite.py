@@ -91,3 +91,9 @@ class Sprite:
         except ValueError:
             # NOTE: this is not a warning, this is bad, so print always
             print("Image does not fit inside the canvas at all")
+
+    def inspect(self) -> np.ndarray:
+        from mashcima.debug import draw_cross
+        img = self.mask.copy()
+        draw_cross(img, -self.left, -self.top, size=5, thickness=1)
+        return img

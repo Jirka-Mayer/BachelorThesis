@@ -84,3 +84,12 @@ class SpriteGroup:
     def render(self, img: np.ndarray):
         for sprite in self.sprites.values():
             sprite.render(img, self.position_x, self.position_y)
+
+    def inspect(self) -> np.ndarray:
+        from mashcima.debug import draw_cross
+        self.recalculate_bounding_box()
+        img = np.zeros(shape=(self.height, self.width), dtype=np.float32)
+        for s in self.sprites.values():
+            s.render(img, -self.left, -self.top)
+        draw_cross(img, -self.left, -self.top, size=5, thickness=1)
+        return img
