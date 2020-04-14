@@ -187,7 +187,7 @@ def staff_beginning_slur(canvas):
 # inspect(rests, 1)
 
 # inspect(bar_lines, 1)
-inspect(clefs, 1)
+# inspect(clefs, 1)
 # TODO: time signature
 # TODO: key signature
 

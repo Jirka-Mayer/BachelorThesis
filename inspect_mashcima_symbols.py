@@ -11,7 +11,7 @@ mc = Mashcima([
     "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
     "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
 
-    "CVC-MUSCIMA_W-02_N-06_D-ideal.xml",  # C clef not present in writer 1
+    #"CVC-MUSCIMA_W-02_N-06_D-ideal.xml",  # C clef not present in writer 1
 ])
 
 

@@ -4,6 +4,7 @@ import itertools
 from typing import List, Dict
 from mashcima.Sprite import Sprite
 from mashcima.SpriteGroup import SpriteGroup
+import cv2
 
 
 # where should muscima++ crop objects be loaded from
@@ -95,6 +96,14 @@ class Mashcima:
         self.F_CLEFS: List[SpriteGroup] = get_f_clefs(self)
         self.C_CLEFS: List[SpriteGroup] = get_c_clefs(self)
 
+        # load default symbols if needed
+        if len(self.F_CLEFS) == 0:
+            self.F_CLEFS.append(SpriteGroup().add("clef", _load_default_sprite("clef_f")))
+        if len(self.G_CLEFS) == 0:
+            self.G_CLEFS.append(SpriteGroup().add("clef", _load_default_sprite("clef_g")))
+        if len(self.C_CLEFS) == 0:
+            self.C_CLEFS.append(SpriteGroup().add("clef", _load_default_sprite("clef_c")))
+
         # validate there is no empty list
         assert len(self.WHOLE_NOTES) > 0
         assert len(self.QUARTER_NOTES) > 0
@@ -111,3 +120,19 @@ class Mashcima:
         assert len(self.C_CLEFS) > 0
 
         print("Mashcima loaded.")
+
+
+def _load_default_sprite(name: str) -> Sprite:
+    print("Loading default sprite:", name)
+    dir = os.path.join(os.path.dirname(__file__), "default_symbols")
+    img_path = os.path.join(dir, name + ".png")
+    center_path = os.path.join(dir, name + ".txt")
+    img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) / 255
+    x = -img.shape[1] // 2
+    y = -img.shape[0] // 2
+    if os.path.isfile(center_path):
+        with open(center_path) as f:
+            x, y = tuple(f.readline().split())
+            x = -int(x)
+            y = -int(y)
+    return Sprite(x, y, img)

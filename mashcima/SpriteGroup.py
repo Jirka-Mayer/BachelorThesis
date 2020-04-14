@@ -35,9 +35,11 @@ class SpriteGroup:
 
     def add(self, name: str, sprite: Sprite):
         self.sprites[name] = sprite
+        return self  # make it chainable
 
     def add_point(self, name: str, point: Tuple[int, int]):
         self.points[name] = point
+        return self  # make it chainable
 
     def sprite(self, name: str):
         return self.sprites[name]
