@@ -10,6 +10,8 @@ mc = Mashcima([
     "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
     "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
     "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+
+    "CVC-MUSCIMA_W-02_N-06_D-ideal.xml",  # C clef not present in writer 1
 ])
 
 
@@ -49,3 +51,7 @@ def inspect(items: List):
 # inspect(mc.DOTS)
 # inspect(mc.LEDGER_LINES)
 # inspect(mc.BAR_LINES)
+#
+# inspect(mc.G_CLEFS)
+# inspect(mc.F_CLEFS)
+# inspect(mc.C_CLEFS)

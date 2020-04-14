@@ -3,6 +3,7 @@ from typing import Optional
 from mashcima import Mashcima
 from mashcima.Canvas import Canvas
 from mashcima.canvas_items.Barline import Barline
+from mashcima.canvas_items.Clef import Clef
 from mashcima.canvas_items.QuarterRest import QuarterRest
 from mashcima.canvas_items.WholeNote import WholeNote
 from mashcima.canvas_items.HalfNote import HalfNote
@@ -32,6 +33,10 @@ AFTER_ATTACHMENTS = [
 ]
 ITEM_CONSTRUCTORS = {
     "|": Barline,
+
+    "clef.G": lambda **kwargs: Clef(clef="G", **kwargs),
+    "clef.F": lambda **kwargs: Clef(clef="F", **kwargs),
+    "clef.C": lambda **kwargs: Clef(clef="C", **kwargs),
 
     "w": WholeNote,
     "h": HalfNote,

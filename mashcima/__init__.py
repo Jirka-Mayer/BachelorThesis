@@ -75,6 +75,9 @@ class Mashcima:
         from mashcima.get_symbols import get_dots
         from mashcima.get_symbols import get_ledger_lines
         from mashcima.get_symbols import get_bar_lines
+        from mashcima.get_symbols import get_g_clefs
+        from mashcima.get_symbols import get_f_clefs
+        from mashcima.get_symbols import get_c_clefs
 
         # load all symbols
         self.WHOLE_NOTES: List[SpriteGroup] = get_whole_notes(self)
@@ -88,6 +91,9 @@ class Mashcima:
         self.DOTS: List[Sprite] = get_dots(self)
         self.LEDGER_LINES: List[Sprite] = get_ledger_lines(self)
         self.BAR_LINES: List[SpriteGroup] = get_bar_lines(self)
+        self.G_CLEFS: List[SpriteGroup] = get_g_clefs(self)
+        self.F_CLEFS: List[SpriteGroup] = get_f_clefs(self)
+        self.C_CLEFS: List[SpriteGroup] = get_c_clefs(self)
 
         # validate there is no empty list
         assert len(self.WHOLE_NOTES) > 0
@@ -100,5 +106,8 @@ class Mashcima:
         assert len(self.DOTS) > 0
         assert len(self.LEDGER_LINES) > 0
         assert len(self.BAR_LINES) > 0
+        assert len(self.G_CLEFS) > 0
+        assert len(self.F_CLEFS) > 0
+        assert len(self.C_CLEFS) > 0
 
         print("Mashcima loaded.")

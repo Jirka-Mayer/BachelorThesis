@@ -175,14 +175,6 @@ def get_accidentals(mc: Mashcima) -> Tuple[List[Sprite], List[Sprite], List[Spri
         elif o.clsname == "natural":
             naturals.append(sprite)
 
-    # DEBUG: inspect accidentals
-    # from mashcima.debug import show_images, draw_cross
-    # show_images([
-    #     draw_cross(a.mask, -a.x, -a.y, size=5, 1)
-    #     for a in (sharps + flats + naturals)
-    # ], 20)
-    # exit()
-
     return sharps, flats, naturals
 
 
@@ -201,14 +193,6 @@ def get_dots(mc: Mashcima) -> List[Sprite]:
             o.mask
         ))
 
-    # DEBUG: inspect dots
-    # from mashcima.debug import show_images, draw_cross
-    # show_images([
-    #     draw_cross(d.mask, -d .x, -d .y, size=3, thickness=1)
-    #     for d in dots
-    # ], 20)
-    # exit()
-
     return dots
 
 
@@ -226,14 +210,6 @@ def get_ledger_lines(mc: Mashcima) -> List[Sprite]:
             -object_center_y,
             o.mask
         ))
-
-    # DEBUG: inspect lines
-    # from mashcima.debug import show_images, draw_cross
-    # show_images([
-    #     draw_cross(l.mask, -l.x, -l.y, size=3, thickness=1)
-    #     for l in lines
-    # ], 20)
-    # exit()
 
     return lines
 
@@ -255,12 +231,83 @@ def get_bar_lines(mc: Mashcima) -> List[SpriteGroup]:
         ))
         items.append(item)
 
-    # DEBUG: inspect lines
-    # from mashcima.debug import show_images, draw_cross
-    # show_images([
-    #     o.mask
-    #     for o in crop_objects
-    # ], 20)
-    # exit()
+    return items
+
+
+def get_g_clefs(mc: Mashcima) -> List[SpriteGroup]:
+    crop_objects = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname in ["g-clef"]
+    ]
+
+    items = []
+    for o in crop_objects:
+        staff = get_outlink_to(mc, o, "staff")
+        staff_line = None
+        line = 0
+        for l in staff.outlinks:
+            resolved_link = mc.CROP_OBJECT_LOOKUP_DICTS[o.doc][l]
+            if resolved_link.clsname == "staff_line":
+                if line == 3:  # counted from top, from zero
+                    staff_line = resolved_link
+                    break
+                line += 1
+
+        item = SpriteGroup()
+        item.add("clef", Sprite(
+            -o.width // 2,
+            o.top - staff_line.top,  # sitting on the G line
+            o.mask
+        ))
+        items.append(item)
+
+    return items
+
+
+def get_f_clefs(mc: Mashcima) -> List[SpriteGroup]:
+    crop_objects = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname in ["f-clef"]
+    ]
+
+    items = []
+    for o in crop_objects:
+        staff = get_outlink_to(mc, o, "staff")
+        staff_line = None
+        line = 0
+        for l in staff.outlinks:
+            resolved_link = mc.CROP_OBJECT_LOOKUP_DICTS[o.doc][l]
+            if resolved_link.clsname == "staff_line":
+                if line == 1:  # counted from top, from zero
+                    staff_line = resolved_link
+                    break
+                line += 1
+
+        item = SpriteGroup()
+        item.add("clef", Sprite(
+            -o.width // 2,
+            o.top - staff_line.top,  # sitting on the F line
+            o.mask
+        ))
+        items.append(item)
+
+    return items
+
+
+def get_c_clefs(mc: Mashcima) -> List[SpriteGroup]:
+    crop_objects = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname in ["c-clef"]
+    ]
+
+    items = []
+    for o in crop_objects:
+        item = SpriteGroup()
+        item.add("clef", Sprite(
+            -o.width // 2,
+            -o.height // 2,
+            o.mask
+        ))
+        items.append(item)
 
     return items
