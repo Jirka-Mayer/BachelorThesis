@@ -4,7 +4,13 @@ import copy
 
 
 class BeamedNote(QuarterNote):
-    def __init__(self, beams: int, left_beamed: bool, right_beamed: bool, **kwargs):
+    def __init__(
+            self,
+            beams: int,
+            left_beamed: bool,
+            right_beamed: bool,
+            **kwargs
+    ):
         super().__init__(**kwargs)
         assert beams in [1, 2, 3]
 

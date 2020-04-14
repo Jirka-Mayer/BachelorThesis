@@ -92,6 +92,13 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
             return None
         return _to_generic(accidentals[0])  # pull out the accidental
 
+    def _get_duration_dots():
+        if "*" in after_attachments:
+            return "*"
+        elif "**" in after_attachments:
+            return "**"
+        return None
+
     def _construct_item():
         key_signature_was_created = False
         if _should_key_signature_be_created():
@@ -100,6 +107,7 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
         canvas.add(ITEM_CONSTRUCTORS[_to_generic(item)](**{
             "pitch": _get_pitch(item),
             "accidental": _get_accidental() if not key_signature_was_created else None,
+            "duration_dots": _get_duration_dots(),
             "slur_start": "(" in after_attachments,
             "slur_end": ")" in before_attachments,
         }))

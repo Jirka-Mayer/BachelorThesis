@@ -68,6 +68,14 @@ def accidentals(canvas):
     annotation_to_canvas(canvas, "#-4 q-4 b-2 q-2 N0 q0 | #-4 q-4 b-2 q-2 N0 q0")
 
 
+def note_duration_dots(canvas):
+    annotation_to_canvas(canvas, "q-2 * q0 * e=-2 * =s0 q-1 * | q6 * q8 *")
+
+
+def note_duration_double_dots(canvas):
+    annotation_to_canvas(canvas, "q-2 ** q0 ** e=-2 ** =s0 q-1 ** | q6 ** q8 **")
+
+
 # ================= BEAMS =================
 
 
@@ -173,7 +181,9 @@ def staff_beginning_slur(canvas):
 # TODO: time signature
 # TODO: key signature
 
-inspect(accidentals, 1)  # TODO: make sure proper annotations are generated
+# inspect(accidentals, 1)
+# inspect(note_duration_dots, 1)
+# inspect(note_duration_double_dots, 1)
 # TODO: note duration dots (one, two) -> update slur attachment points
 # TODO: rest duration dots (one, two) -> update slur attachment points
 # TODO: staccato -> update slur attachment points

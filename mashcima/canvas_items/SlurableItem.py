@@ -6,7 +6,12 @@ ADDITIONAL_SLUR_PADDING = 20
 
 
 class SlurableItem(CanvasItem):
-    def __init__(self, slur_start: bool, slur_end: bool, **kwargs):
+    def __init__(
+            self,
+            slur_start: bool = False,
+            slur_end: bool = False,
+            **kwargs
+    ):
         super().__init__(**kwargs)
 
         self.slur_start = slur_start
