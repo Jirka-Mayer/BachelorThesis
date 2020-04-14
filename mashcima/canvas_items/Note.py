@@ -14,8 +14,8 @@ class Note(SlurableItem):
         self.pitch = pitch
 
         # accidental attachment type
-        self.accidental = accidental
         assert accidental in [None, "#", "b", "N"]
+        self.accidental = accidental
 
         # ledger lines
         self._ledger_line_sprites: List[Sprite] = None
@@ -39,6 +39,11 @@ class Note(SlurableItem):
 
     def select_sprites(self, mc: Mashcima):
         self._select_ledger_line_sprites(mc)
+        self._select_accidental_sprite(mc)
+
+    def place_sprites(self):
+        self._place_accidental()
+        super().place_sprites()
 
     def place_item(self, head: int, pitch_positions: Dict[int, int]) -> int:
         out = super().place_item(head, pitch_positions)
@@ -80,6 +85,25 @@ class Note(SlurableItem):
             if i % 2 == 1:
                 continue  # odd positions are holes, not lines
             yield i * negate
+
+    ########################
+    # Accidental rendering #
+    ########################
+
+    def _select_accidental_sprite(self, mc: Mashcima):
+        if self.accidental is None:
+            return
+        sprites = [a.sprite for a in mc.ACCIDENTALS if a.annotation == self.accidental]
+        self.sprites.add("accidental", random.choice(sprites))
+
+    def _place_accidental(self):
+        if self.accidental is None:
+            return
+        # Before this call, accidental is centered on origin
+        sprite = self.sprites.sprite("accidental")
+        sprite.x -= self.sprites.sprite("notehead").width // 2
+        sprite.x -= sprite.width // 2
+        sprite.x -= random.randint(5, 25)
 
     ##########################
     # Slur attachment points #
