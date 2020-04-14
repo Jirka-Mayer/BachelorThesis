@@ -13,6 +13,7 @@ class Note(SlurableItem):
             pitch: int = 0,
             accidental: Optional[str] = None,
             duration_dots: Optional[str] = None,
+            staccato: bool = False,
             **kwargs
     ):
         super().__init__(**kwargs)
@@ -27,6 +28,9 @@ class Note(SlurableItem):
         # duration dots
         assert duration_dots in [None, "*", "**"]
         self.duration_dots = duration_dots
+
+        # has staccato?
+        self.staccato = staccato
 
         # ledger lines
         self._ledger_line_sprites: List[Sprite] = None
@@ -46,6 +50,8 @@ class Note(SlurableItem):
 
     def get_after_attachment_tokens(self) -> List[str]:
         tokens = super().get_after_attachment_tokens()
+        if self.staccato:
+            tokens = tokens + ["."]
         if self.duration_dots is not None:
             tokens = tokens + [self.duration_dots]
         return tokens
@@ -54,10 +60,12 @@ class Note(SlurableItem):
         self._select_ledger_line_sprites(mc)
         self._select_accidental_sprite(mc)
         self._select_duration_dot_sprites(mc)
+        self._select_staccacto_dot_sprite(mc)
 
     def place_sprites(self):
         self._place_accidental()
         self._place_duration_dots()
+        self._place_staccato_dot()
         super().place_sprites()
 
     def place_item(self, head: int, pitch_positions: Dict[int, int]) -> int:
@@ -155,6 +163,30 @@ class Note(SlurableItem):
             second_dot.y += first_dot.y
             second_dot.x += second_dot.width // 2
             second_dot.x += random.randint(5, 15)
+
+    ##########################
+    # Staccato dot rendering #
+    ##########################
+
+    def _select_staccacto_dot_sprite(self, mc: Mashcima):
+        if not self.staccato:
+            return
+        self.sprites.add("staccato", copy.deepcopy(random.choice(mc.DOTS)))
+
+    def _place_staccato_dot(self):
+        if not self.staccato:
+            return
+
+        sign = 1
+        from mashcima.canvas_items.StemNote import StemNote
+        if isinstance(self, StemNote):
+            sign = -1 if self.flipped else 1
+
+        # Before this call, dot is centered on origin
+        sprite = self.sprites.sprite("staccato")
+        sprite.y += sign * self.sprites.sprite("notehead").height // 2
+        sprite.y += sign * sprite.height // 2
+        sprite.y += sign * random.randint(5, 15)
 
     ##########################
     # Slur attachment points #

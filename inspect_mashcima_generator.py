@@ -101,6 +101,13 @@ def note_duration_double_dots(canvas):
     annotation_to_canvas(canvas, "q-2 ** q0 ** e=-2 ** =s0 q-1 ** | q6 ** q8 **")
 
 
+def staccato(canvas):
+    annotation_to_canvas(
+        canvas,
+        "q-2 . q0 . e=-2 . =s0 q-1 . | q6 . q8 ."
+    )
+
+
 # ================= BEAMS =================
 
 
@@ -186,9 +193,13 @@ def staff_beginning_slur(canvas):
 # Running individual inspections #
 ##################################
 
-# for d in load_primus_as_mashcima_annotations(100):
+# for d in load_primus_as_mashcima_annotations(10):
 #     # print(d["path"])
 #     print(d["mashcima"])
+#     try:
+#         inspect(lambda c: annotation_to_canvas(c, d["mashcima"]), 1)
+#     except:
+#         pass
 
 
 
@@ -200,7 +211,7 @@ def staff_beginning_slur(canvas):
 # TODO: thirty-second notes (with flag)
 
 # inspect(rests, 1)
-
+#
 # inspect(bar_lines, 1)
 # inspect(clefs, 1)
 # inspect(time_signature, 1)
@@ -209,6 +220,7 @@ def staff_beginning_slur(canvas):
 # inspect(accidentals, 1)
 # inspect(note_duration_dots, 1)
 # inspect(note_duration_double_dots, 1)
+# inspect(staccato, 1)
 # TODO: note duration dots (one, two) -> update slur attachment points
 # TODO: rest duration dots (one, two) -> update slur attachment points
 # TODO: staccato -> update slur attachment points

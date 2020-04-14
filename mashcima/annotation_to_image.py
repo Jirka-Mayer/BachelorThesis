@@ -120,6 +120,7 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
             "pitch": _get_pitch(item),
             "accidental": _get_accidental() if not key_signature_was_created else None,
             "duration_dots": _get_duration_dots(),
+            "staccato": "." in after_attachments,
             "slur_start": "(" in after_attachments,
             "slur_end": ")" in before_attachments,
         }))
@@ -136,6 +137,11 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
 
         # handle time signature
         if token.startswith("time."):
+            # first create time signature if it has been collected
+            if _should_key_signature_be_created():
+                _create_key_signature()
+                before_attachments = []
+
             if token in ["time.C", "time.C/"]:
                 canvas.add(WholeTimeSignature(crossed=("/" in token)))
                 continue
