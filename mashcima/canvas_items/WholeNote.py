@@ -4,8 +4,8 @@ import random
 
 
 class WholeNote(Note):
-    def get_annotation_tokens(self):
-        return ["w" + str(self.pitch)]
+    def get_note_generic_annotation(self) -> str:
+        return "w"
     
     def select_sprites(self, mc: Mashcima):
         super().select_sprites(mc)

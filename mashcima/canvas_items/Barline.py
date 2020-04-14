@@ -4,8 +4,8 @@ import random
 
 
 class Barline(SlurableItem):
-    def get_annotation_tokens(self):
-        return ["|"]
+    def get_item_annotation_token(self):
+        return "|"
 
     def select_sprites(self, mc: Mashcima):
         super().select_sprites(mc)

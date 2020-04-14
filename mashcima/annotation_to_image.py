@@ -130,7 +130,13 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
         _construct_item()
 
     # make sure the canvas produced what it was supposed to produce
-    assert " ".join(canvas.get_annotations()) == " ".join(annotation.split())
+    given_annotation = " ".join(annotation.split())
+    generated_annotation = " ".join(canvas.get_annotations())
+    if given_annotation != generated_annotation:
+        print("Canvas generated different annotation from the one given:")
+        print("Given: ", given_annotation)
+        print("Generated: ", generated_annotation)
+        assert given_annotation == generated_annotation  # kill the program
 
 
 def annotation_to_image(mc: Mashcima, annotation: str) -> np.ndarray:
@@ -140,9 +146,5 @@ def annotation_to_image(mc: Mashcima, annotation: str) -> np.ndarray:
     annotation_to_canvas(canvas, annotation)
 
     img = canvas.render(mc)
-
-    # glue the annotations into a string and verify equality
-    generated_annotation = " ".join(canvas.get_annotations())
-    assert annotation == generated_annotation
 
     return img

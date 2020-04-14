@@ -1,7 +1,7 @@
 from mashcima import Mashcima
 import numpy as np
 import cv2
-from typing import Dict
+from typing import List, Dict
 from mashcima.SpriteGroup import SpriteGroup
 from mashcima.debug import draw_cross
 
@@ -13,6 +13,17 @@ class CanvasItem:
         self.DEBUG_RENDER = False
 
     def get_annotation_tokens(self):
+        return self.get_before_attachment_tokens() + \
+            [self.get_item_annotation_token()] + \
+            self.get_after_attachment_tokens()
+
+    def get_item_annotation_token(self) -> str:
+        raise NotImplementedError("Override this")
+
+    def get_before_attachment_tokens(self) -> List[str]:
+        return []
+
+    def get_after_attachment_tokens(self) -> List[str]:
         return []
 
     def select_sprites(self, mc: Mashcima):

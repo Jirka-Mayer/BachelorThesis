@@ -4,8 +4,8 @@ import random
 
 
 class HalfNote(StemNote):
-    def get_annotation_tokens(self):
-        return ["h" + str(self.pitch)]
+    def get_note_generic_annotation(self) -> str:
+        return "h"
 
     def select_sprites(self, mc: Mashcima):
         super().select_sprites(mc)

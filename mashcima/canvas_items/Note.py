@@ -1,24 +1,41 @@
 from mashcima import Mashcima
 from mashcima.canvas_items.SlurableItem import SlurableItem
 from mashcima.Sprite import Sprite
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import numpy as np
 import random
 
 
 class Note(SlurableItem):
-    def __init__(self, pitch: int, accidental: str, **kwargs):
+    def __init__(self, pitch: int, accidental: Optional[str], **kwargs):
         super().__init__(**kwargs)
 
         # note pitch
         self.pitch = pitch
 
         # accidental attachment type
-        self.accidental = accidental  # TODO: display accidentals
+        self.accidental = accidental
+        assert accidental in [None, "#", "b", "N"]
 
         # ledger lines
         self._ledger_line_sprites: List[Sprite] = None
         self._ledger_line_y_positions: List[int] = None
+
+    def get_item_annotation_token(self):
+        return self.get_note_generic_annotation() + str(self.pitch)
+
+    def get_note_generic_annotation(self) -> str:
+        raise NotImplementedError("Override this")
+
+    def get_before_attachment_tokens(self) -> List[str]:
+        tokens = super().get_before_attachment_tokens()
+        if self.accidental is not None:
+            tokens = [self.accidental + str(self.pitch)] + tokens
+        return tokens
+
+    def get_after_attachment_tokens(self) -> List[str]:
+        tokens = super().get_after_attachment_tokens()
+        return tokens
 
     def select_sprites(self, mc: Mashcima):
         self._select_ledger_line_sprites(mc)

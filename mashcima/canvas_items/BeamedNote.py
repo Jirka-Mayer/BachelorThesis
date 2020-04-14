@@ -19,7 +19,7 @@ class BeamedNote(QuarterNote):
         # reference to a beam instance set by the canvas when creating the beam
         self.beam = None
 
-    def get_annotation_tokens(self):
+    def get_note_generic_annotation(self) -> str:
         SYMBOLS = {
             1: "e",
             2: "s",
@@ -30,7 +30,7 @@ class BeamedNote(QuarterNote):
             token = "=" + token
         if self.right_beamed:
             token += "="
-        return [token + str(self.pitch)]
+        return token
 
     def select_sprites(self, mc: Mashcima):
         super().select_sprites(mc)

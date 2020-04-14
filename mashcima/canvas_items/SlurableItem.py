@@ -1,5 +1,5 @@
 from mashcima.canvas_items.CanvasItem import CanvasItem
-from typing import Tuple
+from typing import List, Tuple
 
 
 ADDITIONAL_SLUR_PADDING = 20
@@ -11,6 +11,18 @@ class SlurableItem(CanvasItem):
 
         self.slur_start = slur_start
         self.slur_end = slur_end
+
+    def get_before_attachment_tokens(self) -> List[str]:
+        if self.slur_end:
+            return [")"]
+        else:
+            return []
+
+    def get_after_attachment_tokens(self) -> List[str]:
+        if self.slur_start:
+            return ["("]
+        else:
+            return []
 
     def contribute_to_padding(self):
         if self.slur_end:

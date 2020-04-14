@@ -38,13 +38,17 @@ def whole_notes(canvas):
 
 
 def half_notes(canvas):
-    annotation_to_canvas(canvas, " ".join(["h" + str(i) for i in range(-8, 9)]))
-    annotation_to_canvas(canvas, " ".join(["h0" for _ in range(6)]))
+    annotation_to_canvas(canvas, " ".join(
+        ["h" + str(i) for i in range(-8, 9)] +
+        ["h0" for _ in range(6)]
+    ))
 
 
 def quarter_notes(canvas):
-    annotation_to_canvas(canvas, " ".join(["q" + str(i) for i in range(-8, 9)]))
-    annotation_to_canvas(canvas, " ".join(["q0" for _ in range(6)]))
+    annotation_to_canvas(canvas, " ".join(
+        ["q" + str(i) for i in range(-8, 9)] +
+        ["q0" for _ in range(6)]
+    ))
 
 
 def rests(canvas):
@@ -169,7 +173,7 @@ def staff_beginning_slur(canvas):
 # TODO: time signature
 # TODO: key signature
 
-# inspect(accidentals, 1)  # TODO: make sure proper annotations are generated
+inspect(accidentals, 1)  # TODO: make sure proper annotations are generated
 # TODO: note duration dots (one, two) -> update slur attachment points
 # TODO: rest duration dots (one, two) -> update slur attachment points
 # TODO: staccato -> update slur attachment points
@@ -180,7 +184,7 @@ def staff_beginning_slur(canvas):
 # inspect(triple_beam_group, 1)
 # inspect(double_to_triple_beam_group, 1)
 # inspect(single_to_triple_beam_group, 1)
-
+#
 # inspect(simple_slurs, 1)
 # inspect(joined_slurs, 1)
 # inspect(nested_slurs, 1)
