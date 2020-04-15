@@ -54,6 +54,10 @@ def get_connected_components_not_touching_image_border(
 
 def get_center_of_component(mask: np.ndarray) -> Tuple[int, int]:
     m = cv2.moments(mask.astype(np.uint8))
+    if m["m00"] == 0:
+        import matplotlib.pyplot as plt
+        plt.imshow(mask)
+        plt.show()
     x = int(m["m10"] / m["m00"])
     y = int(m["m01"] / m["m00"])
     return x, y

@@ -6,16 +6,16 @@ from typing import List
 import numpy as np
 
 
-mc = Mashcima([
-    "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
-    "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
-    "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
-
-    # "CVC-MUSCIMA_W-02_N-06_D-ideal.xml",
-    # "CVC-MUSCIMA_W-02_N-13_D-ideal.xml",
-    # "CVC-MUSCIMA_W-02_N-17_D-ideal.xml",
-])
-#mc = Mashcima()
+# mc = Mashcima([
+#     "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
+#     "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
+#     "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+#
+#     # "CVC-MUSCIMA_W-02_N-06_D-ideal.xml",
+#     # "CVC-MUSCIMA_W-02_N-13_D-ideal.xml",
+#     # "CVC-MUSCIMA_W-02_N-17_D-ideal.xml",
+# ])
+mc = Mashcima(use_cache=True)
 
 
 def inspect(items: List):
@@ -40,12 +40,24 @@ def inspect(items: List):
 # INSPECTIONS #
 ###############
 
+# DEFAULT SYMBOL SAVING:
+# import cv2, os
+# s = mc.THIRTYSECOND_RESTS[0].sprite("rest")
+# p = os.path.join(os.path.dirname(__file__), "mashcima/default_symbols/rest_thirtysecond")
+# cv2.imwrite(p + ".png", s.mask * 255)
+# with open(p + ".txt", "w") as f:
+#     f.write(str(-s.x) + " " + str(-s.y))
+
 
 # inspect(mc.WHOLE_NOTES)
-# inspect(mc.QUARTER_NOTES)
 # inspect(mc.HALF_NOTES)
+# inspect(mc.QUARTER_NOTES)
 #
+# inspect(mc.WHOLE_RESTS)
+# inspect(mc.HALF_RESTS)
 # inspect(mc.QUARTER_RESTS)
+# inspect(mc.EIGHTH_RESTS)
+# inspect(mc.SIXTEENTH_RESTS)
 #
 # inspect(mc.FLATS)
 # inspect(mc.SHARPS)

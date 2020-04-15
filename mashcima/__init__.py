@@ -5,6 +5,7 @@ from typing import List, Dict
 from mashcima.Sprite import Sprite
 from mashcima.SpriteGroup import SpriteGroup
 import cv2
+import pickle
 
 
 # where should muscima++ crop objects be loaded from
@@ -13,9 +14,11 @@ CROP_OBJECT_DIRECTORY = os.path.join(
     'Data/muscima-pp/v1.0/data/cropobjects_withstaff'
 )
 
+MASHCIMA_CACHE_PATH = "mashcima-cache.pkl"
+
 
 class Mashcima:
-    def __init__(self, documents: List[str] = None):
+    def __init__(self, documents: List[str] = None, use_cache: bool = False):
         print("Loading mashcima...")
 
         # default documents to load
@@ -25,21 +28,36 @@ class Mashcima:
                 for f in os.listdir(CROP_OBJECT_DIRECTORY)
             ]
             # TODO: HACK: Limit document count
-            documents = documents[:10]
+            #documents = documents[:10]
 
         ##############################
         # Load and prepare MUSCIMA++ #
         ##############################
 
-        # all loaded crop object documents
         self.DOCUMENTS = []
-        for i, doc in enumerate(documents):
-            print("Parsing document %d/%d ..." % (i + 1, len(documents)))
-            self.DOCUMENTS.append(
-                parse_cropobject_list(
-                    os.path.join(CROP_OBJECT_DIRECTORY, doc)
+
+        # try to restore mashcima from cache since it's faster
+        was_restored = False
+        if os.path.isfile(MASHCIMA_CACHE_PATH) and use_cache:
+            was_restored = True
+            print("Restoring mashcima from cache...")
+            self.DOCUMENTS = pickle.load(open(MASHCIMA_CACHE_PATH, "rb"))
+            print("Restored %s documents." % (len(self.DOCUMENTS),))
+
+        # all loaded crop object documents
+        if len(self.DOCUMENTS) == 0:
+            for i, doc in enumerate(documents):
+                print("Parsing document %d/%d ..." % (i + 1, len(documents)))
+                self.DOCUMENTS.append(
+                    parse_cropobject_list(
+                        os.path.join(CROP_OBJECT_DIRECTORY, doc)
+                    )
                 )
-            )
+
+        # cache the loaded documents
+        if not was_restored and use_cache:
+            print("Caching mashcima in", MASHCIMA_CACHE_PATH)
+            pickle.dump(self.DOCUMENTS, open(MASHCIMA_CACHE_PATH, "wb"))
 
         # names of the documents
         # (used for resolving document index from document name)
@@ -65,7 +83,11 @@ class Mashcima:
         from mashcima.get_symbols import get_whole_notes
         from mashcima.get_symbols import get_quarter_notes
         from mashcima.get_symbols import get_half_notes
+        from mashcima.get_symbols import get_whole_rests
+        from mashcima.get_symbols import get_half_rests
         from mashcima.get_symbols import get_quarter_rests
+        from mashcima.get_symbols import get_eighth_rests
+        from mashcima.get_symbols import get_sixteenth_rests
         from mashcima.get_symbols import get_accidentals
         from mashcima.get_symbols import get_dots
         from mashcima.get_symbols import get_ledger_lines
@@ -79,7 +101,14 @@ class Mashcima:
         self.WHOLE_NOTES: List[SpriteGroup] = get_whole_notes(self)
         self.QUARTER_NOTES: List[SpriteGroup] = get_quarter_notes(self)
         self.HALF_NOTES: List[SpriteGroup] = get_half_notes(self)
+
+        # TODO: Continue here !! -> pull symbols of remaining rests and notes
+        self.WHOLE_RESTS: List[SpriteGroup] = get_whole_rests(self)
+        self.HALF_RESTS: List[SpriteGroup] = get_half_rests(self)
         self.QUARTER_RESTS: List[SpriteGroup] = get_quarter_rests(self)
+        self.EIGHTH_RESTS: List[SpriteGroup] = get_eighth_rests(self)
+        self.SIXTEENTH_RESTS: List[SpriteGroup] = get_sixteenth_rests(self)
+
         self.SHARPS: List[Sprite] = []
         self.FLATS: List[Sprite] = []
         self.NATURALS: List[Sprite] = []
@@ -93,6 +122,16 @@ class Mashcima:
         self.TIME_MARKS: Dict[str, List[SpriteGroup]] = get_time_marks(self)
 
         # load default symbols if needed
+        if len(self.WHOLE_RESTS) == 0:
+            self.WHOLE_RESTS.append(_load_default_sprite_group("rest", "rest_whole"))
+        if len(self.HALF_RESTS) == 0:
+            self.HALF_RESTS.append(_load_default_sprite_group("rest", "rest_half"))
+        if len(self.QUARTER_RESTS) == 0:
+            self.QUARTER_RESTS.append(_load_default_sprite_group("rest", "rest_quarter"))
+        if len(self.EIGHTH_RESTS) == 0:
+            self.EIGHTH_RESTS.append(_load_default_sprite_group("rest", "rest_eighth"))
+        if len(self.SIXTEENTH_RESTS) == 0:
+            self.SIXTEENTH_RESTS.append(_load_default_sprite_group("rest", "rest_sixteenth"))
         if len(self.F_CLEFS) == 0:
             self.F_CLEFS.append(_load_default_sprite_group("clef", "clef_f"))
         if len(self.G_CLEFS) == 0:
@@ -109,7 +148,11 @@ class Mashcima:
         assert len(self.WHOLE_NOTES) > 0
         assert len(self.QUARTER_NOTES) > 0
         assert len(self.HALF_NOTES) > 0
+        assert len(self.WHOLE_RESTS) > 0
+        assert len(self.HALF_RESTS) > 0
         assert len(self.QUARTER_RESTS) > 0
+        assert len(self.EIGHTH_RESTS) > 0
+        assert len(self.SIXTEENTH_RESTS) > 0
         assert len(self.FLATS) > 0
         assert len(self.SHARPS) > 0
         assert len(self.NATURALS) > 0

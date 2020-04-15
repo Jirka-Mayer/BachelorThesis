@@ -4,7 +4,7 @@ from mashcima import Mashcima
 from mashcima.Canvas import Canvas
 from mashcima.canvas_items.Barline import Barline
 from mashcima.canvas_items.Clef import Clef
-from mashcima.canvas_items.QuarterRest import QuarterRest
+from mashcima.canvas_items.Rest import Rest
 from mashcima.canvas_items.WholeNote import WholeNote
 from mashcima.canvas_items.HalfNote import HalfNote
 from mashcima.canvas_items.QuarterNote import QuarterNote
@@ -43,12 +43,17 @@ ITEM_CONSTRUCTORS = {
 
     "time.C": lambda **kwargs: WholeTimeSignature(crossed=False, **kwargs),
     "time.C/": lambda **kwargs: WholeTimeSignature(crossed=True, **kwargs),
+    # other time signatures are created in a special way
 
     "w": WholeNote,
     "h": HalfNote,
     "q": QuarterNote,
 
-    "qr": QuarterRest,
+    "wr": lambda **kwargs: Rest(rest_kind="wr", **kwargs),
+    "hr": lambda **kwargs: Rest(rest_kind="hr", **kwargs),
+    "qr": lambda **kwargs: Rest(rest_kind="qr", **kwargs),
+    "er": lambda **kwargs: Rest(rest_kind="er", **kwargs),
+    "sr": lambda **kwargs: Rest(rest_kind="sr", **kwargs),
 
     "e=": lambda **kwargs: BeamedNote(beams=1, left_beamed=False, right_beamed=True, **kwargs),
     "=e=": lambda **kwargs: BeamedNote(beams=1, left_beamed=True, right_beamed=True, **kwargs),
@@ -137,6 +142,17 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
 
         # handle time signature
         if token.startswith("time."):
+            # when we have an item found, we wait for another item or
+            # a before attachment to fire the item we have off and start
+            # tracking the next item
+            if item is not None:
+                if (generic_token in BEFORE_ATTACHMENTS) \
+                        or (generic_token not in AFTER_ATTACHMENTS):
+                    _construct_item()
+                    before_attachments = []
+                    after_attachments = []
+                    item = None
+
             # first create time signature if it has been collected
             if _should_key_signature_be_created():
                 _create_key_signature()

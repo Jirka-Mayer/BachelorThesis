@@ -11,8 +11,6 @@ mc = Mashcima([
     "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
     "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
     "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
-
-    "CVC-MUSCIMA_W-02_N-06_D-ideal.xml",  # C clef not present in writer 1
 ])
 
 
@@ -54,8 +52,10 @@ def quarter_notes(canvas):
 
 
 def rests(canvas):
-    annotation_to_canvas(canvas, " ".join(["qr" for _ in range(6)]))
-    # TODO: half, whole, eight, thirty-two rests
+    annotation_to_canvas(
+        canvas,
+        "wr wr hr hr qr qr er er sr sr"
+    )
 
 
 def bar_lines(canvas):
@@ -199,7 +199,7 @@ def staff_beginning_slur(canvas):
 #     try:
 #         inspect(lambda c: annotation_to_canvas(c, d["mashcima"]), 1)
 #     except:
-#         pass
+#         print("SKIPPED")
 
 
 

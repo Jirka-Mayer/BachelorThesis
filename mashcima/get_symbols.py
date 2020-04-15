@@ -7,6 +7,7 @@ from mashcima import Mashcima
 from mashcima.Sprite import Sprite
 from mashcima.SpriteGroup import SpriteGroup
 from typing import List, Tuple, Dict
+from muscima.io import CropObject
 
 
 # TODO: some class names so that I can filter in the future:
@@ -25,6 +26,11 @@ from typing import List, Tuple, Dict
 # 'staff', 'staff_grouping', 'staff_line', 'staff_space', 'stem', 'tempo_text',
 # 'thin_barline', 'tie', 'time_signature', 'tuple', 'tuple_bracket/line',
 # 'whole-time_mark', 'whole_rest']
+
+
+###################
+# Utility methods #
+###################
 
 
 def _build_notehead_stem_pairs(noteheads, stems):
@@ -72,23 +78,63 @@ def _build_notehead_stem_pairs(noteheads, stems):
     return items
 
 
-def get_quarter_rests(mc: Mashcima) -> List[SpriteGroup]:
+def _get_y_position_of_staff_line(
+        mc: Mashcima,
+        obj: CropObject,
+        line_from_top: int = 0
+):
+    """
+    Given a CropObject it finds the y-coordinate of the corresponding staff line
+    """
+    staff = get_outlink_to(mc, obj, "staff")
+    staff_line = None
+    line = 0
+    for l in staff.outlinks:
+        resolved_link = mc.CROP_OBJECT_LOOKUP_DICTS[obj.doc][l]
+        if resolved_link.clsname == "staff_line":
+            if line == line_from_top:  # counted from top, from zero
+                staff_line = resolved_link
+                break
+            line += 1
+    assert staff_line is not None
+    return (staff_line.top + staff_line.bottom) // 2
+
+
+def _get_symbols_centered_on_line(
+        mc: Mashcima,
+        clsname: str,
+        sprite_name: str,
+        line_index: int,
+        when_center_outside_recenter: bool = False
+) -> List[SpriteGroup]:
+    """
+    Returns list of symbols with given clsname centered on given line index
+    """
     crop_objects = [
         o for o in mc.CROP_OBJECTS
-        if o.clsname == "quarter_rest"
+        if o.clsname in [clsname]
     ]
 
     items = []
     for o in crop_objects:
         item = SpriteGroup()
-        item.add("rest", Sprite(
+        sprite = Sprite(
             -o.width // 2,
-            -o.height // 2,
+            o.top - _get_y_position_of_staff_line(mc, o, line_from_top=line_index),
             o.mask
-        ))
+        )
+        item.add(sprite_name, sprite)
         items.append(item)
 
+        if (-sprite.y < 0 or -sprite.y > sprite.height) and when_center_outside_recenter:
+            sprite.y = -sprite.height // 2
+
     return items
+
+
+################################################
+# Code that actually extracts required symbols #
+################################################
 
 
 def get_whole_notes(mc: Mashcima) -> List[SpriteGroup]:
@@ -130,6 +176,64 @@ def get_quarter_notes(mc: Mashcima) -> List[SpriteGroup]:
     ]
     stems = [get_outlink_to(mc, o, "stem") for o in noteheads]
     return _build_notehead_stem_pairs(noteheads, stems)
+
+
+def get_whole_rests(mc: Mashcima) -> List[SpriteGroup]:
+    rests = _get_symbols_centered_on_line(
+        mc,
+        clsname="whole_rest",
+        sprite_name="rest",
+        line_index=1
+    )
+    for group in rests:
+        sprite = group.sprite("rest")
+        if -sprite.y < -sprite.height // 2 or -sprite.y > sprite.height // 2:
+            sprite.y = 0
+    return rests
+
+
+def get_half_rests(mc: Mashcima) -> List[SpriteGroup]:
+    rests = _get_symbols_centered_on_line(
+        mc,
+        clsname="half_rest",
+        sprite_name="rest",
+        line_index=2
+    )
+    for group in rests:
+        sprite = group.sprite("rest")
+        if -sprite.y < sprite.height // 2 or -sprite.y > sprite.height * 1.5:
+            sprite.y = -sprite.height
+    return rests
+
+
+def get_quarter_rests(mc: Mashcima) -> List[SpriteGroup]:
+    return _get_symbols_centered_on_line(
+        mc,
+        clsname="quarter_rest",
+        sprite_name="rest",
+        line_index=2,
+        when_center_outside_recenter=True
+    )
+
+
+def get_eighth_rests(mc: Mashcima) -> List[SpriteGroup]:
+    return _get_symbols_centered_on_line(
+        mc,
+        clsname="8th_rest",
+        sprite_name="rest",
+        line_index=2,
+        when_center_outside_recenter=True
+    )
+
+
+def get_sixteenth_rests(mc: Mashcima) -> List[SpriteGroup]:
+    return _get_symbols_centered_on_line(
+        mc,
+        clsname="16th_rest",
+        sprite_name="rest",
+        line_index=2,
+        when_center_outside_recenter=True
+    )
 
 
 def get_accidentals(mc: Mashcima) -> Tuple[List[Sprite], List[Sprite], List[Sprite]]:
@@ -204,6 +308,9 @@ def get_ledger_lines(mc: Mashcima) -> List[Sprite]:
 
     lines = []
     for o in crop_objects:
+        if o.mask.sum() == 0:
+            print("Skipping invalid ledger line: ", o.uid)
+            continue
         object_center_x, object_center_y = get_center_of_component(o.mask)
         lines.append(Sprite(
             -object_center_x,
@@ -235,63 +342,21 @@ def get_bar_lines(mc: Mashcima) -> List[SpriteGroup]:
 
 
 def get_g_clefs(mc: Mashcima) -> List[SpriteGroup]:
-    crop_objects = [
-        o for o in mc.CROP_OBJECTS
-        if o.clsname in ["g-clef"]
-    ]
-
-    items = []
-    for o in crop_objects:
-        staff = get_outlink_to(mc, o, "staff")
-        staff_line = None
-        line = 0
-        for l in staff.outlinks:
-            resolved_link = mc.CROP_OBJECT_LOOKUP_DICTS[o.doc][l]
-            if resolved_link.clsname == "staff_line":
-                if line == 3:  # counted from top, from zero
-                    staff_line = resolved_link
-                    break
-                line += 1
-
-        item = SpriteGroup()
-        item.add("clef", Sprite(
-            -o.width // 2,
-            o.top - staff_line.top,  # sitting on the G line
-            o.mask
-        ))
-        items.append(item)
-
-    return items
+    return _get_symbols_centered_on_line(
+        mc,
+        clsname="g-clef",
+        sprite_name="clef",
+        line_index=3
+    )
 
 
 def get_f_clefs(mc: Mashcima) -> List[SpriteGroup]:
-    crop_objects = [
-        o for o in mc.CROP_OBJECTS
-        if o.clsname in ["f-clef"]
-    ]
-
-    items = []
-    for o in crop_objects:
-        staff = get_outlink_to(mc, o, "staff")
-        staff_line = None
-        line = 0
-        for l in staff.outlinks:
-            resolved_link = mc.CROP_OBJECT_LOOKUP_DICTS[o.doc][l]
-            if resolved_link.clsname == "staff_line":
-                if line == 1:  # counted from top, from zero
-                    staff_line = resolved_link
-                    break
-                line += 1
-
-        item = SpriteGroup()
-        item.add("clef", Sprite(
-            -o.width // 2,
-            o.top - staff_line.top,  # sitting on the F line
-            o.mask
-        ))
-        items.append(item)
-
-    return items
+    return _get_symbols_centered_on_line(
+        mc,
+        clsname="f-clef",
+        sprite_name="clef",
+        line_index=1
+    )
 
 
 def get_c_clefs(mc: Mashcima) -> List[SpriteGroup]:
