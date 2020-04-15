@@ -53,7 +53,7 @@ class Note(SlurableItem):
         if self.staccato:
             tokens = ["."] + tokens
         if self.duration_dots is not None:
-            tokens = tokens + [self.duration_dots]
+            tokens = [self.duration_dots] + tokens
         return tokens
 
     def select_sprites(self, mc: Mashcima):

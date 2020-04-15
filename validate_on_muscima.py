@@ -12,7 +12,7 @@ from app.GeneratedDataset import normalize_image_height
 
 # load network for predictions
 network = Network(
-    name="April06",
+    name="April15",
     num_classes=len(VOCABULARY),
     continual_saving=False,
     create_logdir=False,
@@ -34,7 +34,8 @@ image_paths = [
 
 # TODO: HACK: keep only the third image
 print(image_paths)
-image_paths = [image_paths[2]]
+#image_paths = [image_paths[2]]
+image_paths = [image_paths[8]]
 
 for path in image_paths:
     img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)

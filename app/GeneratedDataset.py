@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Callable, Tuple
+from typing import List, Callable, Tuple, Optional
 import cv2
 from app.vocabulary import decode_annotation_list, encode_annotation_string
 from app.Network import Network
@@ -21,26 +21,36 @@ class GeneratedDataset:
 
     def __init__(
             self,
-            size: int,
-            generator: Callable[[], Tuple[np.ndarray, str]]
+            images: List[np.ndarray] = None,
+            annotations: List[str] = None,
+            size: Optional[int] = None,
+            generator: Optional[Callable[[], Tuple[np.ndarray, str]]] = None
     ):
+        if images is None:
+            images = []
+        if annotations is None:
+            annotations = []
+
         # dataset size
-        self.size = size
+        assert len(images) == len(annotations)
+        self.size = len(images)
 
         # the data itself
-        self.images: List[np.ndarray] = []
-        self.labels: List[List[int]] = []
+        self.images: List[np.ndarray] = [normalize_image_height(img) for img in images]
+        self.labels: List[List[int]] = [encode_annotation_string(a) for a in annotations]
 
         # permutation used for data retrieval (when training)
         self.permutation = None
 
         # generate the data
-        for i in range(size):
-            img, annotation = generator()
-            img = normalize_image_height(img)
-            annotation = encode_annotation_string(annotation)
-            self.images.append(img)
-            self.labels.append(annotation)
+        if size is not None:
+            while len(self.images) < size:
+                img, annotation = generator()
+                img = normalize_image_height(img)
+                annotation = encode_annotation_string(annotation)
+                self.images.append(img)
+                self.labels.append(annotation)
+                self.size += 1
 
     #############
     # Debugging #
