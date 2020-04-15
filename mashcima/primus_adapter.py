@@ -180,8 +180,10 @@ IGNORE_INCIPITS_CONTAINING = [
     "digit.16",
     "digit.24",
 
+    "rest.thirty_second",  # not present in muscima - we lack the symbols
     "rest.sixty_fourth",
     "rest.quadruple_whole",
+    "note.thirty_second",  # not present in muscima - we lack the symbols
     "note.double_whole",
     "note.quadruple_whole",
 

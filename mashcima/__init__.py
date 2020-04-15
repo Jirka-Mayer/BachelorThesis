@@ -81,8 +81,10 @@ class Mashcima:
 
         # prevents cyclic imports
         from mashcima.get_symbols import get_whole_notes
-        from mashcima.get_symbols import get_quarter_notes
         from mashcima.get_symbols import get_half_notes
+        from mashcima.get_symbols import get_quarter_notes
+        from mashcima.get_symbols import get_eighth_notes
+        from mashcima.get_symbols import get_sixteenth_notes
         from mashcima.get_symbols import get_whole_rests
         from mashcima.get_symbols import get_half_rests
         from mashcima.get_symbols import get_quarter_rests
@@ -99,10 +101,11 @@ class Mashcima:
 
         # load all symbols
         self.WHOLE_NOTES: List[SpriteGroup] = get_whole_notes(self)
-        self.QUARTER_NOTES: List[SpriteGroup] = get_quarter_notes(self)
         self.HALF_NOTES: List[SpriteGroup] = get_half_notes(self)
+        self.QUARTER_NOTES: List[SpriteGroup] = get_quarter_notes(self)
+        self.EIGHTH_NOTES: List[SpriteGroup] = get_eighth_notes(self)
+        self.SIXTEENTH_NOTES: List[SpriteGroup] = get_sixteenth_notes(self)
 
-        # TODO: Continue here !! -> pull symbols of remaining rests and notes
         self.WHOLE_RESTS: List[SpriteGroup] = get_whole_rests(self)
         self.HALF_RESTS: List[SpriteGroup] = get_half_rests(self)
         self.QUARTER_RESTS: List[SpriteGroup] = get_quarter_rests(self)
@@ -122,6 +125,10 @@ class Mashcima:
         self.TIME_MARKS: Dict[str, List[SpriteGroup]] = get_time_marks(self)
 
         # load default symbols if needed
+        if len(self.EIGHTH_NOTES) == 0:
+            self.EIGHTH_NOTES.append(_load_default_eighth_note())
+        if len(self.SIXTEENTH_NOTES) == 0:
+            self.SIXTEENTH_NOTES.append(_load_default_sixteenth_note())
         if len(self.WHOLE_RESTS) == 0:
             self.WHOLE_RESTS.append(_load_default_sprite_group("rest", "rest_whole"))
         if len(self.HALF_RESTS) == 0:
@@ -146,8 +153,10 @@ class Mashcima:
 
         # validate there is no empty list
         assert len(self.WHOLE_NOTES) > 0
-        assert len(self.QUARTER_NOTES) > 0
         assert len(self.HALF_NOTES) > 0
+        assert len(self.QUARTER_NOTES) > 0
+        assert len(self.EIGHTH_NOTES) > 0
+        assert len(self.SIXTEENTH_NOTES) > 0
         assert len(self.WHOLE_RESTS) > 0
         assert len(self.HALF_RESTS) > 0
         assert len(self.QUARTER_RESTS) > 0
@@ -188,3 +197,20 @@ def _load_default_sprite(name: str) -> Sprite:
             x = -int(x)
             y = -int(y)
     return Sprite(x, y, img)
+
+
+def _load_default_eighth_note() -> SpriteGroup:
+    group = SpriteGroup()
+    group.add("notehead", _load_default_sprite("note_eighth_notehead"))
+    group.add("stem", _load_default_sprite("note_eighth_stem"))
+    group.add("flag_8", _load_default_sprite("note_eighth_flag_8"))
+    return group
+
+
+def _load_default_sixteenth_note() -> SpriteGroup:
+    group = SpriteGroup()
+    group.add("notehead", _load_default_sprite("note_sixteenth_notehead"))
+    group.add("stem", _load_default_sprite("note_sixteenth_stem"))
+    group.add("flag_8", _load_default_sprite("note_sixteenth_flag_8"))
+    group.add("flag_16", _load_default_sprite("note_sixteenth_flag_16"))
+    return group

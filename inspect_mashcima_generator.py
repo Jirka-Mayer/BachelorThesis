@@ -12,6 +12,7 @@ mc = Mashcima([
     "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
     "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
 ])
+# mc = Mashcima(use_cache=True)
 
 
 def inspect(generator, samples=10):
@@ -48,6 +49,20 @@ def quarter_notes(canvas):
     annotation_to_canvas(canvas, " ".join(
         ["q" + str(i) for i in range(-8, 9)] +
         ["q0" for _ in range(6)]
+    ))
+
+
+def eighth_notes(canvas):
+    annotation_to_canvas(canvas, " ".join(
+        ["e" + str(i) for i in range(-8, 9)] +
+        ["e0" for _ in range(6)]
+    ))
+
+
+def sixteenth_notes(canvas):
+    annotation_to_canvas(canvas, " ".join(
+        ["s" + str(i) for i in range(-8, 9)] +
+        ["s0" for _ in range(6)]
     ))
 
 
@@ -193,23 +208,18 @@ def staff_beginning_slur(canvas):
 # Running individual inspections #
 ##################################
 
-# for d in load_primus_as_mashcima_annotations(10):
-#     # print(d["path"])
-#     print(d["mashcima"])
-#     try:
-#         inspect(lambda c: annotation_to_canvas(c, d["mashcima"]), 1)
-#     except:
-#         print("SKIPPED")
-
+for d in load_primus_as_mashcima_annotations(10):
+    # print(d["path"])
+    print(d["mashcima"])
+    inspect(lambda c: annotation_to_canvas(c, d["mashcima"]), 1)
 
 
 # inspect(whole_notes, 1)
 # inspect(half_notes, 1)
 # inspect(quarter_notes, 1)
-# TODO: eight notes (with flag)
-# TODO: sixteenth notes (with flag)
-# TODO: thirty-second notes (with flag)
-
+# inspect(eighth_notes, 1)
+# inspect(sixteenth_notes, 1)
+#
 # inspect(rests, 1)
 #
 # inspect(bar_lines, 1)

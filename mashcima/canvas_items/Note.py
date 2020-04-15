@@ -51,7 +51,7 @@ class Note(SlurableItem):
     def get_after_attachment_tokens(self) -> List[str]:
         tokens = super().get_after_attachment_tokens()
         if self.staccato:
-            tokens = tokens + ["."]
+            tokens = ["."] + tokens
         if self.duration_dots is not None:
             tokens = tokens + [self.duration_dots]
         return tokens

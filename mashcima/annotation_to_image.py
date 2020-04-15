@@ -8,6 +8,7 @@ from mashcima.canvas_items.Rest import Rest
 from mashcima.canvas_items.WholeNote import WholeNote
 from mashcima.canvas_items.HalfNote import HalfNote
 from mashcima.canvas_items.QuarterNote import QuarterNote
+from mashcima.canvas_items.FlagNote import FlagNote
 from mashcima.canvas_items.BeamedNote import BeamedNote
 from mashcima.canvas_items.WholeTimeSignature import WholeTimeSignature
 from mashcima.canvas_items.TimeSignature import TimeSignature
@@ -48,6 +49,8 @@ ITEM_CONSTRUCTORS = {
     "w": WholeNote,
     "h": HalfNote,
     "q": QuarterNote,
+    "e": lambda **kwargs: FlagNote(flag_kind="e", **kwargs),
+    "s": lambda **kwargs: FlagNote(flag_kind="s", **kwargs),
 
     "wr": lambda **kwargs: Rest(rest_kind="wr", **kwargs),
     "hr": lambda **kwargs: Rest(rest_kind="hr", **kwargs),
@@ -87,6 +90,8 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
         if len(accidentals) == 0:  # no accidentals present
             return False
         if len(accidentals) > 1:
+            return True
+        if item is None:
             return True
         if _to_generic(item) not in NOTES:
             return True
@@ -140,20 +145,20 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
         token = tokens[i]
         generic_token = _to_generic(token)
 
+        # when we have an item found, we wait for another item or
+        # a before attachment to fire the item we have off and start
+        # tracking the next item
+        if item is not None:
+            if (generic_token in BEFORE_ATTACHMENTS) \
+                    or (generic_token not in AFTER_ATTACHMENTS):
+                _construct_item()
+                before_attachments = []
+                after_attachments = []
+                item = None
+
         # handle time signature
         if token.startswith("time."):
-            # when we have an item found, we wait for another item or
-            # a before attachment to fire the item we have off and start
-            # tracking the next item
-            if item is not None:
-                if (generic_token in BEFORE_ATTACHMENTS) \
-                        or (generic_token not in AFTER_ATTACHMENTS):
-                    _construct_item()
-                    before_attachments = []
-                    after_attachments = []
-                    item = None
-
-            # first create time signature if it has been collected
+            # first create key signature if it has been collected
             if _should_key_signature_be_created():
                 _create_key_signature()
                 before_attachments = []
@@ -169,17 +174,6 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
             canvas.add(TimeSignature(top=first, bottom=second))
             skip_next = True
             continue
-
-        # when we have an item found, we wait for another item or
-        # a before attachment to fire the item we have off and start
-        # tracking the next item
-        if item is not None:
-            if (generic_token in BEFORE_ATTACHMENTS)\
-                    or (generic_token not in AFTER_ATTACHMENTS):
-                _construct_item()
-                before_attachments = []
-                after_attachments = []
-                item = None
 
         if generic_token in BEFORE_ATTACHMENTS:
             before_attachments.append(token)

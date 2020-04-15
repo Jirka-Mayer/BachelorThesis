@@ -10,30 +10,12 @@ from typing import List, Tuple, Dict
 from muscima.io import CropObject
 
 
-# TODO: some class names so that I can filter in the future:
-# (not all though)
-#
-# ['8th_flag', '8th_rest', 'accent', 'arpeggio_"wobble"', 'beam',
-# 'duration-dot', 'dynamics_text', 'f-clef', 'flat', 'g-clef', 'glissando',
-# 'grace-notehead-full', 'grace_strikethrough', 'hairpin-cresc.',
-# 'hairpin-decr.', 'half_rest', 'instrument_specific', 'key_signature',
-# 'ledger_line', 'letter_A', 'letter_P', 'letter_T', 'letter_a', 'letter_c',
-# 'letter_d', 'letter_e', 'letter_f', 'letter_g', 'letter_i', 'letter_l',
-# 'letter_m', 'letter_n', 'letter_o', 'letter_p', 'letter_r', 'letter_s',
-# 'letter_t', 'letter_u', 'measure_separator', 'multi-staff_brace', 'natural',
-# 'notehead-empty', 'notehead-full', 'numeral_3', 'numeral_6', 'numeral_7',
-# 'other-dot', 'other_text', 'quarter_rest', 'sharp', 'slur', 'staccato-dot',
-# 'staff', 'staff_grouping', 'staff_line', 'staff_space', 'stem', 'tempo_text',
-# 'thin_barline', 'tie', 'time_signature', 'tuple', 'tuple_bracket/line',
-# 'whole-time_mark', 'whole_rest']
-
-
 ###################
 # Utility methods #
 ###################
 
 
-def _build_notehead_stem_pairs(noteheads, stems):
+def _build_notehead_stem_pairs(noteheads, stems, flags8=None, flags16=None):
     """
     Combines list of noteheads and a list of stems into a list of
     canvas items. Handles flipping when stem points down.
@@ -63,9 +45,31 @@ def _build_notehead_stem_pairs(noteheads, stems):
             stems[i].top - notehead_center_y,
             stems[i].mask
         ))
+        if flags8 is not None:
+            item.add("flag_8", Sprite(
+                flags8[i].left - notehead_center_x,
+                flags8[i].top - notehead_center_y,
+                flags8[i].mask
+            ))
+        if flags16 is not None:
+            item.add("flag_16", Sprite(
+                flags16[i].left - notehead_center_x,
+                flags16[i].top - notehead_center_y,
+                flags16[i].mask
+            ))
 
         if flip:
             item = item.create_flipped_copy()
+
+            if flags8 is not None:
+                f = item.sprite("flag_8")
+                f.mask = np.flip(f.mask, axis=1)
+                f.x += f.width
+
+            if flags16 is not None:
+                f = item.sprite("flag_16")
+                f.mask = np.flip(f.mask, axis=1)
+                f.x += f.width
 
         stem_sprite = item.sprite("stem")
         item.add_point("stem_head", (
@@ -176,6 +180,32 @@ def get_quarter_notes(mc: Mashcima) -> List[SpriteGroup]:
     ]
     stems = [get_outlink_to(mc, o, "stem") for o in noteheads]
     return _build_notehead_stem_pairs(noteheads, stems)
+
+
+def get_eighth_notes(mc: Mashcima) -> List[SpriteGroup]:
+    noteheads = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname == "notehead-full"
+           and has_outlink_to(mc, o, "stem")
+           and has_outlink_to(mc, o, "8th_flag")
+    ]
+    stems = [get_outlink_to(mc, o, "stem") for o in noteheads]
+    flags = [get_outlink_to(mc, o, "8th_flag") for o in noteheads]
+    return _build_notehead_stem_pairs(noteheads, stems, flags)
+
+
+def get_sixteenth_notes(mc: Mashcima) -> List[SpriteGroup]:
+    noteheads = [
+        o for o in mc.CROP_OBJECTS
+        if o.clsname == "notehead-full"
+           and has_outlink_to(mc, o, "stem")
+           and has_outlink_to(mc, o, "8th_flag")
+           and has_outlink_to(mc, o, "16th_flag")
+    ]
+    stems = [get_outlink_to(mc, o, "stem") for o in noteheads]
+    flags8 = [get_outlink_to(mc, o, "8th_flag") for o in noteheads]
+    flags16 = [get_outlink_to(mc, o, "16th_flag") for o in noteheads]
+    return _build_notehead_stem_pairs(noteheads, stems, flags8, flags16)
 
 
 def get_whole_rests(mc: Mashcima) -> List[SpriteGroup]:
