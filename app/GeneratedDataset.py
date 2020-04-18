@@ -5,6 +5,7 @@ from app.Network import Network
 
 
 def normalize_image_height(img: np.ndarray):
+    # TODO: move this into the network
     target = Network.IMAGE_HEIGHT
     ratio = target / img.shape[0]
     w = int(img.shape[1] * ratio)

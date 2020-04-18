@@ -343,7 +343,7 @@ def parse_annotation_into_token_groups(annotation: str) -> Tuple[List[TokenGroup
     # === 4. phase: handle unattached attachments ===
 
     i = 0
-    while i < len(groups) - 1:
+    while i < len(groups):
         if groups[i].token in ["START", "END"]:
             if len(groups[i].before_attachments) != 0:
                 warnings.append(

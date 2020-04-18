@@ -1,7 +1,8 @@
 import numpy as np
 from app.vocabulary import get_pitch, to_generic
-from app.vocabulary import is_after_attachment, is_before_attachment
-from app.vocabulary import is_note, is_accidental
+from app.vocabulary import is_accidental
+from app.vocabulary import parse_annotation_into_token_groups
+from app.vocabulary import KeySignatureTokenGroup, TimeSignatureTokenGroup
 from mashcima import Mashcima
 from mashcima.Canvas import Canvas
 from mashcima.canvas_items.Barline import Barline
@@ -26,7 +27,7 @@ ITEM_CONSTRUCTORS = {
 
     "time.C": lambda **kwargs: WholeTimeSignature(crossed=False, **kwargs),
     "time.C/": lambda **kwargs: WholeTimeSignature(crossed=True, **kwargs),
-    # other time signatures are created in a special way
+    # numeric time signatures are created in a special way
 
     "w": WholeNote,
     "h": HalfNote,
@@ -54,119 +55,51 @@ ITEM_CONSTRUCTORS = {
 }
 
 
-def annotation_to_canvas(canvas: Canvas, annotation: str):
+def annotation_to_canvas(canvas: Canvas, annotation: str, print_warnings=True):
     """Appends symbols in annotation to the canvas"""
-    before_attachments = []
-    after_attachments = []
-    item = None
 
-    def _should_key_signature_be_created() -> bool:
-        accidentals = [b for b in before_attachments if is_accidental(b)]
-        if len(accidentals) == 0:  # no accidentals present
-            return False
-        if len(accidentals) > 1:
-            return True
-        if item is None:
-            return True
-        if not is_note(item):
-            return True
-        # now we have one accidental in front of a note -> create key signature
-        # if this accidental has different pitch than the note
-        if get_pitch(accidentals[0]) != get_pitch(item):
-            return True
-        # otherwise it's just an accidental, no big deal
-        return False
+    groups, warnings = parse_annotation_into_token_groups(annotation)
 
-    def _create_key_signature():
-        accidentals = [b for b in before_attachments if is_accidental(b)]
-        types = [to_generic(a) for a in accidentals]
-        pitches = [get_pitch(a) for a in accidentals]
-        canvas.add(KeySignature(types, pitches))
+    if print_warnings and len(warnings) > 0:
+        print("Warnings when parsing: " + annotation)
+        print("\t" + "\t\n".join(warnings))
 
-    def _get_accidental():
-        accidentals = [b for b in before_attachments if is_accidental(b)]
-        if len(accidentals) == 0:
-            return None
-        return to_generic(accidentals[0])  # pull out the accidental
+    for group in groups:
 
-    def _get_duration_dots():
-        if "*" in after_attachments:
-            return "*"
-        elif "**" in after_attachments:
-            return "**"
-        return None
+        # special token groups
+        if isinstance(group, TimeSignatureTokenGroup):
+            canvas.add(TimeSignature(
+                top=int(group.first_token[len("time."):]),
+                bottom=int(group.second_token[len("time."):])
+            ))
+            continue
+        if isinstance(group, KeySignatureTokenGroup):
+            canvas.add(KeySignature(
+                types=[to_generic(a) for a in group.before_attachments],
+                pitches=[get_pitch(a) for a in group.before_attachments]
+            ))
+            continue
 
-    def _construct_item():
-        key_signature_was_created = False
-        if _should_key_signature_be_created():
-            _create_key_signature()
-            key_signature_was_created = True
-        canvas.add(ITEM_CONSTRUCTORS[to_generic(item)](**{
-            "pitch": get_pitch(item),
-            "accidental": _get_accidental() if not key_signature_was_created else None,
-            "duration_dots": _get_duration_dots(),
-            "staccato": "." in after_attachments,
-            "slur_start": "(" in after_attachments,
-            "slur_end": ")" in before_attachments,
+        # default token group
+        accidental = None
+        accidentals = [b for b in group.before_attachments if is_accidental(b)]
+        if len(accidentals) > 0:
+            accidental = to_generic(accidentals[0])
+
+        duration_dots = None
+        if "*" in group.after_attachments:
+            duration_dots = "*"
+        elif "**" in group.after_attachments:
+            duration_dots = "**"
+
+        canvas.add(ITEM_CONSTRUCTORS[to_generic(group.token)](**{
+            "pitch": get_pitch(group.token),
+            "accidental": accidental,
+            "duration_dots": duration_dots,
+            "staccato": "." in group.after_attachments,
+            "slur_start": "(" in group.after_attachments,
+            "slur_end": ")" in group.before_attachments,
         }))
-
-    tokens = annotation.split()
-    skip_next = False
-    for i in range(len(tokens)):
-        if skip_next:
-            skip_next = False
-            continue
-
-        token = tokens[i]
-        generic_token = to_generic(token)
-
-        # when we have an item found, we wait for another item or
-        # a before attachment to fire the item we have off and start
-        # tracking the next item
-        if item is not None:
-            if is_before_attachment(generic_token) or \
-                    not is_after_attachment(generic_token):
-                _construct_item()
-                before_attachments = []
-                after_attachments = []
-                item = None
-
-        # handle time signature
-        if token.startswith("time."):
-            # first create key signature if it has been collected
-            if _should_key_signature_be_created():
-                _create_key_signature()
-                before_attachments = []
-
-            if token in ["time.C", "time.C/"]:
-                canvas.add(WholeTimeSignature(crossed=("/" in token)))
-                continue
-            if (i == len(tokens) - 1) or (not tokens[i + 1].startswith("time.")):
-                print("Skipping un-paired time signature:", token)
-                continue
-            first = int(token[len("time."):])
-            second = int(tokens[i + 1][len("time."):])
-            canvas.add(TimeSignature(top=first, bottom=second))
-            skip_next = True
-            continue
-
-        if is_before_attachment(generic_token):
-            before_attachments.append(token)
-        elif is_after_attachment(generic_token):
-            after_attachments.append(token)
-        else:
-            item = token
-
-    # we ran to the end, now construct the last item
-    if item is not None:
-        _construct_item()
-        before_attachments = []
-        after_attachments = []
-        item = None
-
-    # there was no last item, but maybe there was a key signature
-    if _should_key_signature_be_created():
-        _create_key_signature()
 
     # make sure the canvas produced what it was supposed to produce
     given_annotation = " ".join(annotation.split())
