@@ -1,5 +1,4 @@
 from app.Network import Network
-from app.vocabulary import VOCABULARY
 from app.datasets import train_dataset, dev_dataset
 
 
@@ -9,12 +8,16 @@ from app.datasets import train_dataset, dev_dataset
 # build the network
 network = Network(
     name="April15",
-    num_classes=len(VOCABULARY),
     continual_saving=True,
     create_logdir=True,
     threads=4
 )
-#network.load()
+# network = Network.load(
+#     name="April15",
+#     continual_saving=True,
+#     create_logdir=True,
+#     threads=4
+# )
 
 # train network
 network.train(

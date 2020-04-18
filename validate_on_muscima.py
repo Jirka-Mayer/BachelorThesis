@@ -7,18 +7,10 @@ from validation.get_staff_images_from_sheet_image import get_staff_images_from_s
 # ================================================
 
 from app.Network import Network
-from app.vocabulary import VOCABULARY
 from app.GeneratedDataset import normalize_image_height
 
 # load network for predictions
-network = Network(
-    name="April15",
-    num_classes=len(VOCABULARY),
-    continual_saving=False,
-    create_logdir=False,
-    threads=4
-)
-network.load()
+network = Network.load(name="April15", threads=4)
 
 # ==================================================
 

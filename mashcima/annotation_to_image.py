@@ -1,5 +1,7 @@
 import numpy as np
-from typing import Optional
+from app.vocabulary import get_pitch, to_generic
+from app.vocabulary import is_after_attachment, is_before_attachment
+from app.vocabulary import is_note, is_accidental
 from mashcima import Mashcima
 from mashcima.Canvas import Canvas
 from mashcima.canvas_items.Barline import Barline
@@ -15,26 +17,6 @@ from mashcima.canvas_items.TimeSignature import TimeSignature
 from mashcima.canvas_items.KeySignature import KeySignature
 
 
-def _to_generic(annotation: str):
-    return annotation.rstrip("-0123456789")
-
-
-def _get_pitch(annotation: str) -> Optional[int]:
-    generic = annotation.rstrip("-0123456789")
-    pitch_string = annotation[len(generic):]
-    if pitch_string == "":
-        return None
-    return int(pitch_string)
-
-
-BEFORE_ATTACHMENTS = [
-    "fermata",
-    "#", "b", "N",
-    ")"
-]
-AFTER_ATTACHMENTS = [
-    "(", ".", "*", "**"
-]
 ITEM_CONSTRUCTORS = {
     "|": Barline,
 
@@ -70,13 +52,6 @@ ITEM_CONSTRUCTORS = {
     "=t=": lambda **kwargs: BeamedNote(beams=3, left_beamed=True, right_beamed=True, **kwargs),
     "=t": lambda **kwargs: BeamedNote(beams=3, left_beamed=True, right_beamed=False, **kwargs),
 }
-ACCIDENTALS = ["#", "b", "N"]
-NOTES = [
-    "w", "h", "q", "e", "s", "t",
-    "=e", "=e=", "e=",
-    "=s", "=s=", "s=",
-    "=t", "=t=", "t=",
-]
 
 
 def annotation_to_canvas(canvas: Canvas, annotation: str):
@@ -86,33 +61,33 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
     item = None
 
     def _should_key_signature_be_created() -> bool:
-        accidentals = [b for b in before_attachments if _to_generic(b) in ACCIDENTALS]
+        accidentals = [b for b in before_attachments if is_accidental(b)]
         if len(accidentals) == 0:  # no accidentals present
             return False
         if len(accidentals) > 1:
             return True
         if item is None:
             return True
-        if _to_generic(item) not in NOTES:
+        if not is_note(item):
             return True
         # now we have one accidental in front of a note -> create key signature
         # if this accidental has different pitch than the note
-        if _get_pitch(accidentals[0]) != _get_pitch(item):
+        if get_pitch(accidentals[0]) != get_pitch(item):
             return True
         # otherwise it's just an accidental, no big deal
         return False
 
     def _create_key_signature():
-        accidentals = [b for b in before_attachments if _to_generic(b) in ACCIDENTALS]
-        types = [_to_generic(a) for a in accidentals]
-        pitches = [_get_pitch(a) for a in accidentals]
+        accidentals = [b for b in before_attachments if is_accidental(b)]
+        types = [to_generic(a) for a in accidentals]
+        pitches = [get_pitch(a) for a in accidentals]
         canvas.add(KeySignature(types, pitches))
 
     def _get_accidental():
-        accidentals = [b for b in before_attachments if _to_generic(b) in ACCIDENTALS]
+        accidentals = [b for b in before_attachments if is_accidental(b)]
         if len(accidentals) == 0:
             return None
-        return _to_generic(accidentals[0])  # pull out the accidental
+        return to_generic(accidentals[0])  # pull out the accidental
 
     def _get_duration_dots():
         if "*" in after_attachments:
@@ -126,8 +101,8 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
         if _should_key_signature_be_created():
             _create_key_signature()
             key_signature_was_created = True
-        canvas.add(ITEM_CONSTRUCTORS[_to_generic(item)](**{
-            "pitch": _get_pitch(item),
+        canvas.add(ITEM_CONSTRUCTORS[to_generic(item)](**{
+            "pitch": get_pitch(item),
             "accidental": _get_accidental() if not key_signature_was_created else None,
             "duration_dots": _get_duration_dots(),
             "staccato": "." in after_attachments,
@@ -143,14 +118,14 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
             continue
 
         token = tokens[i]
-        generic_token = _to_generic(token)
+        generic_token = to_generic(token)
 
         # when we have an item found, we wait for another item or
         # a before attachment to fire the item we have off and start
         # tracking the next item
         if item is not None:
-            if (generic_token in BEFORE_ATTACHMENTS) \
-                    or (generic_token not in AFTER_ATTACHMENTS):
+            if is_before_attachment(generic_token) or \
+                    not is_after_attachment(generic_token):
                 _construct_item()
                 before_attachments = []
                 after_attachments = []
@@ -175,9 +150,9 @@ def annotation_to_canvas(canvas: Canvas, annotation: str):
             skip_next = True
             continue
 
-        if generic_token in BEFORE_ATTACHMENTS:
+        if is_before_attachment(generic_token):
             before_attachments.append(token)
-        elif generic_token in AFTER_ATTACHMENTS:
+        elif is_after_attachment(generic_token):
             after_attachments.append(token)
         else:
             item = token

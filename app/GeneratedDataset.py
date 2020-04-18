@@ -1,7 +1,6 @@
 import numpy as np
 from typing import List, Callable, Tuple, Optional
 import cv2
-from app.vocabulary import decode_annotation_list, encode_annotation_string
 from app.Network import Network
 
 
@@ -37,7 +36,7 @@ class GeneratedDataset:
 
         # the data itself
         self.images: List[np.ndarray] = [normalize_image_height(img) for img in images]
-        self.labels: List[List[int]] = [encode_annotation_string(a) for a in annotations]
+        self.annotations: List[str] = [a for a in annotations]
 
         # permutation used for data retrieval (when training)
         self.permutation = None
@@ -47,9 +46,8 @@ class GeneratedDataset:
             while len(self.images) < size:
                 img, annotation = generator()
                 img = normalize_image_height(img)
-                annotation = encode_annotation_string(annotation)
                 self.images.append(img)
-                self.labels.append(annotation)
+                self.annotations.append(annotation)
                 self.size += 1
 
     #############
@@ -63,7 +61,7 @@ class GeneratedDataset:
 
         for _ in range(example_count):
             index = random.randint(0, self.size - 1)
-            print(decode_annotation_list(self.labels[index]))
+            print(self.annotations[index])
             # plt.imshow(np.dstack([
             #     self.images[index],
             #     self.images[index],
@@ -97,10 +95,10 @@ class GeneratedDataset:
 
         # resolve indices to data
         picked_images: List[np.ndarray] = []
-        picked_labels: List[List[int]] = []
+        picked_labels: List[str] = []
         for i in indices:
             picked_images.append(self.images[i])
-            picked_labels.append(self.labels[i])
+            picked_labels.append(self.annotations[i])
 
         # get maximum image width
         max_image_width = max([i.shape[1] for i in picked_images])

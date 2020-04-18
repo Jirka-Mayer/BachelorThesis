@@ -1,19 +1,27 @@
-from typing import List
+from typing import List, Optional, Tuple
 
+# pitches that can be used for items that have pitches
+HIGHEST_PITCH = 12  # fourth ledger line above
+LOWEST_PITCH = -8  # second ledger line below
+PITCHES = [str(pos) for pos in reversed(range(LOWEST_PITCH, HIGHEST_PITCH + 1))]
 
-LOWEST_POSITION = -8  # second ledger line below
-HIGHEST_POSITION = 8  # second ledger line above
+# Vocabulary representation with wildcards
+#
+# It contains more symbols than are actually generated or trained, to prepare
+# ground for future expansion. These symbols are marked as NOT_GENERATED or
+# are commented otherwise.
+_WILDCARD_VOCABULARY = [
+    # unknown symbol
+    # Used for symbols that are not recognised, e.g. grace notes.
+    # Not generated, should be present only in annotations of validation data.
+    "?",
 
-# all possible positions
-POSITIONS = [str(pos) for pos in reversed(range(LOWEST_POSITION, HIGHEST_POSITION + 1))]
-
-# symbolic vocabulary representation
-SYMBOLIC = [
+    # barlines
     "|",  # barline
-    "|:",  # repeat start
-    ":|",  # repeat end
-    "fermata",  # fermata above the note
+    "|:",  # repeat start       NOT_GENERATED
+    ":|",  # repeat end         NOT_GENERATED
 
+    # clefs
     "clef.C4",
     "clef.C2",
     "clef.C0",  # standard alto clef (middle sitting on position 0 (center line))
@@ -25,6 +33,7 @@ SYMBOLIC = [
     "clef.G-2",  # standard treble clef (curl sitting on position -2 (line))
     "clef.G-4",
 
+    # time signatures
     "time.C",  # common (C) meter sign (shorthand for 4/4)
     "time.C/",  # crossed C meter sign (shorthand for 2/2)
     "time.0",
@@ -38,16 +47,36 @@ SYMBOLIC = [
     "time.8",
     "time.9",
 
-    "#{position}",  # sharp
-    "b{position}",  # flat
-    "N{position}",  # natural
+    # accidentals & key signatures
+    "#{p}",  # sharp
+    "b{p}",  # flat
+    "N{p}",  # natural
+    "x{p}",  # double sharp         NOT_GENERATED
+    "bb{p}",  # double flat         NOT_GENERATED
 
+    # slurs
     "(",  # slur start
     ")",  # slur end
-    ".",  # staccato dot
-    "*",  # duration dot
-    "**",  # duration double dot
 
+    # tuplets (number above a note)
+    "tuplet.3",  # triplet          NOT_GENERATED
+
+    # other before attachments
+    "fermata",  # fermata           NOT_GENERATED
+    "trill",  # trill               NOT_GENERATED
+    "+",  # also trill              NOT_GENERATED
+
+    # other after attachments
+    ".",  # staccato dot
+    "_",  # tenuto bar              NOT_GENERATED
+    ">",  # accent                  NOT_GENERATED
+    "^",  # marcato                 NOT_GENERATED
+    "*",  # duration dot
+    "**",  # duration double dot    NOT_GENERATED for rests
+
+    # rests
+    "lr",  # longa rest (4 bars)    NOT_GENERATED
+    "br",  # breve rest (2 bars)    NOT_GENERATED
     "wr",  # whole rest
     "hr",  # half rest
     "qr",  # quarter rest
@@ -55,41 +84,307 @@ SYMBOLIC = [
     "sr",  # sixteenth rest
     "tr",  # thirty-two rest
 
-    "w{position}",  # whole note
-    "h{position}",  # half note
-    "q{position}",  # quarter note
-    "e{position}",  # eighth note
-    "s{position}",  # sixteenth note
-    "t{position}",  # thirty-second note
+    # notes
+    "w{p}",  # whole note
+    "h{p}",  # half note
+    "q{p}",  # quarter note
+    "e{p}",  # eighth note
+    "s{p}",  # sixteenth note
+    "t{p}",  # thirty-second note
 
-    "=e{position}",  # beamed left eight note
-    "=e={position}",  # beamed both eight note
-    "e={position}",  # beamed left eight note
+    # beamed notes
+    "=e{p}",  # beamed left eight note
+    "=e={p}",  # beamed both eight note
+    "e={p}",  # beamed left eight note
 
-    "=s{position}",  # beamed left sixteenth note
-    "=s={position}",  # beamed both sixteenth note
-    "s={position}",  # beamed left sixteenth note
+    "=s{p}",  # beamed left sixteenth note
+    "=s={p}",  # beamed both sixteenth note
+    "s={p}",  # beamed left sixteenth note
 
-    "=t{position}",  # beamed left thirty-second note
-    "=t={position}",  # beamed both thirty-second note
-    "t={position}",  # beamed left thirty-second note
+    "=t{p}",  # beamed left thirty-second note
+    "=t={p}",  # beamed both thirty-second note
+    "t={p}",  # beamed left thirty-second note
 ]
 
-# build actual vocabulary
+# the actual vocabulary
+# These values are used for encoding model output.
 VOCABULARY = []
-for s in SYMBOLIC:
-    if "{position}" in s:
-        VOCABULARY += [s.replace("{position}", str(pos)) for pos in POSITIONS]
+for wild in _WILDCARD_VOCABULARY:
+    if "{p}" in wild:
+        VOCABULARY += [wild.replace("{p}", str(p)) for p in PITCHES]
     else:
-        VOCABULARY.append(s)
+        VOCABULARY.append(wild)
 
-# check no duplicities
+# check for duplicities
 assert len(VOCABULARY) == len(set(VOCABULARY))
 
 
-def encode_annotation_string(annotation: str) -> List[int]:
-    return [VOCABULARY.index(s) for s in annotation.split()]
+##########################
+# Helper sets (internal) #
+##########################
+
+_ACCIDENTALS = [
+    "#", "b", "N", "x", "bb"
+]
+
+_BEFORE_ATTACHMENTS = [
+    # order DOES matter!
+    ")",
+    "fermata", "trill", "+",
+    "tuplet.3",
+    *_ACCIDENTALS
+]
+
+_AFTER_ATTACHMENTS = [
+    # order DOES matter!
+    ".", "_", ">", "^", "*", "**",
+    "("
+]
+
+# dictates in what order should attachments be placed around an item
+_ATTACHMENT_ORDER = [
+    *_BEFORE_ATTACHMENTS, *_AFTER_ATTACHMENTS
+]
+
+_NOTES = [
+    "w", "h", "q", "e", "s", "t",
+    "=e", "=e=", "e=",
+    "=s", "=s=", "s=",
+    "=t", "=t=", "t=",
+]
+
+_NUMERIC_TIME_SIGNATURE = [
+    "time.0",
+    "time.1",
+    "time.2",
+    "time.3",
+    "time.4",
+    "time.5",
+    "time.6",
+    "time.7",
+    "time.8",
+    "time.9",
+]
 
 
-def decode_annotation_list(annotations: List[int]) -> str:
-    return " ".join([VOCABULARY[i] for i in annotations])
+###################
+# Utility methods #
+###################
+
+def to_generic(annotation_token: str):
+    """
+    Converts an annotation token to it's generic version (pitch-less version).
+    For generic tokens nothing happens.
+    """
+    return annotation_token.rstrip("-0123456789")
+
+
+def get_pitch(annotation_token: str) -> Optional[int]:
+    """Returns pitch of a token or None if it has no pitch or is generic"""
+    generic = to_generic(annotation_token)
+    pitch_string = annotation_token[len(generic):]
+    if pitch_string == "":
+        return None
+    return int(pitch_string)
+
+
+def is_before_attachment(annotation_token: str) -> bool:
+    """Returns true if the token is a before attachment (generic or not)"""
+    return to_generic(annotation_token) in _BEFORE_ATTACHMENTS
+
+
+def is_after_attachment(annotation_token: str) -> bool:
+    """Returns true if the token is a before attachment (generic or not)"""
+    return to_generic(annotation_token) in _AFTER_ATTACHMENTS
+
+
+def is_note(annotation_token: str) -> bool:
+    """Returns true if the token is a note (generic or not)"""
+    return to_generic(annotation_token) in _NOTES
+
+
+def is_accidental(annotation_token: str) -> bool:
+    """Returns true if the token is an accidental (generic or not)"""
+    return to_generic(annotation_token) in _ACCIDENTALS
+
+
+def is_numeric_time_signature(annotation_token: str) -> bool:
+    """Returns true if the token is a numeric time signature (not C or C/)"""
+    return annotation_token in _NUMERIC_TIME_SIGNATURE
+
+
+#########################
+# Grouping and analysis #
+#########################
+
+# Tokens can be grouped into larger units that make analysis easier.
+
+class TokenGroup:
+    """An item with before and after attachments"""
+    def __init__(
+            self,
+            token: str,
+            before_attachments: List[str]
+    ):
+        super().__init__()
+        self.token = token
+        self.before_attachments = before_attachments
+        self.after_attachments = []
+
+
+class TimeSignatureTokenGroup(TokenGroup):
+    """Two-number time signature (not C and C/)"""
+    def __init__(self, first_number: TokenGroup, second_number: TokenGroup):
+        super().__init__(
+            "TIME_SIGNATURE",
+            first_number.before_attachments + second_number.before_attachments
+        )
+        self.after_attachments = first_number.after_attachments + second_number.after_attachments
+        self.first_token = first_number.token
+        self.second_token = second_number.token
+
+
+class KeySignatureTokenGroup(TokenGroup):
+    """Group of accidentals without an item to stick to"""
+    def __init__(self, group: TokenGroup):
+        super().__init__(
+            "KEY_SIGNATURE",
+            [b for b in group.before_attachments if is_accidental(b)]
+        )
+        group.before_attachments = [b for b in group.before_attachments if not is_accidental(b)]
+
+    @staticmethod
+    def should_key_signature_be_extracted(group: TokenGroup) -> bool:
+        accidentals = [b for b in group.before_attachments if is_accidental(b)]
+        if len(accidentals) == 0:  # no accidentals present
+            return False
+        if len(accidentals) > 1:  # multiple accidentals present
+            return True
+        if not is_note(group.token):  # group is not a note
+            return True
+        # now we have one accidental in front of a note -> create key signature
+        # if this accidental has different pitch than the note
+        if get_pitch(accidentals[0]) != get_pitch(group.token):
+            return True
+        # otherwise it's just an accidental for a note, no key signature
+        return False
+
+
+def parse_annotation_into_token_groups(annotation: str) -> Tuple[List[TokenGroup], List[str]]:
+    """
+    Parses, validates and repairs an annotation and produces token groups,
+    which is an intermediate representation that is easy to add to canvas.
+
+    Returns list of token groups and a list of warnings.
+    """
+    tokens = annotation.split()
+
+    # output
+    groups: List[TokenGroup] = []
+    warnings: List[str] = []
+
+    # === 1. phase: stick attachments to items ===
+
+    # bound the start and end with extra tokens to gather unattached attachments
+    tokens = ["START"] + tokens + ["END"]
+
+    # accumulator for before attachments
+    before_attachments = []
+
+    # last created item
+    item: TokenGroup = None
+
+    # iteration control
+    skip_next = False
+    for i, token in enumerate(tokens):
+        if skip_next:
+            skip_next = False
+            continue
+
+        # accumulate before attachments
+        if is_before_attachment(token):
+            before_attachments.append(token)
+
+        # stick after attachment to the last item
+        elif is_after_attachment(token):
+            item.after_attachments.append(token)
+
+        # create new item
+        else:
+            item = TokenGroup(token, before_attachments)
+            before_attachments = []
+            groups.append(item)
+
+    # === 2. phase: group time signatures ===
+
+    i = 0
+    while i < len(groups) - 1:
+        if is_numeric_time_signature(groups[i].token):
+            if is_numeric_time_signature(groups[i + 1].token):
+                groups[i].before_attachments += groups[i + 1].before_attachments
+                groups[i].after_attachments += groups[i + 1].after_attachments
+                groups[i] = TimeSignatureTokenGroup(groups[i], groups[i + 1])
+                groups.pop(i + 1)
+            else:
+                warnings.append("Unpaired numeric time signature: " + groups[i].token)
+                groups.pop(i)
+                i -= 1
+        i += 1
+
+    # === 3. phase: extract key signatures ===
+
+    i = 0
+    while i < len(groups) - 1:
+        if KeySignatureTokenGroup.should_key_signature_be_extracted(groups[i]):
+            groups.insert(i, KeySignatureTokenGroup(groups[i]))
+            i += 1
+        i += 1
+
+    # === 4. phase: handle unattached attachments ===
+
+    i = 0
+    while i < len(groups) - 1:
+        if groups[i].token in ["START", "END"]:
+            if len(groups[i].before_attachments) != 0:
+                warnings.append(
+                    "Unattached before attachments: "
+                    + repr(groups[i].before_attachments)
+                )
+            if len(groups[i].after_attachments) != 0:
+                warnings.append(
+                    "Unattached after attachments: "
+                    + repr(groups[i].before_attachments)
+                )
+            groups.pop(i)
+            i -= 1
+        i += 1
+
+    # === 5. phase: validate attachment ordering ===
+
+    def _order_tokens(tokens: List[str]) -> List[str]:
+        return list(sorted(
+            tokens,
+            key=lambda t: _ATTACHMENT_ORDER.index(to_generic(t))
+        ))
+
+    def _is_properly_ordered(tokens: List[str]) -> bool:
+        return tokens == _order_tokens(tokens)
+
+    for group in groups:
+        if not _is_properly_ordered(group.before_attachments):
+            warnings.append(
+                "Attachments are not ordered properly: "
+                + repr(group.before_attachments)
+            )
+            group.before_attachments = _order_tokens(group.before_attachments)
+
+        if not _is_properly_ordered(group.after_attachments):
+            warnings.append(
+                "Attachments are not ordered properly: "
+                + repr(group.after_attachments)
+            )
+            group.after_attachments = _order_tokens(group.after_attachments)
+
+    # === Done ===
+
+    return groups, warnings

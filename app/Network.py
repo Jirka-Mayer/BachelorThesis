@@ -2,9 +2,9 @@ import tensorflow as tf
 import os
 import cv2
 import datetime
-from typing import List
+from typing import List, Optional
 from app.sparse_tensor_from_sequences import sparse_tensor_from_sequences
-from app.vocabulary import decode_annotation_list
+from app.vocabulary import VOCABULARY
 
 
 class Network:
@@ -22,7 +22,7 @@ class Network:
     def __init__(
             self,
             name: str = None,
-            num_classes: int = None,
+            vocabulary: Optional[List[str]] = None,
             continual_saving: bool = False,
             create_logdir: bool = False,
             threads: int = 1,
@@ -32,10 +32,11 @@ class Network:
         if self.name is None:
             raise Exception("Network name has to be specified")
 
+        # vocabulary used for output encoding
+        self.vocabulary: List[str] = VOCABULARY if vocabulary is None else vocabulary
+
         # number of output classes
-        self.num_classes: int = num_classes
-        if self.num_classes is None:
-            raise Exception("Number of output classes need to be specified")
+        self.num_classes: int = len(self.vocabulary)
 
         # does the network save itself on improvement during dev evaluation?
         self.continual_saving: bool = continual_saving
@@ -350,6 +351,10 @@ class Network:
                 graph=self.session.graph
             )
 
+    ###################
+    # Utility methods #
+    ###################
+
     @staticmethod
     def create_logdir(model_name: str):
         if not os.path.exists("tf-logs"):
@@ -358,6 +363,12 @@ class Network:
             model_name,
             datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
         )
+
+    def encode_model_output(self, annotation: str) -> List[int]:
+        return [self.vocabulary.index(s) for s in annotation.split()]
+
+    def decode_model_output(self, model_output: List[int]) -> str:
+        return " ".join([self.vocabulary[i] for i in model_output])
 
     #########################
     # Training & prediction #
@@ -426,7 +437,8 @@ class Network:
         wrong_examples = []
 
         while dataset.has_batch():
-            images, labels, widths = dataset.next_batch(batch_size)
+            images, annotations, widths = dataset.next_batch(batch_size)
+            labels = [self.encode_model_output(a) for a in annotations]
             predictions, _, _ = self.session.run([
                 self.predictions,
                 self.update_edit_distance,
@@ -451,9 +463,9 @@ class Network:
                     right_items += 1
                 print(
                     ok,
-                    decode_annotation_list(label),
+                    self.decode_model_output(label),
                     " ==> ",
-                    decode_annotation_list(pred)
+                    self.decode_model_output(pred)
                 )
                 offset += l
                 if label != pred:
@@ -474,9 +486,9 @@ class Network:
             print("Some wrong examples:")
             for i in range(min(10, len(wrong_examples))):
                 print(
-                    decode_annotation_list(wrong_examples[i][0]),
+                    self.decode_model_output(wrong_examples[i][0]),
                     " ==> ",
-                    decode_annotation_list(wrong_examples[i][1])
+                    self.decode_model_output(wrong_examples[i][1])
                 )
 
         # save validation loss and edit distance to summaries
@@ -508,7 +520,7 @@ class Network:
             self.dropout: 0.0
         })
 
-        annotation: str = decode_annotation_list(predictions.values)
+        annotation: str = self.decode_model_output(predictions.values)
 
         return annotation
 
@@ -536,14 +548,27 @@ class Network:
         - trained-models/{model-name}/model.data-...
         - trained-models/{model-name}/checkpoint
         - trained-models/{model-name}/model.edit-distance
+        - trained-models/{model-name}/model.vocabulary
     """
 
-    def load(self):
+    @staticmethod
+    def load(name: str, **kwargs):
         """Loads the model of a given name"""
-        self.saver.restore(
-            self.session,
-            self._get_model_path(self.name)
+        if not Network._exists(name):
+            raise Exception("Model %s does not exist" % (name,))
+
+        vocabulary = Network._load_vocabulary(name)
+        network = Network(
+            name=name,
+            vocabulary=vocabulary,
+            **kwargs
         )
+        network.saver.restore(
+            network.session,
+            network._get_model_path(network.name)
+        )
+
+        return network
 
     def save(self, edit_distance=None):
         """Saves the model and also saves edit distance if provided"""
@@ -559,6 +584,8 @@ class Network:
         if edit_distance is not None:
             self._save_edit_distance(self.name, edit_distance)
 
+        self._save_vocabulary(self.name)
+
     def _save_edit_distance(self, model_name: str, edit_distance: float):
         """Saves the edit distance"""
         dirname = self._get_model_directory(model_name)
@@ -567,6 +594,14 @@ class Network:
 
         with open(self._get_model_path(model_name) + ".edit_distance", "w") as file:
             file.write(str(edit_distance))
+
+    def _save_vocabulary(self, model_name: str):
+        dirname = self._get_model_directory(model_name)
+        if not os.path.exists(dirname):
+            os.mkdir(dirname)
+
+        with open(self._get_model_path(model_name) + ".vocabulary", "w") as file:
+            file.write(str("\n".join(self.vocabulary)))
 
     def save_if_better(self, edit_distance):
         """Saves the model only if it has smaller edit distance, than the saved"""
@@ -583,15 +618,23 @@ class Network:
             ed = float(file.read())
         return ed
 
-    def _exists(self, model_name: str) -> bool:
-        """Returns true if a given model exists"""
-        return os.path.isdir(self._get_model_directory(model_name))
+    @staticmethod
+    def _load_vocabulary(model_name: str) -> List[str]:
+        with open(Network._get_model_path(model_name) + ".vocabulary", "r") as file:
+            return [l.strip() for l in file.readlines()]
 
-    def _get_model_directory(self, model_name: str) -> str:
+    @staticmethod
+    def _exists(model_name: str) -> bool:
+        """Returns true if a given model exists"""
+        return os.path.isdir(Network._get_model_directory(model_name))
+
+    @staticmethod
+    def _get_model_directory(model_name: str) -> str:
         """Returns directory path of a given model name"""
         return os.path.dirname(os.path.realpath(__file__)) + \
             "/../trained-models/" + model_name
 
-    def _get_model_path(self, model_name: str) -> str:
+    @staticmethod
+    def _get_model_path(model_name: str) -> str:
         """Returns path for tensorflow saver to save the model to"""
-        return self._get_model_directory(model_name) + "/model"
+        return Network._get_model_directory(model_name) + "/model"
