@@ -25,8 +25,8 @@ def inspect(generator, samples=10):
         annotation = " ".join(canvas.get_annotations())
 
         print(annotation)
-        # plt.imshow(img)
-        # plt.show()
+        plt.imshow(img)
+        plt.show()
 
 
 ###############
@@ -208,16 +208,16 @@ def staff_beginning_slur(canvas):
 # Running individual inspections #
 ##################################
 
-skipped = 0
-for d in load_primus_as_mashcima_annotations(100):
-    # print(d["path"])
-    print(d["mashcima"])
-    try:
-        inspect(lambda c: annotation_to_canvas(c, d["mashcima"]), 1)
-    except:
-        print("SKIPPED")
-        skipped += 1
-print("Total skipped:", skipped)
+# skipped = 0
+# for d in load_primus_as_mashcima_annotations():
+#     # print(d["path"])
+#     print(d["mashcima"])
+#     try:
+#         inspect(lambda c: annotation_to_canvas(c, d["mashcima"]), 1)
+#     except:
+#         print("SKIPPED")
+#         skipped += 1
+# print("Total skipped:", skipped)
 
 
 # inspect(whole_notes, 1)
