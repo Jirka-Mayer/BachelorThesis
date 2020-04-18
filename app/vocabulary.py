@@ -166,6 +166,10 @@ _NUMERIC_TIME_SIGNATURE = [
     "time.9",
 ]
 
+_BARLINES = [
+    "|", ":|", "|:"
+]
+
 
 ###################
 # Utility methods #
@@ -211,6 +215,38 @@ def is_accidental(annotation_token: str) -> bool:
 def is_numeric_time_signature(annotation_token: str) -> bool:
     """Returns true if the token is a numeric time signature (not C or C/)"""
     return annotation_token in _NUMERIC_TIME_SIGNATURE
+
+
+def is_barline(annotation_token: str) -> bool:
+    """Returns true if the token is some kind of barline"""
+    return annotation_token in _BARLINES
+
+
+def get_measures(annotation: str) -> List[str]:
+    """
+    Splits annotation into annotations of individual measures.
+
+    WARNING: This split is done in a dummy way and ignores barline attachments
+    and similar, so should be used with caution.
+    """
+    tokens = annotation.split()
+
+    if tokens[0] == "|":
+        tokens.pop(0)
+    if tokens[-1] == "|":
+        tokens.pop(-1)
+
+    measures = []
+
+    measure = []
+    for token in tokens:
+        if is_barline(token):
+            measures.append(" ".join(measure))
+            measure = []
+        else:
+            measure.append(token)
+
+    return measures
 
 
 #########################
