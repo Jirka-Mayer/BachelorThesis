@@ -1,7 +1,6 @@
 import cv2
-import matplotlib.pyplot as plt
 import os
-from validation.get_staff_images_from_sheet_image import get_staff_images_from_sheet_image
+from app.get_staff_images_from_sheet_image import get_staff_images_from_sheet_image
 
 
 # ================================================
