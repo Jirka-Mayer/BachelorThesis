@@ -2,6 +2,7 @@ import os
 import numpy as np
 from muscima.io import parse_cropobject_list
 from typing import Tuple, Dict
+import config
 
 
 # to prevent the XML from being loaded each time this method gets called
@@ -15,11 +16,9 @@ def generate_staff_lines() -> Tuple[np.ndarray, Dict[int, int]]:
     if _staff_line_cache is not None:
         return _staff_line_cache[0].copy(), _staff_line_cache[1]
 
-    from mashcima import CROP_OBJECT_DIRECTORY
-
     doc = parse_cropobject_list(
         os.path.join(
-            CROP_OBJECT_DIRECTORY,
+            config.MUSCIMA_PP_CROP_OBJECT_DIRECTORY,
             "CVC-MUSCIMA_W-01_N-19_D-ideal.xml"
         )
     )

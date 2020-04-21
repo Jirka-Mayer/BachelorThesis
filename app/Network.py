@@ -263,7 +263,7 @@ class Network:
         # WARNING:
         # my version of tensorflow (1.12.0) uses "num_classes - 1" as the blank
         # index however the new tensorflow uses "0"
-        if tf.__version__ != "1.12.0":
+        if tf.__version__ not in ["1.12.0", "1.5.0"]:
             raise Exception("Make sure you know, how your blank is encoded!")
 
         # loss
@@ -394,7 +394,8 @@ class Network:
         train_dataset.prepare_epoch()
 
         while train_dataset.has_batch():
-            images, labels, widths = train_dataset.next_batch(batch_size)
+            images, annotations, widths = train_dataset.next_batch(batch_size)
+            labels = [self.encode_model_output(a) for a in annotations]
             rate = self._calculate_learning_rate(self.get_global_step())
 
             # vars to evaluate
