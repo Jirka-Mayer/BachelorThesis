@@ -46,3 +46,26 @@ Tady je dokumentace jednotlivých větších komponent:
 
 - [Dataset a generování dat](docs/dataset-generation.md)
 - [Kód definice neuronové sítě `Network.py`](docs/network.md)
+
+
+## Setting up on a fresh machine
+
+Make sure you have all the required python packages installed:
+
+    pip install numpy
+    pip install cv2
+    pip install tensorflow  # TODO: specify version
+    pip install muscima
+    pip install editdistance
+
+Download PRIMUS dataset (as a `.tgz` file) from
+[https://grfia.dlsi.ua.es/primus/](https://grfia.dlsi.ua.es/primus/)
+It need not be extracted.
+
+Download CVC-MUSCIMA images from [http://www.cvc.uab.es/cvcmuscima/index_database.html](http://www.cvc.uab.es/cvcmuscima/index_database.html)
+
+Download MUSCIMA++ from [https://ufal.mff.cuni.cz/muscima](https://ufal.mff.cuni.cz/muscima)
+
+Clone the repository.
+
+Copy `config_example.py` to `config.py` and modify accordingly.

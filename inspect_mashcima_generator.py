@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from mashcima.Canvas import Canvas
 import random
 from mashcima.annotation_to_image import annotation_to_canvas
-from mashcima.primus_adapter import load_primus_as_mashcima_annotations
 
 
 mc = Mashcima([
@@ -207,18 +206,6 @@ def staff_beginning_slur(canvas):
 ##################################
 # Running individual inspections #
 ##################################
-
-# skipped = 0
-# for d in load_primus_as_mashcima_annotations():
-#     # print(d["path"])
-#     print(d["mashcima"])
-#     try:
-#         inspect(lambda c: annotation_to_canvas(c, d["mashcima"]), 1)
-#     except:
-#         print("SKIPPED")
-#         skipped += 1
-# print("Total skipped:", skipped)
-
 
 # inspect(whole_notes, 1)
 # inspect(half_notes, 1)

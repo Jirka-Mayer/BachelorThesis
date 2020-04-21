@@ -1,66 +1,56 @@
-import os
-from typing import Tuple
-
-
-PRIMUS_DIRECTORY = os.path.join(
-    os.environ['HOME'],
-    'Downloads/primusCalvoRizoAppliedSciences2018'
-)
+from typing import Tuple, Generator
+import tarfile
+import config
 
 
 def load_primus_as_mashcima_annotations(take=None):
     print("Loading Primus incipits...")
 
-    dir_aa = os.path.join(PRIMUS_DIRECTORY, "package_aa")
-    incipit_paths_aa = [
-        os.path.join(dir_aa, f + "/" + f + ".agnostic")
-        for f in os.listdir(dir_aa)
-    ]
-    incipit_paths_aa.sort()
-
-    dir_ab = os.path.join(PRIMUS_DIRECTORY, "package_ab")
-    incipit_paths_ab = [
-        os.path.join(dir_ab, f + "/" + f + ".agnostic")
-        for f in os.listdir(dir_ab)
-    ]
-    incipit_paths_ab.sort()
-
-    incipit_paths = incipit_paths_aa + incipit_paths_ab
-
     ignored_count = 0
     invalid_count = 0
-    if take is None:
-        take = len(incipit_paths)
 
-    print("Taking: ", take)
+    print("Taking: ", "all" if take is None else take)
 
-    mashcima_annotations = []
-    for path in incipit_paths:
-        with open(path) as f:
-            primus_annotation = f.readline()
-            converted = convert_primus_annotation_to_mashcima_annotation(
-                primus_annotation
-            )
-            if converted is None:
-                ignored_count += 1
-                continue
-            if not validate_mashcima_annotation(converted)[0]:
-                ignored_count += 1
-                invalid_count += 1
-                continue
-            mashcima_annotations.append({
-                "path": path,
-                "primus": primus_annotation,
-                "mashcima": converted
-            })
-        if len(mashcima_annotations) >= take:
+    out = []
+    for path, primus_annotation in _iterate_tgz_primus(config.PRIMUS_PATH):
+        converted = convert_primus_annotation_to_mashcima_annotation(
+            primus_annotation
+        )
+        if converted is None:
+            ignored_count += 1
+            continue
+        if not validate_mashcima_annotation(converted)[0]:
+            ignored_count += 1
+            invalid_count += 1
+            continue
+        out.append({
+            "path": path,
+            "primus": primus_annotation,
+            "mashcima": converted
+        })
+
+        if take is not None and len(out) >= take:
             break
 
     print("Ignored incipits: ", ignored_count)
     print("Invalid incipits: ", invalid_count)
-    print("Loaded incipits: ", len(mashcima_annotations))
+    print("Loaded incipits: ", len(out))
 
-    return mashcima_annotations
+    return out
+
+
+def _iterate_tgz_primus(path: str) -> Generator[Tuple[str, str], None, None]:
+    with tarfile.open(path, "r:gz") as tar:
+        while True:
+            item = tar.next()
+            if item is None:
+                break
+
+            if not str(item.name).endswith(".agnostic"):
+                continue
+
+            with tar.extractfile(item) as f:
+                yield item.name, f.read().decode("utf-8")
 
 
 PRIMUS_TO_MASHCIMA_GENERIC_LOOKUP_TABLE = {

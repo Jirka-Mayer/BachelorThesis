@@ -1,5 +1,6 @@
 from app.Network import Network
 from app.datasets import train_dataset, dev_dataset
+import config
 
 
 # dev_dataset.check_dataset_visually()
@@ -7,16 +8,16 @@ from app.datasets import train_dataset, dev_dataset
 
 # build the network
 network = Network(
-    name="April15",
+    name=config.MODEL_NAME,
     continual_saving=True,
     create_logdir=True,
-    threads=4
+    threads=config.NUM_THREADS
 )
 # network = Network.load(
-#     name="April15",
+#     name=config.MODEL_NAME,
 #     continual_saving=True,
 #     create_logdir=True,
-#     threads=4
+#     threads=config.NUM_THREADS
 # )
 
 # train network

@@ -6,13 +6,8 @@ from mashcima.Sprite import Sprite
 from mashcima.SpriteGroup import SpriteGroup
 import cv2
 import pickle
+import config
 
-
-# where should muscima++ crop objects be loaded from
-CROP_OBJECT_DIRECTORY = os.path.join(
-    os.environ['HOME'],
-    'Data/muscima-pp/v1.0/data/cropobjects_withstaff'
-)
 
 MASHCIMA_CACHE_PATH = "mashcima-cache.pkl"
 
@@ -24,8 +19,8 @@ class Mashcima:
         # default documents to load
         if documents is None:
             documents = [
-                os.path.join(CROP_OBJECT_DIRECTORY, f)
-                for f in os.listdir(CROP_OBJECT_DIRECTORY)
+                os.path.join(config.MUSCIMA_PP_CROP_OBJECT_DIRECTORY, f)
+                for f in os.listdir(config.MUSCIMA_PP_CROP_OBJECT_DIRECTORY)
             ]
             # TODO: HACK: Limit document count
             #documents = documents[:10]
@@ -50,7 +45,7 @@ class Mashcima:
                 print("Parsing document %d/%d ..." % (i + 1, len(documents)))
                 self.DOCUMENTS.append(
                     parse_cropobject_list(
-                        os.path.join(CROP_OBJECT_DIRECTORY, doc)
+                        os.path.join(config.MUSCIMA_PP_CROP_OBJECT_DIRECTORY, doc)
                     )
                 )
 

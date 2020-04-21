@@ -6,14 +6,9 @@ from app.muscima_annotations import MUSCIMA_RAW_ANNOTATIONS
 from app.Network import Network
 from app.GeneratedDataset import normalize_image_height
 from app.vocabulary import get_measures
+import config
 
-
-CVC_MUSCIMA = os.path.join(
-    os.environ['HOME'],
-    'Data/CvcMuscima-Distortions/ideal'
-)
-
-network = Network.load(name="April15", threads=4)
+network = Network.load(name=config.MODEL_NAME, threads=config.NUM_THREADS)
 
 ser_sum = 0
 mer_sum = 0
@@ -23,7 +18,7 @@ for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
     for part, staves in parts.items():
         print("Validating on Writer: %s Part: %s ..." % (writer, part))
         image_path = os.path.join(
-            CVC_MUSCIMA,
+            config.CVC_MUSCIMA_PATH,
             "w-{:02d}/image/p{:03d}.png".format(writer, part)
         )
         img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
