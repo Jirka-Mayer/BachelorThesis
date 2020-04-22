@@ -4,7 +4,7 @@ import editdistance
 from app.get_staff_images_from_sheet_image import get_staff_images_from_sheet_image
 from app.muscima_annotations import MUSCIMA_RAW_ANNOTATIONS
 from app.Network import Network
-from app.GeneratedDataset import normalize_image_height
+from app.AnnotationsDataset import normalize_image_height
 from app.vocabulary import get_measures
 import config
 

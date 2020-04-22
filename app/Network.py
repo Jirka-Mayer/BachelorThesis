@@ -1,10 +1,12 @@
 import tensorflow as tf
 import os
 import cv2
+import numpy as np
 import datetime
 from typing import List, Optional
 from app.sparse_tensor_from_sequences import sparse_tensor_from_sequences
 from app.vocabulary import VOCABULARY
+from app.Dataset import Dataset
 
 
 class Network:
@@ -17,6 +19,7 @@ class Network:
     """
 
     IMAGE_HEIGHT = 64  # fixed by the CNN block architecture
+    IMAGE_PADDING_COLOR = 0.0  # color to put after image end in a batch tensor
     NETWORK_SCOPE = "network"
 
     def __init__(
@@ -364,11 +367,55 @@ class Network:
             datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
         )
 
+    @staticmethod
+    def normalize_image(img: np.ndarray):
+        # fix up image format
+        if len(img.shape) == 3:
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+        if img.max(initial=0) > 1.0:
+            img = img / 255
+
+        # normalize height
+        target = Network.IMAGE_HEIGHT
+        ratio = target / img.shape[0]
+        w = int(img.shape[1] * ratio)
+        return cv2.resize(img, (w, target), interpolation=cv2.INTER_AREA)
+
     def encode_model_output(self, annotation: str) -> List[int]:
         return [self.vocabulary.index(s) for s in annotation.split()]
 
     def decode_model_output(self, model_output: List[int]) -> str:
         return " ".join([self.vocabulary[i] for i in model_output])
+
+    def get_next_batch_from(self, dataset: Dataset, batch_size: int):
+        images, annotations = dataset.next_batch(batch_size)
+
+        take = len(images)
+        assert len(images) == len(annotations)
+
+        # pull data from dataset and normalize
+        norm_images = [Network.normalize_image(img) for img in images]
+        labels = [self.encode_model_output(a) for a in annotations]
+
+        # convert the data into tensors
+        max_image_width = max([i.shape[1] for i in norm_images])
+        image_tensor = np.empty(
+            shape=(take, Network.IMAGE_HEIGHT, max_image_width),
+            dtype=np.float32
+        )
+        image_widths = np.empty(shape=(take,), dtype=np.int32)
+        for i in range(take):
+            w = norm_images[i].shape[1]
+            image_tensor[i, :, 0:w] = norm_images[i]
+            image_tensor[i, :, w:] = Network.IMAGE_PADDING_COLOR
+            image_widths[i] = w
+
+        return (
+            image_tensor,
+            image_widths,
+            sparse_tensor_from_sequences(labels)
+        )
 
     #########################
     # Training & prediction #
@@ -394,8 +441,7 @@ class Network:
         train_dataset.prepare_epoch()
 
         while train_dataset.has_batch():
-            images, annotations, widths = train_dataset.next_batch(batch_size)
-            labels = [self.encode_model_output(a) for a in annotations]
+            images, widths, labels = self.get_next_batch_from(train_dataset, batch_size)
             rate = self._calculate_learning_rate(self.get_global_step())
 
             # vars to evaluate
@@ -408,7 +454,7 @@ class Network:
             evaluated = self.session.run(evaluate, {
                 self.images: images,
                 self.image_widths: widths,
-                self.labels: sparse_tensor_from_sequences(labels),
+                self.labels: labels,
                 self.is_training: True,
                 self.learning_rate: rate,
                 self.dropout: 0.5
@@ -438,8 +484,7 @@ class Network:
         wrong_examples = []
 
         while dataset.has_batch():
-            images, annotations, widths = dataset.next_batch(batch_size)
-            labels = [self.encode_model_output(a) for a in annotations]
+            images, widths, labels = self.get_next_batch_from(dataset, batch_size)
             predictions, _, _ = self.session.run([
                 self.predictions,
                 self.update_edit_distance,
@@ -447,7 +492,7 @@ class Network:
             ], {
                 self.images: images,
                 self.image_widths: widths,
-                self.labels: sparse_tensor_from_sequences(labels),
+                self.labels: labels,
                 self.is_training: False,
                 self.dropout: 0.0
             })
@@ -505,14 +550,8 @@ class Network:
 
     def predict(self, img):
         """Predicts symbols in a single image"""
-        if len(img.shape) == 3:
-            img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-
-        if img.max() > 1.0:
-            img = img / 255
-
+        img = Network.normalize_image(img)
         width = img.shape[1]
-        assert img.shape[0] == Network.IMAGE_HEIGHT
 
         predictions = self.session.run(self.predictions, {
             self.images: [img],
