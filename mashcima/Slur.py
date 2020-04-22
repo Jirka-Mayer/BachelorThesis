@@ -83,7 +83,11 @@ class Slur:
             [center_point[1]],
             [end_attachment[1]]
         ])
-        abc = np.linalg.inv(A).dot(v)
+        try:
+            abc = np.linalg.inv(A).dot(v)
+        except:
+            print("Slur didn't render - singular matrix")
+            return
         f = lambda x: abc[0] * x**2 + abc[1] * x + abc[2]
 
         for x in range(start_attachment[0], end_attachment[0]):
