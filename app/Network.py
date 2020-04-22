@@ -414,7 +414,7 @@ class Network:
         return (
             image_tensor,
             image_widths,
-            sparse_tensor_from_sequences(labels)
+            labels
         )
 
     #########################
@@ -454,7 +454,7 @@ class Network:
             evaluated = self.session.run(evaluate, {
                 self.images: images,
                 self.image_widths: widths,
-                self.labels: labels,
+                self.labels: sparse_tensor_from_sequences(labels),
                 self.is_training: True,
                 self.learning_rate: rate,
                 self.dropout: 0.5
@@ -492,7 +492,7 @@ class Network:
             ], {
                 self.images: images,
                 self.image_widths: widths,
-                self.labels: labels,
+                self.labels: sparse_tensor_from_sequences(labels),
                 self.is_training: False,
                 self.dropout: 0.0
             })

@@ -4,7 +4,6 @@ import editdistance
 from app.get_staff_images_from_sheet_image import get_staff_images_from_sheet_image
 from app.muscima_annotations import MUSCIMA_RAW_ANNOTATIONS
 from app.Network import Network
-from app.AnnotationsDataset import normalize_image_height
 from app.vocabulary import get_measures
 import config
 
@@ -32,9 +31,7 @@ for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
         assert len(staff_images) == len(staves)
 
         for i, gold_annotation in enumerate(staves):
-            prediction = network.predict(
-                normalize_image_height(staff_images[i])
-            )
+            prediction = network.predict(staff_images[i])
 
             if gold_annotation == "TODO":
                 print(prediction)
