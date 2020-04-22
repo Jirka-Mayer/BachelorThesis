@@ -2,6 +2,10 @@ from typing import Tuple, Generator
 import tarfile
 import config
 
+# TODO: HACK
+from mashcima.annotation_to_image import annotation_to_canvas
+from mashcima.Canvas import Canvas
+
 
 def load_primus_as_mashcima_annotations(take=None):
     print("Loading Primus incipits...")
@@ -23,6 +27,15 @@ def load_primus_as_mashcima_annotations(take=None):
             ignored_count += 1
             invalid_count += 1
             continue
+
+        # TODO: HACK an image has to be creatable from the annotation:
+        try:
+            annotation_to_canvas(Canvas(), converted)
+        except:
+            print("Skipping PRIMUS annotation because it's not convertible")
+            ignored_count += 1
+            continue
+
         out.append({
             "path": path,
             "primus": primus_annotation,

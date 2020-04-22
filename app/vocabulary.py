@@ -370,7 +370,7 @@ def parse_annotation_into_token_groups(annotation: str) -> Tuple[List[TokenGroup
     # === 3. phase: extract key signatures ===
 
     i = 0
-    while i < len(groups) - 1:
+    while i < len(groups):
         if KeySignatureTokenGroup.should_key_signature_be_extracted(groups[i]):
             groups.insert(i, KeySignatureTokenGroup(groups[i]))
             i += 1
@@ -407,6 +407,9 @@ def parse_annotation_into_token_groups(annotation: str) -> Tuple[List[TokenGroup
         return tokens == _order_tokens(tokens)
 
     for group in groups:
+        if isinstance(group, KeySignatureTokenGroup):
+            continue  # key signature need not be checked for ordering
+
         if not _is_properly_ordered(group.before_attachments):
             warnings.append(
                 "Attachments are not ordered properly: "

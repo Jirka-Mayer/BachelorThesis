@@ -3,6 +3,13 @@ from app.datasets import train_dataset, dev_dataset
 import config
 
 
+# train_dataset.prepare_epoch()
+# b = 1
+# while train_dataset.has_batch():
+#     train_dataset.next_batch(100)
+#     print(b, "/", train_dataset.count_batches(100))
+# exit()
+
 # dev_dataset.check_dataset_visually()
 # exit()
 
