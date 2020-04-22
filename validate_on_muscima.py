@@ -16,6 +16,11 @@ item_count = 0
 
 for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
     for part, staves in parts.items():
+
+        # TODO: HACK filter out specific part
+        if part != 9:
+            continue
+
         print("Validating on Writer: %s Part: %s ..." % (writer, part))
         image_path = os.path.join(
             config.CVC_MUSCIMA_PATH,
@@ -30,6 +35,10 @@ for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
             prediction = network.predict(
                 normalize_image_height(staff_images[i])
             )
+
+            if gold_annotation == "TODO":
+                print(prediction)
+                continue
 
             symbol_error_rate = editdistance.eval(
                 gold_annotation.split(),

@@ -29,11 +29,11 @@ class SlurableItem(CanvasItem):
         else:
             return []
 
-    def contribute_to_padding(self):
-        if self.slur_end:
-            self.sprites.padding_left += ADDITIONAL_SLUR_PADDING
-        if self.slur_start:
-            self.sprites.padding_right += ADDITIONAL_SLUR_PADDING
+    # def contribute_to_padding(self):
+    #     if self.slur_end:
+    #         self.sprites.padding_left += ADDITIONAL_SLUR_PADDING
+    #     if self.slur_start:
+    #         self.sprites.padding_right += ADDITIONAL_SLUR_PADDING
 
     def get_slur_start_attachment_point(self, slur) -> Tuple[int, int]:
         return self._get_slur_attachment_point(True, slur)

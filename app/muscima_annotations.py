@@ -21,6 +21,11 @@ MUSCIMA_RAW_ANNOTATIONS = {
             "clef.C0 time.3 time.4 wr | qr #4 q4 q5 | q6 ( ) q5 #4 q4 | q5 ( e=6 =e=5 #4 =e=4 #3 =e3 | #4 q4 e=5 ) =e4 #3 e=3 ( ) =e4 | #4 q4 q6 * e7 | q5 #4 e=4 ( ) #3 =e3 q6 | q2 q2 #4 q4 |",
             "clef.C2 time.3 time.4 wr | wr | wr | qr q0 q1 | q4 ( ) q3 q2 | q3 ( e=4 =e=3 =e=2 =e1 | q2 e=3 ) =e2 e=1 ( ) =e2 | q1 q4 q4 |",
             "clef.F2 time.3 time.4 wr | wr | wr | wr | qr #3 q3 q4 | q5 ( ) q4 #3 q3 | q4 ( e=5 =e=4 #3 =e=3 #2 =e2 | #3 q3 e=4 ) =e3 #2 e=2 ( ) =e1 |"
+        ],
+        9: [
+            "clef.F2 #2 time.3 time.4 e=-4 ( =e0 ) q5 e=4 ( =s=5 ) =s6 | e=5 ( ) =e=4 =e=3 ( ) =e=2 =e=3 ( ) =e0 | e=1 ( ) =e=3 =e6= ( ) =e=4 =e=2 ( ) =e7 | trill h7 h0 h-6 ? | e=-3 ( =e2 ) q6 e=5 ( =s=6 ) =s7 | e=6 ( ) =e=5 =e=4 ( ) =e=3 =e=2 ( ) =e1 | e=2 ( =s=3 ) =s4 e=3 =e=2 =e=1 =e2 | q0 q-3 q-7 :| |: e=0 ( =e2 ) q4 e=3 ( =s=4 ) =s5 |",
+            "clef.F2 #2 e=4 ( ) =e=3 =e=2 ( ) =e=1 =e=0 ( ) =e2 | e=-2 =e=0 ( #3 =e=3 ) =e=4 =e=5 =e7 | e=-3 e=7 ( =e=6 ) =e5 q6 | #0 e=0 ( =e=2 ) =e=4 =e=6 =e=5 =e4 | e=5 ( =e=1 ) =e=-4 =e=4 =e=6 =e=5 | e=4 ( =e=3 ) =e=2 =e=1 =e=-2 #0 =e0 | q-6 * e=1 N0 =e=0 =e-1 | e=-2 ( =e0 ) q3 e=0 ( =s=1 N2 ) =s2 |",
+            "clef.F2 #2 N2 e=2 ( ) =e=0 =e=1 ( ) =e=-1 =e=-8 =e-2 | #-1 e=-1 ( =e1 ) q4 e=1 ( =s=2 ) =s3 | e=3 ( ) =e=1 =e=2 ( ) =e=0 =e=-7 =e-3 | e=0 ( =e=2 ) =e=4 =e=6 =e=5 =e6 | e=1 ( =e=3 ) =e=5 =e=7 =e=6 =e8 | e=7 =e=2 =e=3 =e=-2 =e=-7 =e2 | ? fermata :| N2 b-2"
         ]
     }
 }
@@ -29,7 +34,7 @@ MUSCIMA_RAW_ANNOTATIONS = {
 for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
     for part, staves in parts.items():
         for i, staff in enumerate(staves):
-            if staff is None:
+            if staff in [None, "TODO"]:
                 continue
             _, warnings = parse_annotation_into_token_groups(staff)
             if len(warnings) != 0:

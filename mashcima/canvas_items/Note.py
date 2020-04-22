@@ -45,7 +45,7 @@ class Note(SlurableItem):
     def get_before_attachment_tokens(self) -> List[str]:
         tokens = super().get_before_attachment_tokens()
         if self.accidental is not None:
-            tokens = [self.accidental + str(self.pitch)] + tokens
+            tokens = tokens + [self.accidental + str(self.pitch)]
         return tokens
 
     def get_after_attachment_tokens(self) -> List[str]:
