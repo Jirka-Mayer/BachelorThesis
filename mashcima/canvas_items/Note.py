@@ -50,10 +50,10 @@ class Note(SlurableItem):
 
     def get_after_attachment_tokens(self) -> List[str]:
         tokens = super().get_after_attachment_tokens()
-        if self.staccato:
-            tokens = ["."] + tokens
         if self.duration_dots is not None:
             tokens = [self.duration_dots] + tokens
+        if self.staccato:
+            tokens = ["."] + tokens
         return tokens
 
     def select_sprites(self, mc: Mashcima):

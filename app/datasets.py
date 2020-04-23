@@ -2,6 +2,7 @@ from mashcima.primus_adapter import load_primus_as_mashcima_annotations
 from app.AnnotationsDataset import AnnotationsDataset
 from mashcima.annotation_to_image import annotation_to_image
 from mashcima.transform_image import transform_image
+from app.generate_random_annotation import generate_random_annotation
 from mashcima import Mashcima
 import numpy as np
 
@@ -80,9 +81,12 @@ primus_train = [item["mashcima"] for item in primus[:TRAIN_SIZE]]
 primus_dev = [item["mashcima"] for item in primus[TRAIN_SIZE:]]
 
 # TODO: generate muscima annotations properly, not in this bodge way
-muscima_train = generate_muscima_annotations(TRAIN_SIZE)
-muscima_dev = generate_muscima_annotations(DEV_SIZE)
+# muscima_train = generate_muscima_annotations(TRAIN_SIZE)
+# muscima_dev = generate_muscima_annotations(DEV_SIZE)
+
+generated_train = [generate_random_annotation() for _ in range(TRAIN_SIZE)]
+generated_dev = [generate_random_annotation() for _ in range(DEV_SIZE)]
 
 # build the final datasets
-train_dataset = AnnotationsDataset(primus_train + muscima_train, image_generator)
-dev_dataset = AnnotationsDataset(primus_dev + muscima_dev, image_generator)
+train_dataset = AnnotationsDataset(primus_train + generated_train, image_generator)
+dev_dataset = AnnotationsDataset(primus_dev + generated_dev, image_generator)

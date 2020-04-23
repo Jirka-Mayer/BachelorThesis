@@ -17,8 +17,8 @@ for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
     for part, staves in parts.items():
 
         # TODO: HACK filter out specific part
-        if part != 9:
-            continue
+        # if part != 9:
+        #     continue
 
         print("Validating on Writer: %s Part: %s ..." % (writer, part))
         image_path = os.path.join(
@@ -36,6 +36,9 @@ for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
             if gold_annotation == "TODO":
                 print(prediction)
                 continue
+
+            print("GOLD", gold_annotation)
+            print("PRED", prediction)
 
             symbol_error_rate = editdistance.eval(
                 gold_annotation.split(),

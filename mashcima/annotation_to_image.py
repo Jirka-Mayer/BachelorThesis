@@ -1,8 +1,9 @@
 import numpy as np
+from typing import List
 from app.vocabulary import get_pitch, to_generic
 from app.vocabulary import is_accidental
 from app.vocabulary import parse_annotation_into_token_groups
-from app.vocabulary import KeySignatureTokenGroup, TimeSignatureTokenGroup
+from app.vocabulary import KeySignatureTokenGroup, TimeSignatureTokenGroup, TokenGroup
 from mashcima import Mashcima
 from mashcima.Canvas import Canvas
 from mashcima.canvas_items.Barline import Barline
@@ -55,15 +56,8 @@ ITEM_CONSTRUCTORS = {
 }
 
 
-def annotation_to_canvas(canvas: Canvas, annotation: str, print_warnings=True):
-    """Appends symbols in annotation to the canvas"""
-
-    groups, warnings = parse_annotation_into_token_groups(annotation)
-
-    if print_warnings and len(warnings) > 0:
-        print("Warnings when parsing: " + annotation)
-        print("\t" + "\t\n".join(warnings))
-
+def token_groups_to_canvas(canvas: Canvas, groups: List[TokenGroup]):
+    """Appends token groups to a canvas instance"""
     for group in groups:
 
         # special token groups
@@ -100,6 +94,18 @@ def annotation_to_canvas(canvas: Canvas, annotation: str, print_warnings=True):
             "slur_start": "(" in group.after_attachments,
             "slur_end": ")" in group.before_attachments,
         }))
+
+
+def annotation_to_canvas(canvas: Canvas, annotation: str, print_warnings=True):
+    """Appends symbols in annotation to the canvas"""
+
+    groups, warnings = parse_annotation_into_token_groups(annotation)
+
+    if print_warnings and len(warnings) > 0:
+        print("Warnings when parsing: " + annotation)
+        print("\t" + "\t\n".join(warnings))
+
+    token_groups_to_canvas(canvas, groups)
 
     # make sure the canvas produced what it was supposed to produce
     given_annotation = " ".join(annotation.split())

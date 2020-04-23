@@ -3,6 +3,7 @@ import numpy as np
 from muscima.io import parse_cropobject_list
 from typing import Tuple, Dict
 import config
+from app.vocabulary import HIGHEST_PITCH, LOWEST_PITCH
 
 
 # to prevent the XML from being loaded each time this method gets called
@@ -50,11 +51,16 @@ def generate_staff_lines() -> Tuple[np.ndarray, Dict[int, int]]:
     space_centers = np.array(line_centers[0:-1]) + np.array(spaces) / 2
     position_zip = zip(line_centers, space_centers)
     positions = [int(p) for t in position_zip for p in t] + [line_centers[-1]]
+
+    # add positions above and below (ledger lines)
     step = int(np.mean(spaces) / 2)
-    for i in range(4):
+    add_count = max(abs(HIGHEST_PITCH), abs(LOWEST_PITCH)) - 4
+    for i in range(add_count):
         positions = [positions[0] - step] + positions + [positions[-1] + step]
+
+    # create a pitch -> position mapping
     position_dict = {
-        8 - i: pos
+        ((len(positions) - 1) // 2) - i: pos
         for i, pos in enumerate(positions)
     }
 

@@ -82,7 +82,7 @@ _WILDCARD_VOCABULARY = [
     "qr",  # quarter rest
     "er",  # eighth rest
     "sr",  # sixteenth rest
-    "tr",  # thirty-two rest
+    "tr",  # thirty-two rest        NOT_GENERATED
 
     # notes
     "w{p}",  # whole note
@@ -90,7 +90,7 @@ _WILDCARD_VOCABULARY = [
     "q{p}",  # quarter note
     "e{p}",  # eighth note
     "s{p}",  # sixteenth note
-    "t{p}",  # thirty-second note
+    "t{p}",  # thirty-second note   NOT_GENERATED
 
     # beamed notes
     "=e{p}",  # beamed left eight note
@@ -260,12 +260,20 @@ class TokenGroup:
     def __init__(
             self,
             token: str,
-            before_attachments: List[str]
+            before_attachments: Optional[List[str]] = None,
+            after_attachments: Optional[List[str]] = None
     ):
         super().__init__()
+
+        if before_attachments is None:
+            before_attachments = []
+
+        if after_attachments is None:
+            after_attachments = []
+
         self.token = token
         self.before_attachments = before_attachments
-        self.after_attachments = []
+        self.after_attachments = after_attachments
 
 
 class TimeSignatureTokenGroup(TokenGroup):
@@ -427,3 +435,25 @@ def parse_annotation_into_token_groups(annotation: str) -> Tuple[List[TokenGroup
     # === Done ===
 
     return groups, warnings
+
+
+def validate_annotation(annotation: str):
+    groups, warnings = parse_annotation_into_token_groups(annotation)
+    if len(warnings) > 0:
+        print("Invalid annotation:")
+        print(annotation)
+        print("\t" + "\t\n".join(warnings))
+        raise Exception("Invalid annotation")
+
+
+def stringify_token_groups_to_annotation(groups: List[TokenGroup]) -> str:
+    # NOTE: this method is a bit of a bodge - it crosses different layers
+    # of abstraction and should be refactored in the future.
+    # Annotation and token group logic should not need to touch Canvas.
+    #
+    # WHY? I need to keep attachments sorted properly, and canvas does that.
+    from mashcima.Canvas import Canvas
+    from mashcima.annotation_to_image import token_groups_to_canvas
+    canvas = Canvas()
+    token_groups_to_canvas(canvas, groups)
+    return " ".join(canvas.get_annotations())
