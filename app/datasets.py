@@ -63,11 +63,12 @@ def generate_muscima_annotations(anotation_count: int):
 TRAIN_SIZE = 2000
 DEV_SIZE = 50
 
-mc = Mashcima([
-    "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
-    "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
-    "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
-])
+# mc = Mashcima([
+#     "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
+#     "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
+#     "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+# ])
+mc = Mashcima(use_cache=True)
 
 
 def image_generator(annotation: str) -> np.ndarray:

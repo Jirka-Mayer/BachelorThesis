@@ -53,6 +53,9 @@ class BeamedNote(QuarterNote):
         lengthen = stem_length + stem.y
         if self.flipped:
             lengthen = stem_length - stem.y - stem.height
+        if stem.height + lengthen < 1:
+            lengthen = 1 - stem.height
+            print("Stem length for beamed note clamped to minimal height.")
         stem.stretch_height(stem.height + lengthen)
 
         if not self.flipped:
