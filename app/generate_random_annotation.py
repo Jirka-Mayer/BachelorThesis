@@ -2,7 +2,7 @@ from typing import List, Optional
 from app.vocabulary import PITCHES, HIGHEST_PITCH, LOWEST_PITCH
 from app.vocabulary import TokenGroup, TimeSignatureTokenGroup, KeySignatureTokenGroup
 from app.vocabulary import validate_annotation, stringify_token_groups_to_annotation
-from app.vocabulary import is_note, is_barline
+from app.vocabulary import is_note, is_barline, get_pitch
 import random
 
 
@@ -133,6 +133,9 @@ def _generate_note(
     # never generate an accidental after a key signature
     if previous_group is not None and isinstance(previous_group, KeySignatureTokenGroup):
         accidental = []
+        # also the note pitch has to differ from the last accidental in the key signature
+        while pitch == str(get_pitch(previous_group.before_attachments[-1])):
+            pitch = str(_generate_random_pitch())
     duration_dots = random.choice([
         *([[]] * 10),
         *([["*"]] * 5),
