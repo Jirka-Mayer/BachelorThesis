@@ -10,6 +10,7 @@ def generate_random_annotation() -> str:
     # create items
     count = random.randint(5, 15)
     groups: List[TokenGroup] = []
+    previous_group = None
     i = 0
     while i < count:
         if random.random() < 0.1 and i + 2 < count:
@@ -17,12 +18,13 @@ def generate_random_annotation() -> str:
             beamed_group_length = random.randint(2, min(count - i, 8))
             if random.random() < 0.1:  # boost 2-beams
                 beamed_group_length = 2
-            groups += _generate_beamed_group(beamed_group_length)
+            groups += _generate_beamed_group(beamed_group_length, previous_group)
             i += beamed_group_length
         else:
             # simple token
-            groups.append(_generate_simple_token_group())
+            groups.append(_generate_simple_token_group(previous_group))
             i += 1
+        previous_group = groups[-1]
 
     # add slurs
     in_slur = False
@@ -50,7 +52,7 @@ def _is_slurable(group: TokenGroup) -> bool:
     return is_note(group.token)# or is_barline(group.token)
 
 
-def _generate_beamed_group(length: int) -> List[TokenGroup]:
+def _generate_beamed_group(length: int, previous_group: Optional[TokenGroup]) -> List[TokenGroup]:
     assert length >= 2
 
     groups = []
@@ -61,8 +63,10 @@ def _generate_beamed_group(length: int) -> List[TokenGroup]:
         kind = random.choice(["e", "s", "t"])
         groups.append(_generate_note(
             kind=left_beamed + kind + right_beamed,
-            pitch=pitches[i]
+            pitch=pitches[i],
+            previous_group=previous_group
         ))
+        previous_group = groups[-1]
 
     return groups
 
@@ -78,31 +82,26 @@ _SIMPLE_TOKEN_GROUP_CONSTRUCTORS = [
     #"|:",
     #":|",
 
-    lambda: _generate_clef(),
-    lambda: _generate_time_signature(),
-    lambda: _generate_key_signature(),
+    lambda **kwargs: _generate_clef(),
+    lambda **kwargs: _generate_time_signature(),
+    lambda **kwargs: _generate_key_signature(),
 
     # "lr", "br",
     "wr", "hr", "qr", "er", "sr",
     #"tr",
 
-    *([lambda: _generate_note("w")] * 2),
-    *([lambda: _generate_note("h")] * 2),
-    *([lambda: _generate_note("q")] * 2),
-    *([lambda: _generate_note("e")] * 2),
-    *([lambda: _generate_note("s")] * 2),
-    #"t{p}",  # thirty-second note
+    *([lambda **kwargs: _generate_some_note(**kwargs)] * 2),
 ]
 
 
-def _generate_simple_token_group() -> TokenGroup:
+def _generate_simple_token_group(previous_group: Optional[TokenGroup]) -> TokenGroup:
     """Generates notes, rests, clefs, time signature, barlines, key signatures"""
     constructor = random.choice(_SIMPLE_TOKEN_GROUP_CONSTRUCTORS)
 
     if isinstance(constructor, str):
         return TokenGroup(token=constructor)
 
-    result = constructor()
+    result = constructor(previous_group=previous_group)
 
     if isinstance(result, str):
         return TokenGroup(token=result)
@@ -110,7 +109,17 @@ def _generate_simple_token_group() -> TokenGroup:
     return result
 
 
-def _generate_note(kind: str, pitch: Optional[int] = None) -> TokenGroup:
+def _generate_some_note(previous_group: Optional[TokenGroup]) -> TokenGroup:
+    return _generate_note(random.choice([
+        "w", "h", "q", "e", "s",  # "t"
+    ]), None, previous_group)
+
+
+def _generate_note(
+        kind: str,
+        pitch: Optional[int] = None,
+        previous_group: Optional[TokenGroup] = None
+) -> TokenGroup:
     if pitch is None:
         pitch = str(_generate_random_pitch())
     else:
@@ -121,6 +130,9 @@ def _generate_note(kind: str, pitch: Optional[int] = None) -> TokenGroup:
         *([["b" + pitch]] * 1),
         *([["N" + pitch]] * 1)
     ])
+    # never generate an accidental after a key signature
+    if previous_group is not None and isinstance(previous_group, KeySignatureTokenGroup):
+        accidental = []
     duration_dots = random.choice([
         *([[]] * 10),
         *([["*"]] * 5),
