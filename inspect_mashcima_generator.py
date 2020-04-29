@@ -108,6 +108,24 @@ def accidentals(canvas):
     annotation_to_canvas(canvas, "#-4 q-4 b-2 q-2 N0 q0 | #-4 q-4 b-2 q-2 N0 q0")
 
 
+def sharps(canvas):
+    annotation_to_canvas(canvas, " ".join(
+        ["#" + str(i) + " q" + str(i) for i in PITCHES]
+    ))
+
+
+def flats(canvas):
+    annotation_to_canvas(canvas, " ".join(
+        ["b" + str(i) + " q" + str(i) for i in PITCHES]
+    ))
+
+
+def naturals(canvas):
+    annotation_to_canvas(canvas, " ".join(
+        ["N" + str(i) + " q" + str(i) for i in PITCHES]
+    ))
+
+
 def note_duration_dots(canvas):
     annotation_to_canvas(canvas, "q-2 * q0 * e=-2 * =s0 q-1 * | q6 * q8 *")
 
@@ -208,20 +226,24 @@ def staff_beginning_slur(canvas):
 # Running individual inspections #
 ##################################
 
-inspect(whole_notes, 1)
-inspect(half_notes, 1)
-inspect(quarter_notes, 1)
-inspect(eighth_notes, 1)
-inspect(sixteenth_notes, 1)
-
+# inspect(whole_notes, 1)
+# inspect(half_notes, 1)
+# inspect(quarter_notes, 1)
+# inspect(eighth_notes, 1)
+# inspect(sixteenth_notes, 1)
+#
 # inspect(rests, 1)
 #
 # inspect(bar_lines, 1)
 # inspect(clefs, 1)
 # inspect(time_signature, 1)
 # inspect(key_signature, 1)
-
+#
 # inspect(accidentals, 1)
+# inspect(sharps, 1)
+# inspect(flats, 1)
+# inspect(naturals, 1)
+
 # inspect(note_duration_dots, 1)
 # inspect(note_duration_double_dots, 1)
 # inspect(staccato, 1)

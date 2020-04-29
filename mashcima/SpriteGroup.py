@@ -1,5 +1,5 @@
 from mashcima.Sprite import Sprite
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 import numpy as np
 import copy
 
@@ -68,18 +68,23 @@ class SpriteGroup:
         self.width = self.right - self.left
         self.height = self.bottom - self.top
 
-    def create_flipped_copy(self):
+    def create_flipped_copy(self, names: List[str] = None):
         """Returns a flipped copy of this item"""
         cp = copy.deepcopy(self)
 
-        for sprite in cp.sprites.values():
-            sprite.flip()
+        if names is None:
+            names = list(cp.sprites.keys()) + list(cp.points.keys())
+
+        for sprite_name, sprite in cp.sprites.items():
+            if sprite_name in names:
+                sprite.flip()
 
         for point_name in cp.points:
-            cp.points[point_name] = (
-                -cp.points[point_name][0],
-                -cp.points[point_name][1]
-            )
+            if point_name in names:
+                cp.points[point_name] = (
+                    -cp.points[point_name][0],
+                    -cp.points[point_name][1]
+                )
 
         return cp
 

@@ -31,7 +31,12 @@ class StemNote(Note):
 
     def place_sprites(self):
         if self.flipped:
-            self.sprites = self.sprites.create_flipped_copy()
+            self.sprites = self.sprites.create_flipped_copy(
+                [
+                    "notehead", "stem", "stem_head",
+                    "flag_8", "flag_16", "flag_32"
+                ]
+            )
         super().place_sprites()
 
     def render(self, img: np.ndarray):
