@@ -12,7 +12,7 @@ class AnnotationsDataset(Dataset):
     def __init__(
             self,
             annotations: List[str],
-            generator: Callable[[str], np.ndarray]
+            generator: Callable[[int, List[str]], np.ndarray]
     ):
         super().__init__()
 
@@ -20,6 +20,7 @@ class AnnotationsDataset(Dataset):
         self.annotations = annotations
 
         # generator that turns annotations to images
+        # (gets annotation index and list of all annotations)
         self.generator = generator
 
     #############
@@ -49,4 +50,4 @@ class AnnotationsDataset(Dataset):
         return self.annotations[index]
 
     def get_image(self, index: int) -> np.ndarray:
-        return self.generator(self.annotations[index])
+        return self.generator(index, self.annotations)

@@ -381,6 +381,8 @@ def get_bar_lines(mc: Mashcima) -> List[SpriteGroup]:
 
     items = []
     for o in crop_objects:
+        if o.height > 150:
+            continue  # TODO: not ignore, but separate and use properly
         item = SpriteGroup()
         item.add("barline", Sprite(
             -o.width // 2,

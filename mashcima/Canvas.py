@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from mashcima import Mashcima
 from mashcima.canvas_items.CanvasItem import CanvasItem
 from mashcima.canvas_items.SlurableItem import SlurableItem
@@ -7,6 +7,7 @@ from mashcima.canvas_items.BeamedNote import BeamedNote
 from mashcima.Slur import Slur
 from mashcima.Beam import Beam
 from mashcima.CanvasOptions import CanvasOptions
+import numpy as np
 import random
 
 
@@ -113,6 +114,29 @@ class Canvas:
             add_slur(start, end)
 
     def render(self, mc: Mashcima):
+        """Simple rendering that creates a single cropped staff"""
+        from mashcima.generate_staff_lines import generate_staff_lines
+        img, pitch_positions = generate_staff_lines()
+        head = self.render_onto_image(
+            mc,
+            img,
+            pitch_positions,
+            0
+        )
+
+        # crop the result
+        img = img[:, 0:head]
+
+        return img
+
+    def render_onto_image(
+            self,
+            mc: Mashcima,
+            img: np.ndarray,
+            pitch_positions: Dict[int, int],
+            head_start: int
+    ) -> int:
+        """More advanced rendering that renders onto a given staff image"""
         if not self._construction_finished:
             self.finish_construction()
 
@@ -120,11 +144,8 @@ class Canvas:
         for item in self.items:
             item.select_sprites(mc)
 
-        from mashcima.generate_staff_lines import generate_staff_lines
-        img, pitch_positions = generate_staff_lines()
-
         # place sprites and place items
-        head = self._place_items(pitch_positions)
+        head = self._place_items(pitch_positions, head_start)
 
         # place beams
         for b in self.beams:
@@ -140,12 +161,9 @@ class Canvas:
         for s in self.slurs:
             s.render(img)
 
-        # crop the result
-        img = img[:, 0:head]
+        return head
 
-        return img
-
-    def _place_items(self, pitch_positions):
+    def _place_items(self, pitch_positions, head_start):
         """Move items to proper places in the pixel space"""
         for item in self.items:
             item.place_sprites()
@@ -153,7 +171,7 @@ class Canvas:
         def generate_padding():
             return random.randint(5, 25)
 
-        head = 0
+        head = head_start
         for i, item in enumerate(self.items):
             head += generate_padding()  # left padding
             head += item.place_item(head, pitch_positions)

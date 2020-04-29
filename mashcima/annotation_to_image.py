@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List
+from typing import List, Optional
 from app.vocabulary import get_pitch, to_generic
 from app.vocabulary import is_accidental
 from app.vocabulary import parse_annotation_into_token_groups
@@ -126,5 +126,94 @@ def annotation_to_image(mc: Mashcima, annotation: str) -> np.ndarray:
     annotation_to_canvas(canvas, annotation)
 
     img = canvas.render(mc)
+
+    return img
+
+
+def multi_staff_annotation_to_image(
+        mc: Mashcima,
+        main_annotation: str,
+        above_annotation: Optional[str],
+        below_annotation: Optional[str],
+        min_width=0,  # keep some empty staff lines after the end
+        crop_horizontally=True,
+        crop_vertically=True,
+        transform_image=True,
+) -> np.ndarray:
+    """
+    Advanced function that creates image of a staff with staves above and
+    below and applies transformations if requested.
+    """
+    from mashcima.generate_staff_lines import generate_staff_lines
+    from mashcima.transform_image import transform_image as transform_image_function
+
+    staff_img, pitch_positions = generate_staff_lines()
+    staff_height = staff_img.shape[0] // 3
+    staff_width = staff_img.shape[1]
+
+    img = np.zeros(
+        shape=(staff_height * 9, staff_width),
+        dtype=np.float32
+    )
+
+    # draw staff lines
+    if above_annotation is not None:
+        img[staff_height * 1:staff_height * 4, :] = staff_img
+    img[staff_height * 3:staff_height * 6, :] = staff_img
+    if below_annotation is not None:
+        img[staff_height * 5:staff_height * 8, :] = staff_img
+
+    # draw above staff symbols
+    if above_annotation is not None:
+        canvas = Canvas()
+        canvas.options.barlines_up = False
+        canvas.options.barlines_down = False
+        annotation_to_canvas(canvas, above_annotation)
+        canvas.render_onto_image(
+            mc, img,
+            {pitch: y + staff_height * 1 for pitch, y in pitch_positions.items()},
+            head_start=0
+        )
+
+    # draw main staff symbols
+    canvas = Canvas()
+    canvas.options.barlines_up = above_annotation is not None
+    canvas.options.barlines_down = below_annotation is not None
+    annotation_to_canvas(canvas, main_annotation)
+    head_end = canvas.render_onto_image(
+        mc, img,
+        {pitch: y + staff_height * 3 for pitch, y in pitch_positions.items()},
+        head_start=0
+    )
+
+    # draw below staff symbols
+    if below_annotation is not None:
+        canvas = Canvas()
+        canvas.options.barlines_up = False
+        canvas.options.barlines_down = False
+        annotation_to_canvas(canvas, below_annotation)
+        canvas.render_onto_image(
+            mc, img,
+            {pitch: y + staff_height * 5 for pitch, y in pitch_positions.items()},
+            head_start=0
+        )
+
+    # minimal length
+    if head_end < min_width:
+        head_end = min_width
+
+    # cropping box
+    box = [
+        0,  # x
+        staff_height * 3 if crop_vertically else 0,  # y
+        head_end if crop_horizontally else staff_width,  # width
+        staff_height * 3 if crop_vertically else img.shape[0]  # height
+    ]
+
+    # transform or just crop
+    if transform_image:
+        img = transform_image_function(img, box)
+    else:
+        img = img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]]
 
     return img

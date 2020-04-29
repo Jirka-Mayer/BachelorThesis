@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import random
 import math
+from typing import Optional, List
 
 
 def _generate_transformation(img_shape):
@@ -52,21 +53,34 @@ def _generate_padding(img_shape):
     return top, right, bottom, left
 
 
-def transform_image(img: np.ndarray):
+def transform_image(img: np.ndarray, box: Optional[List[int]]=None):
     """Rotates and deforms the image slightly"""
+    # box = [x, y, width, height]
+
+    if box is None:
+        corners = np.array([
+            [[0, 0]],
+            [[img.shape[1], 0]],
+            [[img.shape[1], img.shape[0]]],
+            [[0, img.shape[0]]]
+        ], dtype=np.int32)
+        box_shape = img.shape
+    else:
+        box_shape = (box[3], box[2])
+        corners = np.array([
+            [[box[0], box[1]]],
+            [[box[0] + box_shape[1], box[1]]],
+            [[box[0] + box_shape[1], box[1] + box_shape[0]]],
+            [[box[0], box[1] + box_shape[0]]]
+        ], dtype=np.int32)
+
     # setup the transformation matrix
-    matrix = _generate_transformation(img.shape)
+    matrix = _generate_transformation(box_shape)
 
     # setup padding (top, right, bottom, left)
-    padding = _generate_padding(img.shape)
+    padding = _generate_padding(box_shape)
 
     # transform image corners to get the new dimensions (rect)
-    corners = np.array([
-        [[0, 0]],
-        [[img.shape[1], 0]],
-        [[img.shape[1], img.shape[0]]],
-        [[0, img.shape[0]]]
-    ], dtype=np.int32)
     transformed_corners = cv2.transform(corners, matrix)
     rect = cv2.boundingRect(transformed_corners)  # (left, top, width, height)
 
