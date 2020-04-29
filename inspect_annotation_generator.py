@@ -13,13 +13,13 @@ if SHOW_IMAGES:
         "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
     ])
 
-for i in range(10000):
+for i in range(10):
     annotation = generate_random_annotation()
-    #print(annotation)
+    print(annotation)
     if i % 100 == 0:
         print(i)
 
     if SHOW_IMAGES:
         img = annotation_to_image(mc, annotation)
-        # plt.imshow(img)
-        # plt.show()
+        plt.imshow(img)
+        plt.show()

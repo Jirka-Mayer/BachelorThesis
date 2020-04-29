@@ -86,11 +86,9 @@ _SIMPLE_TOKEN_GROUP_CONSTRUCTORS = [
     lambda **kwargs: _generate_time_signature(),
     lambda **kwargs: _generate_key_signature(),
 
-    # TODO: generate some note -> generate duration dots
-    "lr", "br", "wr", "hr", "qr", "er", "sr",
-    #"tr",
+    lambda **kwargs: _generate_some_rest(),
 
-    *([lambda **kwargs: _generate_some_note(**kwargs)] * 2),
+    *([lambda **kwargs: _generate_some_note(**kwargs)] * 3),
 ]
 
 
@@ -107,6 +105,22 @@ def _generate_simple_token_group(previous_group: Optional[TokenGroup]) -> TokenG
         return TokenGroup(token=result)
 
     return result
+
+
+def _generate_some_rest() -> TokenGroup:
+    kind = random.choice([
+        "lr", "br", "wr", "hr", "qr", "er", "sr",
+        # "tr",
+    ])
+    duration_dots = random.choice([
+        *([[]] * 10),
+        *([["*"]] * 5),
+        *([["**"]] * 1)
+    ])
+    return TokenGroup(
+        token=kind,
+        after_attachments=[*duration_dots]
+    )
 
 
 def _generate_some_note(previous_group: Optional[TokenGroup]) -> TokenGroup:
