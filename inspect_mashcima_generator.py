@@ -134,6 +134,14 @@ def note_duration_double_dots(canvas):
     annotation_to_canvas(canvas, "q-2 ** q0 ** e=-2 ** =s0 q-1 ** | q6 ** q8 **")
 
 
+def rest_duration_dots(canvas):
+    annotation_to_canvas(canvas, "wr * hr * qr * er * sr *")
+
+
+def rest_duration_double_dots(canvas):
+    annotation_to_canvas(canvas, "wr ** hr ** qr ** er ** sr **")
+
+
 def staccato(canvas):
     annotation_to_canvas(
         canvas,
@@ -246,6 +254,8 @@ def staff_beginning_slur(canvas):
 
 # inspect(note_duration_dots, 1)
 # inspect(note_duration_double_dots, 1)
+# inspect(rest_duration_dots, 1)
+# inspect(rest_duration_double_dots, 1)
 # inspect(staccato, 1)
 # TODO: note duration dots (one, two) -> update slur attachment points
 # TODO: rest duration dots (one, two) -> update slur attachment points

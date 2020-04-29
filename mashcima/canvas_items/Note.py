@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple, Optional
 import numpy as np
 import random
 import copy
+from mashcima.DurationDots import DurationDots
 
 
 class Note(SlurableItem):
@@ -26,8 +27,7 @@ class Note(SlurableItem):
         self.accidental = accidental
 
         # duration dots
-        assert duration_dots in [None, "*", "**"]
-        self.duration_dots = duration_dots
+        self.duration_dots = DurationDots(self, duration_dots)
 
         # has staccato?
         self.staccato = staccato
@@ -50,8 +50,7 @@ class Note(SlurableItem):
 
     def get_after_attachment_tokens(self) -> List[str]:
         tokens = super().get_after_attachment_tokens()
-        if self.duration_dots is not None:
-            tokens = [self.duration_dots] + tokens
+        tokens = self.duration_dots.get_tokens() + tokens
         if self.staccato:
             tokens = ["."] + tokens
         return tokens
@@ -59,12 +58,12 @@ class Note(SlurableItem):
     def select_sprites(self, mc: Mashcima):
         self._select_ledger_line_sprites(mc)
         self._select_accidental_sprite(mc)
-        self._select_duration_dot_sprites(mc)
+        self.duration_dots.select_sprites(mc)
         self._select_staccacto_dot_sprite(mc)
 
     def place_sprites(self):
         self._place_accidental()
-        self._place_duration_dots()
+        self.duration_dots.place_sprites()
         self._place_staccato_dot()
         super().place_sprites()
 
@@ -134,35 +133,6 @@ class Note(SlurableItem):
         sprite.x -= self.sprites.sprite("notehead").width // 2
         sprite.x -= sprite.width // 2
         sprite.x -= random.randint(5, 25)
-
-    ##########################
-    # Duration dot rendering #
-    ##########################
-
-    def _select_duration_dot_sprites(self, mc: Mashcima):
-        if self.duration_dots is None:
-            return
-        self.sprites.add("duration_dot", copy.deepcopy(random.choice(mc.DOTS)))
-        if self.duration_dots == "**":
-            self.sprites.add("duration_dot_2", copy.deepcopy(random.choice(mc.DOTS)))
-
-    def _place_duration_dots(self):
-        if self.duration_dots is None:
-            return
-        # Before this call, dot is centered on origin
-        first_dot = self.sprites.sprite("duration_dot")
-        first_dot.x += self.sprites.sprite("notehead").width // 2
-        first_dot.x += first_dot.width // 2
-        first_dot.x += random.randint(5, 15)
-        if self.pitch % 2 == 0:
-            first_dot.y += 10 if self.pitch > 0 else -10  # put it into a space
-        first_dot.y += random.randint(-5, 5)
-        if self.duration_dots == "**":
-            second_dot = self.sprites.sprite("duration_dot_2")
-            second_dot.x += first_dot.x
-            second_dot.y += first_dot.y
-            second_dot.x += second_dot.width // 2
-            second_dot.x += random.randint(5, 15)
 
     ##########################
     # Staccato dot rendering #

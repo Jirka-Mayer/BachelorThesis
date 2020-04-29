@@ -1,6 +1,7 @@
 from mashcima import Mashcima
 from mashcima.canvas_items.CanvasItem import CanvasItem
-from typing import Optional, Dict
+from mashcima.DurationDots import DurationDots
+from typing import Optional, Dict, List
 import random
 import copy
 
@@ -19,12 +20,15 @@ class Rest(CanvasItem):
         self.kind = rest_kind
 
         # duration dots
-        assert duration_dots in [None, "*", "**"]
-        self.duration_dots = duration_dots
-        assert duration_dots is None  # TODO: duration dots not yet implemented for rests
+        self.duration_dots = DurationDots(self, duration_dots)
 
     def get_item_annotation_token(self) -> str:
         return self.kind
+
+    def get_after_attachment_tokens(self) -> List[str]:
+        tokens = super().get_after_attachment_tokens()
+        tokens = self.duration_dots.get_tokens() + tokens
+        return tokens
 
     def contribute_to_padding(self):
         if self.kind in ["wr", "hr"]:
@@ -42,7 +46,13 @@ class Rest(CanvasItem):
             self.sprites = copy.deepcopy(random.choice(mc.EIGHTH_RESTS))
         if self.kind == "sr":
             self.sprites = copy.deepcopy(random.choice(mc.SIXTEENTH_RESTS))
+
+        self.duration_dots.select_sprites(mc)
         super().select_sprites(mc)
+
+    def place_sprites(self):
+        self.duration_dots.place_sprites()
+        super().place_sprites()
 
     def place_item(self, head: int, pitch_positions: Dict[int, int]):
         out = super().place_item(head, pitch_positions)
