@@ -10,8 +10,8 @@ import config
 #     print(b, "/", train_dataset.count_batches(100))
 # exit()
 
-# dev_dataset.check_dataset_visually()
-# exit()
+dev_dataset.check_dataset_visually()
+exit()
 
 # build the network
 # network = Network(

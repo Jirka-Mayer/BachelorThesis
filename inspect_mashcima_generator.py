@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from mashcima.Canvas import Canvas
 import random
 from mashcima.annotation_to_image import annotation_to_canvas
+from app.vocabulary import PITCHES
 
 
 mc = Mashcima([
@@ -34,33 +35,33 @@ def inspect(generator, samples=10):
 
 
 def whole_notes(canvas):
-    annotation_to_canvas(canvas, " ".join(["w" + str(i) for i in range(-8, 9)]))
+    annotation_to_canvas(canvas, " ".join(["w" + str(i) for i in PITCHES]))
 
 
 def half_notes(canvas):
     annotation_to_canvas(canvas, " ".join(
-        ["h" + str(i) for i in range(-8, 9)] +
+        ["h" + str(i) for i in PITCHES] +
         ["h0" for _ in range(6)]
     ))
 
 
 def quarter_notes(canvas):
     annotation_to_canvas(canvas, " ".join(
-        ["q" + str(i) for i in range(-8, 9)] +
+        ["q" + str(i) for i in PITCHES] +
         ["q0" for _ in range(6)]
     ))
 
 
 def eighth_notes(canvas):
     annotation_to_canvas(canvas, " ".join(
-        ["e" + str(i) for i in range(-8, 9)] +
+        ["e" + str(i) for i in PITCHES] +
         ["e0" for _ in range(6)]
     ))
 
 
 def sixteenth_notes(canvas):
     annotation_to_canvas(canvas, " ".join(
-        ["s" + str(i) for i in range(-8, 9)] +
+        ["s" + str(i) for i in PITCHES] +
         ["s0" for _ in range(6)]
     ))
 
@@ -207,12 +208,12 @@ def staff_beginning_slur(canvas):
 # Running individual inspections #
 ##################################
 
-# inspect(whole_notes, 1)
-# inspect(half_notes, 1)
-# inspect(quarter_notes, 1)
-# inspect(eighth_notes, 1)
-# inspect(sixteenth_notes, 1)
-#
+inspect(whole_notes, 1)
+inspect(half_notes, 1)
+inspect(quarter_notes, 1)
+inspect(eighth_notes, 1)
+inspect(sixteenth_notes, 1)
+
 # inspect(rests, 1)
 #
 # inspect(bar_lines, 1)

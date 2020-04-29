@@ -20,6 +20,7 @@ _WILDCARD_VOCABULARY = [
     "|",  # barline
     "|:",  # repeat start       NOT_GENERATED
     ":|",  # repeat end         NOT_GENERATED
+    ":|:",  # repeat both       NOT_GENERATED
 
     # clefs
     "clef.C4",

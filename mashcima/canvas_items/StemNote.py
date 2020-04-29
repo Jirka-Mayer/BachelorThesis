@@ -2,6 +2,7 @@ from mashcima import Mashcima
 from mashcima.canvas_items.Note import Note
 from mashcima.debug import draw_cross
 import numpy as np
+import random
 
 
 class StemNote(Note):
@@ -23,8 +24,10 @@ class StemNote(Note):
     def select_sprites(self, mc: Mashcima):
         super().select_sprites(mc)
 
-        # decide flip
+        # decide whether to flip or not
         self.flipped = self.pitch > 0
+        if self.pitch in self.canvas_options.randomize_stem_flips_for_pitches:
+            self.flipped = random.choice([True, False])
 
     def place_sprites(self):
         if self.flipped:

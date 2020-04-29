@@ -4,13 +4,20 @@ import cv2
 from typing import List, Dict
 from mashcima.SpriteGroup import SpriteGroup
 from mashcima.debug import draw_cross
+from mashcima.CanvasOptions import CanvasOptions
 
 
 class CanvasItem:
     def __init__(self, **kwargs):
         self.sprites: SpriteGroup = SpriteGroup()
 
+        self.canvas_options: CanvasOptions = None
+
         self.DEBUG_RENDER = False
+
+    def set_canvas_options(self, options: CanvasOptions):
+        """Called by the canvas when added into the canvas"""
+        self.canvas_options = options
 
     def get_annotation_tokens(self):
         return self.get_before_attachment_tokens() + \

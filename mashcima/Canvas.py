@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from mashcima import Mashcima
 from mashcima.canvas_items.CanvasItem import CanvasItem
 from mashcima.canvas_items.SlurableItem import SlurableItem
@@ -6,11 +6,12 @@ from mashcima.canvas_items.InvisibleSlurEnd import InvisibleSlurEnd
 from mashcima.canvas_items.BeamedNote import BeamedNote
 from mashcima.Slur import Slur
 from mashcima.Beam import Beam
+from mashcima.CanvasOptions import CanvasOptions
 import random
 
 
 class Canvas:
-    def __init__(self):
+    def __init__(self, options: Optional[CanvasOptions] = None):
         # items on the canvas
         self.items: List[CanvasItem] = []
 
@@ -22,11 +23,15 @@ class Canvas:
 
         # was the construction finished or not
         self._construction_finished = False
+
+        # options that alter how is the staff printed
+        self.options = CanvasOptions() if options is None else options
         
     def add(self, item: CanvasItem):
         if self._construction_finished:
             raise Exception("Cannot add item, construction has been finished")
         self.items.append(item)
+        item.set_canvas_options(self.options)
 
     def get_annotations(self) -> List[str]:
         out: List[str] = []
