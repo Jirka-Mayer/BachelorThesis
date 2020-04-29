@@ -208,6 +208,28 @@ def get_sixteenth_notes(mc: Mashcima) -> List[SpriteGroup]:
     return _build_notehead_stem_pairs(noteheads, stems, flags8, flags16)
 
 
+def get_longa_rests(mc: Mashcima) -> List[SpriteGroup]:
+    HEIGHT_THRESHOLD = 44  # split longas from breves
+    rests = _get_symbols_centered_on_line(
+        mc,
+        clsname="multi-measure_rest",
+        sprite_name="rest",
+        line_index=2
+    )
+    return list(filter(lambda r: r.sprite("rest").height > HEIGHT_THRESHOLD, rests))
+
+
+def get_breve_rests(mc: Mashcima) -> List[SpriteGroup]:
+    HEIGHT_THRESHOLD = 44  # split longas from breves
+    rests = _get_symbols_centered_on_line(
+        mc,
+        clsname="multi-measure_rest",
+        sprite_name="rest",
+        line_index=2
+    )
+    return list(filter(lambda r: r.sprite("rest").height <= HEIGHT_THRESHOLD, rests))
+
+
 def get_whole_rests(mc: Mashcima) -> List[SpriteGroup]:
     rests = _get_symbols_centered_on_line(
         mc,

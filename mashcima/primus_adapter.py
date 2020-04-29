@@ -97,6 +97,8 @@ PRIMUS_TO_MASHCIMA_GENERIC_LOOKUP_TABLE = {
     "duration_dot": "*",
     # double dots are joined manually
 
+    "rest.quadruple_whole": "lr",
+    "rest.double_whole": "br",
     "rest.whole": "wr",
     "rest.half": "hr",
     "rest.quarter": "qr",
@@ -125,6 +127,8 @@ PRIMUS_TO_MASHCIMA_GENERIC_LOOKUP_TABLE = {
 }
 
 PRIMUS_TO_MASHCIMA_PITCH_LOOKUP_TABLE = {
+    "L8": 10,
+    "S7": 9,
     "L7": 8,
     "S6": 7,
     "L6": 6,
@@ -142,6 +146,7 @@ PRIMUS_TO_MASHCIMA_PITCH_LOOKUP_TABLE = {
     "L0": -6,
     "S-1": -7,
     "L-1": -8,
+    "S-2": -9,
 }
 
 ANNOTATIONS_WITHOUT_PITCH = [
@@ -166,6 +171,8 @@ ANNOTATIONS_WITHOUT_PITCH = [
     "staccato_dot",
     "duration_dot",
 
+    "rest.quadruple_whole",
+    "rest.double_whole",
     "rest.whole",
     "rest.half",
     "rest.quarter",
@@ -185,10 +192,9 @@ IGNORE_INCIPITS_CONTAINING = [
 
     "rest.thirty_second",  # not present in muscima - we lack the symbols
     "rest.sixty_fourth",
-    "rest.quadruple_whole",
     "note.thirty_second",  # not present in muscima - we lack the symbols
-    "note.double_whole",
     "note.quadruple_whole",
+    "note.double_whole",
 
     "note.beamedRight0",
     "note.beamedLeft0",

@@ -69,7 +69,7 @@ def sixteenth_notes(canvas):
 def rests(canvas):
     annotation_to_canvas(
         canvas,
-        "wr wr hr hr qr qr er er sr sr"
+        "lr lr br br wr wr hr hr qr qr er er sr sr"
     )
 
 
@@ -135,11 +135,11 @@ def note_duration_double_dots(canvas):
 
 
 def rest_duration_dots(canvas):
-    annotation_to_canvas(canvas, "wr * hr * qr * er * sr *")
+    annotation_to_canvas(canvas, "lr * br * wr * hr * qr * er * sr *")
 
 
 def rest_duration_double_dots(canvas):
-    annotation_to_canvas(canvas, "wr ** hr ** qr ** er ** sr **")
+    annotation_to_canvas(canvas, "lr ** br ** wr ** hr ** qr ** er ** sr **")
 
 
 def staccato(canvas):

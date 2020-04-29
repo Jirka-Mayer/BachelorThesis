@@ -6,16 +6,16 @@ from typing import List
 import numpy as np
 
 
-mc = Mashcima([
-    "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
-    "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
-    "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
-
-    # "CVC-MUSCIMA_W-02_N-06_D-ideal.xml",
-    # "CVC-MUSCIMA_W-02_N-13_D-ideal.xml",
-    # "CVC-MUSCIMA_W-02_N-17_D-ideal.xml",
-])
-# mc = Mashcima(use_cache=True)
+# mc = Mashcima([
+#     "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
+#     "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
+#     "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+#
+#     # "CVC-MUSCIMA_W-02_N-06_D-ideal.xml",
+#     # "CVC-MUSCIMA_W-02_N-13_D-ideal.xml",
+#     # "CVC-MUSCIMA_W-02_N-17_D-ideal.xml",
+# ])
+mc = Mashcima(use_cache=True)
 
 
 def inspect(items: List):
@@ -42,8 +42,8 @@ def inspect(items: List):
 
 # DEFAULT SYMBOL SAVING:
 # import cv2, os
-# s = mc.EIGHTH_NOTES[2].sprite("flag_8")
-# p = os.path.join(os.path.dirname(__file__), "mashcima/default_symbols/note_eighth_flag_8")
+# s = mc.BREVE_RESTS[0].sprite("rest")
+# p = os.path.join(os.path.dirname(__file__), "mashcima/default_symbols/rest_breve")
 # cv2.imwrite(p + ".png", s.mask * 255)
 # with open(p + ".txt", "w") as f:
 #     f.write(str(-s.x) + " " + str(-s.y))
@@ -54,7 +54,9 @@ def inspect(items: List):
 # inspect(mc.QUARTER_NOTES)
 # inspect(mc.EIGHTH_NOTES)
 # inspect(mc.SIXTEENTH_NOTES)
-#
+
+# inspect(mc.LONGA_RESTS)
+# inspect(mc.BREVE_RESTS)
 # inspect(mc.WHOLE_RESTS)
 # inspect(mc.HALF_RESTS)
 # inspect(mc.QUARTER_RESTS)

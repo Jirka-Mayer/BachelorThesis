@@ -16,7 +16,7 @@ class Rest(CanvasItem):
         super().__init__(**kwargs)
 
         # rest kind
-        assert rest_kind in ["wr", "hr", "qr", "er", "sr"]
+        assert rest_kind in ["lr", "br", "wr", "hr", "qr", "er", "sr"]
         self.kind = rest_kind
 
         # duration dots
@@ -31,11 +31,15 @@ class Rest(CanvasItem):
         return tokens
 
     def contribute_to_padding(self):
-        if self.kind in ["wr", "hr"]:
+        if self.kind in ["lr", "br", "wr", "hr"]:
             self.sprites.padding_left += 20
             self.sprites.padding_right += 20
 
     def select_sprites(self, mc: Mashcima):
+        if self.kind == "lr":
+            self.sprites = copy.deepcopy(random.choice(mc.LONGA_RESTS))
+        if self.kind == "br":
+            self.sprites = copy.deepcopy(random.choice(mc.BREVE_RESTS))
         if self.kind == "wr":
             self.sprites = copy.deepcopy(random.choice(mc.WHOLE_RESTS))
         if self.kind == "hr":

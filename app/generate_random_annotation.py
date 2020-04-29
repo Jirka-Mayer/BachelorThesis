@@ -86,8 +86,8 @@ _SIMPLE_TOKEN_GROUP_CONSTRUCTORS = [
     lambda **kwargs: _generate_time_signature(),
     lambda **kwargs: _generate_key_signature(),
 
-    # "lr", "br",
-    "wr", "hr", "qr", "er", "sr",
+    # TODO: generate some note -> generate duration dots
+    "lr", "br", "wr", "hr", "qr", "er", "sr",
     #"tr",
 
     *([lambda **kwargs: _generate_some_note(**kwargs)] * 2),

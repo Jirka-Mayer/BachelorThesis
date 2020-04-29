@@ -36,6 +36,8 @@ ITEM_CONSTRUCTORS = {
     "e": lambda **kwargs: FlagNote(flag_kind="e", **kwargs),
     "s": lambda **kwargs: FlagNote(flag_kind="s", **kwargs),
 
+    "lr": lambda **kwargs: Rest(rest_kind="lr", **kwargs),
+    "br": lambda **kwargs: Rest(rest_kind="br", **kwargs),
     "wr": lambda **kwargs: Rest(rest_kind="wr", **kwargs),
     "hr": lambda **kwargs: Rest(rest_kind="hr", **kwargs),
     "qr": lambda **kwargs: Rest(rest_kind="qr", **kwargs),

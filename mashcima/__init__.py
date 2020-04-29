@@ -80,6 +80,8 @@ class Mashcima:
         from mashcima.get_symbols import get_quarter_notes
         from mashcima.get_symbols import get_eighth_notes
         from mashcima.get_symbols import get_sixteenth_notes
+        from mashcima.get_symbols import get_longa_rests
+        from mashcima.get_symbols import get_breve_rests
         from mashcima.get_symbols import get_whole_rests
         from mashcima.get_symbols import get_half_rests
         from mashcima.get_symbols import get_quarter_rests
@@ -101,6 +103,8 @@ class Mashcima:
         self.EIGHTH_NOTES: List[SpriteGroup] = get_eighth_notes(self)
         self.SIXTEENTH_NOTES: List[SpriteGroup] = get_sixteenth_notes(self)
 
+        self.LONGA_RESTS: List[SpriteGroup] = get_longa_rests(self)
+        self.BREVE_RESTS: List[SpriteGroup] = get_breve_rests(self)
         self.WHOLE_RESTS: List[SpriteGroup] = get_whole_rests(self)
         self.HALF_RESTS: List[SpriteGroup] = get_half_rests(self)
         self.QUARTER_RESTS: List[SpriteGroup] = get_quarter_rests(self)
@@ -124,6 +128,10 @@ class Mashcima:
             self.EIGHTH_NOTES.append(_load_default_eighth_note())
         if len(self.SIXTEENTH_NOTES) == 0:
             self.SIXTEENTH_NOTES.append(_load_default_sixteenth_note())
+        if len(self.LONGA_RESTS) == 0:
+            self.LONGA_RESTS.append(_load_default_sprite_group("rest", "rest_longa"))
+        if len(self.BREVE_RESTS) == 0:
+            self.BREVE_RESTS.append(_load_default_sprite_group("rest", "rest_breve"))
         if len(self.WHOLE_RESTS) == 0:
             self.WHOLE_RESTS.append(_load_default_sprite_group("rest", "rest_whole"))
         if len(self.HALF_RESTS) == 0:
@@ -152,6 +160,8 @@ class Mashcima:
         assert len(self.QUARTER_NOTES) > 0
         assert len(self.EIGHTH_NOTES) > 0
         assert len(self.SIXTEENTH_NOTES) > 0
+        assert len(self.LONGA_RESTS) > 0
+        assert len(self.BREVE_RESTS) > 0
         assert len(self.WHOLE_RESTS) > 0
         assert len(self.HALF_RESTS) > 0
         assert len(self.QUARTER_RESTS) > 0
