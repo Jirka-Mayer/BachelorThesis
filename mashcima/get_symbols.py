@@ -373,7 +373,9 @@ def get_ledger_lines(mc: Mashcima) -> List[Sprite]:
     return lines
 
 
-def get_bar_lines(mc: Mashcima) -> List[SpriteGroup]:
+def get_barlines(mc: Mashcima) -> Tuple[List[SpriteGroup], List[SpriteGroup]]:
+    TALL_BARLINE_THRESHOLD = 150
+
     crop_objects = [
         o for o in mc.CROP_OBJECTS
         if o.clsname in ["thin_barline"]
@@ -381,8 +383,6 @@ def get_bar_lines(mc: Mashcima) -> List[SpriteGroup]:
 
     items = []
     for o in crop_objects:
-        if o.height > 150:
-            continue  # TODO: not ignore, but separate and use properly
         item = SpriteGroup()
         item.add("barline", Sprite(
             -o.width // 2,
@@ -390,9 +390,13 @@ def get_bar_lines(mc: Mashcima) -> List[SpriteGroup]:
             o.mask,
             print_render_warnings=(False if o.height > 350 else True)
         ))
+        item.recalculate_bounding_box()  # needed for .height to be set
         items.append(item)
 
-    return items
+    return (
+        list(filter(lambda i: i.height < TALL_BARLINE_THRESHOLD, items)),
+        list(filter(lambda i: i.height >= TALL_BARLINE_THRESHOLD, items))
+    )
 
 
 def get_g_clefs(mc: Mashcima) -> List[SpriteGroup]:

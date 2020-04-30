@@ -90,7 +90,7 @@ class Mashcima:
         from mashcima.get_symbols import get_accidentals
         from mashcima.get_symbols import get_dots
         from mashcima.get_symbols import get_ledger_lines
-        from mashcima.get_symbols import get_bar_lines
+        from mashcima.get_symbols import get_barlines
         from mashcima.get_symbols import get_g_clefs
         from mashcima.get_symbols import get_f_clefs
         from mashcima.get_symbols import get_c_clefs
@@ -117,7 +117,9 @@ class Mashcima:
         self.SHARPS, self.FLATS, self.NATURALS = get_accidentals(self)
         self.DOTS: List[Sprite] = get_dots(self)
         self.LEDGER_LINES: List[Sprite] = get_ledger_lines(self)
-        self.BAR_LINES: List[SpriteGroup] = get_bar_lines(self)
+        self.BAR_LINES: List[SpriteGroup] = []
+        self.TALL_BAR_LINES: List[SpriteGroup] = []
+        self.BAR_LINES, self.TALL_BAR_LINES = get_barlines(self)
         self.G_CLEFS: List[SpriteGroup] = get_g_clefs(self)
         self.F_CLEFS: List[SpriteGroup] = get_f_clefs(self)
         self.C_CLEFS: List[SpriteGroup] = get_c_clefs(self)
@@ -173,6 +175,7 @@ class Mashcima:
         assert len(self.DOTS) > 0
         assert len(self.LEDGER_LINES) > 0
         assert len(self.BAR_LINES) > 0
+        assert len(self.TALL_BAR_LINES) > 0
         assert len(self.G_CLEFS) > 0
         assert len(self.F_CLEFS) > 0
         assert len(self.C_CLEFS) > 0
