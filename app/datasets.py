@@ -17,7 +17,7 @@ MIN_STAFF_WIDTH_PX = 800
 #     "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
 #     "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
 # ])
-mc = Mashcima(use_cache=True)
+mc = Mashcima(use_cache=True, skip_writers=[1, 2, 3, 4, 5])
 
 
 def image_generator(annotation_index: int, annotations: List[str]) -> np.ndarray:

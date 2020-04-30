@@ -13,9 +13,9 @@ def load_primus_as_mashcima_annotations(take=None, print_warnings=False):
     print("Taking: ", "all" if take is None else take)
 
     if take is None:
-        print("".join(["-" * 88]))  # primus has 88K incipits
+        print("".join(["-"] * 88))  # primus has 88K incipits
     else:
-        print("".join(["-" * take // 1000]))
+        print("".join(["-"] * (take // 1000)))
 
     out = []
     progress = 0

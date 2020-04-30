@@ -1,7 +1,8 @@
 import os
+import re
 from muscima.io import parse_cropobject_list, CropObject
 import itertools
-from typing import List, Dict
+from typing import List, Dict, Optional
 from mashcima.Sprite import Sprite
 from mashcima.SpriteGroup import SpriteGroup
 import cv2
@@ -13,7 +14,13 @@ MASHCIMA_CACHE_PATH = "mashcima-cache.pkl"
 
 
 class Mashcima:
-    def __init__(self, documents: List[str] = None, use_cache: bool = False):
+    def __init__(
+            self,
+            documents: List[str] = None,
+            take_writers: Optional[List[int]] = None,
+            skip_writers: Optional[List[int]] = None,
+            use_cache: bool = False
+    ):
         print("Loading mashcima...")
 
         # default documents to load
@@ -53,6 +60,24 @@ class Mashcima:
         if not was_restored and use_cache:
             print("Caching mashcima in", MASHCIMA_CACHE_PATH)
             pickle.dump(self.DOCUMENTS, open(MASHCIMA_CACHE_PATH, "wb"))
+
+        # filter documents
+        def _get_writer(document_name: str) -> int:
+            m = re.search("^CVC-MUSCIMA_W-(\d+)", document_name)
+            assert m is not None
+            return int(m.group(1))
+
+        if skip_writers is not None:
+            self.DOCUMENTS = list(filter(
+                lambda d: _get_writer(d[0].doc) not in skip_writers,
+                self.DOCUMENTS
+            ))
+
+        if take_writers is not None:
+            self.DOCUMENTS = list(filter(
+                lambda d: _get_writer(d[0].doc) in take_writers,
+                self.DOCUMENTS
+            ))
 
         # names of the documents
         # (used for resolving document index from document name)
