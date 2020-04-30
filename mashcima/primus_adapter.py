@@ -1,13 +1,10 @@
-from typing import Tuple, Generator
+from typing import Tuple, Generator, Optional
 import tarfile
 import config
-
-# TODO: HACK
-from mashcima.annotation_to_image import annotation_to_canvas
-from mashcima.Canvas import Canvas
+from app.vocabulary import parse_annotation_into_token_groups
 
 
-def load_primus_as_mashcima_annotations(take=None):
+def load_primus_as_mashcima_annotations(take=None, print_warnings=False):
     print("Loading Primus incipits...")
 
     ignored_count = 0
@@ -15,36 +12,52 @@ def load_primus_as_mashcima_annotations(take=None):
 
     print("Taking: ", "all" if take is None else take)
 
+    if take is None:
+        print("".join(["-" * 88]))  # primus has 88K incipits
+    else:
+        print("".join(["-" * take // 1000]))
+
     out = []
+    progress = 0
     for path, primus_annotation in _iterate_tgz_primus(config.PRIMUS_PATH):
+        # track progress
+        if progress % 1000 == 0:
+            print("^", end="", flush=True)
+        progress += 1
+
+        # perform the conversion as good as we can
         converted = convert_primus_annotation_to_mashcima_annotation(
             primus_annotation
         )
+
+        # skip ignored incipits (contain invalid symbols)
         if converted is None:
             ignored_count += 1
             continue
-        if not validate_mashcima_annotation(converted)[0]:
-            ignored_count += 1
+
+        # validate annotation
+        _, warnings = parse_annotation_into_token_groups(converted)
+        if len(warnings) != 0:
+            if print_warnings:
+                print("Invalid annotation at: " + str(progress))
+                print(converted)
+                print("\t" + "\n\t".join(warnings))
             invalid_count += 1
             continue
 
-        # TODO: HACK an image has to be creatable from the annotation:
-        try:
-            annotation_to_canvas(Canvas(), converted)
-        except:
-            print("Skipping PRIMUS annotation because it's not convertible")
-            ignored_count += 1
-            continue
-
+        # the annotation is ok, we can return it
         out.append({
             "path": path,
             "primus": primus_annotation,
             "mashcima": converted
         })
 
+        # limit the number of incipits taken
         if take is not None and len(out) >= take:
             break
 
+    # print summary
+    print("")
     print("Ignored incipits: ", ignored_count)
     print("Invalid incipits: ", invalid_count)
     print("Loaded incipits: ", len(out))
@@ -127,6 +140,7 @@ PRIMUS_TO_MASHCIMA_GENERIC_LOOKUP_TABLE = {
 }
 
 PRIMUS_TO_MASHCIMA_PITCH_LOOKUP_TABLE = {
+    "S8": 11,
     "L8": 10,
     "S7": 9,
     "L7": 8,
@@ -147,6 +161,9 @@ PRIMUS_TO_MASHCIMA_PITCH_LOOKUP_TABLE = {
     "S-1": -7,
     "L-1": -8,
     "S-2": -9,
+    "L-2": -10,
+    "S-3": -11,
+    "L-3": -12,
 }
 
 ANNOTATIONS_WITHOUT_PITCH = [
@@ -185,10 +202,11 @@ IGNORE_INCIPITS_CONTAINING = [
     "multirest",
     "fermata.above",
 
-    "digit.12",
     "digit.11",
+    "digit.12",
     "digit.16",
     "digit.24",
+    "digit.48",
 
     "rest.thirty_second",  # not present in muscima - we lack the symbols
     "rest.sixty_fourth",
@@ -224,8 +242,18 @@ IGNORE_INCIPITS_CONTAINING = [
 # ignore gracenotes without ignoring the entire incipit
 REMOVE_GRACENOTES = True
 
+# ignore fermatas without ignoring the entire incipit
+REMOVE_FERMATAS = True
 
-def convert_primus_annotation_to_mashcima_annotation(primus_annotation: str):
+
+def convert_primus_annotation_to_mashcima_annotation(primus_annotation: str) -> Optional[str]:
+    """
+    Converts primus annotation string to a mashcima annotation string
+    as good as it can do. If the incipit is ignored, None is returned.
+
+    The resulting mashcima annotation may not be valid and needs to be checked.
+    (invalid beam starts/ends, invalid attachment order, ...)
+    """
     parts = primus_annotation.split()
     mashcima_annotation = []
 
@@ -271,6 +299,10 @@ def convert_primus_annotation_to_mashcima_annotation(primus_annotation: str):
         if REMOVE_GRACENOTES and generic.startswith("gracenote."):
             continue
 
+        # skip fermatas
+        if REMOVE_FERMATAS and generic == "fermata.above":
+            continue
+
         # ignore the incipit if it contains illegal symbols
         if generic in IGNORE_INCIPITS_CONTAINING:
             return None
@@ -282,8 +314,8 @@ def convert_primus_annotation_to_mashcima_annotation(primus_annotation: str):
             )
 
         if pitch not in PRIMUS_TO_MASHCIMA_PITCH_LOOKUP_TABLE:
-            # raise Exception("Primus pitch not convertible: " + part)
-            return None  # pitch not convertible
+            raise Exception("Primus pitch not convertible: " + part)
+            #return None  # pitch not convertible
 
         if generic in ANNOTATIONS_WITHOUT_PITCH:
             # convert without pitch
@@ -307,39 +339,3 @@ def convert_primus_annotation_to_mashcima_annotation(primus_annotation: str):
             i += 1
 
     return " ".join(mashcima_annotation)
-
-
-def validate_mashcima_annotation(annotation: str) -> Tuple[bool, str]:
-    result, message = mashcima_annotation_has_valid_beams(annotation)
-    if not result:
-        return result, message
-    return True, "everything OK"
-
-
-def mashcima_annotation_has_valid_beams(annotation: str) -> Tuple[bool, str]:
-    tokens = annotation.split()
-    in_beam = False
-    for t in tokens:
-
-        # skip non-note tokens
-        if ("e" not in t) and ("s" not in t) and ("t" not in t):
-            continue
-
-        # skip rests -> those are ok
-        if t == "er" or t == "sr" or t == "tr":
-            continue
-
-        g = t.rstrip("-0123456789")
-        s = g.startswith("=")
-        e = g.endswith("=")
-
-        if in_beam:
-            if not s:
-                return False, "Non-finished beam: 'x= x' at: " + t
-        else:
-            if s:
-                return False, "Non-started beam: 'x =x' at: " + t
-
-        in_beam = e
-
-    return True, "everything ok"

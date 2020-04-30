@@ -2,7 +2,7 @@ from typing import List, Optional, Tuple
 
 # pitches that can be used for items that have pitches
 HIGHEST_PITCH = 12  # fourth ledger line above
-LOWEST_PITCH = -8  # second ledger line below
+LOWEST_PITCH = -12  # fourth ledger line below
 PITCHES = [str(pos) for pos in reversed(range(LOWEST_PITCH, HIGHEST_PITCH + 1))]
 
 # Vocabulary representation with wildcards
@@ -73,11 +73,11 @@ _WILDCARD_VOCABULARY = [
     ">",  # accent                  NOT_GENERATED
     "^",  # marcato                 NOT_GENERATED
     "*",  # duration dot
-    "**",  # duration double dot    NOT_GENERATED for rests
+    "**",  # duration double dot
 
     # rests
-    "lr",  # longa rest (4 bars)    NOT_GENERATED
-    "br",  # breve rest (2 bars)    NOT_GENERATED
+    "lr",  # longa rest (4 bars)
+    "br",  # breve rest (2 bars)
     "wr",  # whole rest
     "hr",  # half rest
     "qr",  # quarter rest
@@ -147,11 +147,19 @@ _ATTACHMENT_ORDER = [
     *_BEFORE_ATTACHMENTS, *_AFTER_ATTACHMENTS
 ]
 
-_NOTES = [
-    "w", "h", "q", "e", "s", "t",
+_BEAMED_NOTES = [
     "=e", "=e=", "e=",
     "=s", "=s=", "s=",
     "=t", "=t=", "t=",
+]
+
+_NOTES = [
+    "w", "h", "q", "e", "s", "t",
+    *_BEAMED_NOTES
+]
+
+_RESTS = [
+    "lr", "br", "wr", "hr", "qr", "er", "sr", "tr"
 ]
 
 _NUMERIC_TIME_SIGNATURE = [
@@ -206,6 +214,21 @@ def is_after_attachment(annotation_token: str) -> bool:
 def is_note(annotation_token: str) -> bool:
     """Returns true if the token is a note (generic or not)"""
     return to_generic(annotation_token) in _NOTES
+
+
+def is_beamed_note(annotation_token: str) -> bool:
+    """Returns true if the token is a beamed note (generic or not)"""
+    return to_generic(annotation_token) in _BEAMED_NOTES
+
+
+def is_rest(annotation_token: str) -> bool:
+    """Returns true if the token is a rest"""
+    return annotation_token in _RESTS
+
+
+def is_clef(annotation_token: str) -> bool:
+    """Returns true if the token is a clef"""
+    return annotation_token.startswith("clef.")
 
 
 def is_accidental(annotation_token: str) -> bool:
@@ -432,6 +455,73 @@ def parse_annotation_into_token_groups(annotation: str) -> Tuple[List[TokenGroup
                 + repr(group.after_attachments)
             )
             group.after_attachments = _order_tokens(group.after_attachments)
+
+    # === 6. phase: validate beam continuity ===
+
+    def _remove_right_beam(group):
+        pitch = get_pitch(group.token)
+        assert pitch is not None
+        generic = to_generic(group.token)
+        if generic.endswith("="):
+            group.token = generic[:-1] + str(pitch)
+
+    def _remove_left_beam(group):
+        if group.token.startswith("="):
+            group.token = group.token[1:]
+
+    def _add_left_beam(group):
+        if not group.token.startswith("="):
+            group.token = "=" + group.token
+
+    in_beam = False
+    last_beamed_group = None
+    for group in groups:
+        if in_beam:
+            # inside of a beam we have to hit another beamed note
+
+            # except for these allowed symbols
+            if is_rest(group.token)\
+                    or is_clef(group.token)\
+                    or isinstance(group, KeySignatureTokenGroup):
+                continue
+
+            if not is_beamed_note(group.token):
+                warnings.append(
+                    "Unexpected token inside a beamed group: " + repr(group.token)
+                )
+                _remove_right_beam(last_beamed_group)
+                in_beam = False
+                last_beamed_group = None
+                continue
+
+            # now the beamed note has to have a left beam
+            if not to_generic(group.token).startswith("="):
+                warnings.append(
+                    "Non-finished beam: 'x= x' at: " + repr(group.token)
+                )
+                _add_left_beam(group)
+
+            # end beam
+            if not to_generic(group.token).endswith("="):
+                in_beam = False
+                last_beamed_group = None
+
+        else:
+            # outside of a beam we just wait for a beam to start and check
+            # that we don't encounter non-started beams
+            if not is_beamed_note(group.token):
+                continue
+
+            if to_generic(group.token).startswith("="):
+                warnings.append(
+                    "Non-started beam: 'x =x' at: " + repr(group.token)
+                )
+                _remove_left_beam(group)
+
+            # start beam, but only if it does actually start
+            if to_generic(group.token).endswith("="):
+                in_beam = True
+                last_beamed_group = group
 
     # === Done ===
 
