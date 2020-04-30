@@ -6,16 +6,16 @@ from typing import List
 import numpy as np
 
 
-mc = Mashcima([
-    "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
-    "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
-    "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
-
-    # "CVC-MUSCIMA_W-02_N-06_D-ideal.xml",
-    # "CVC-MUSCIMA_W-02_N-13_D-ideal.xml",
-    # "CVC-MUSCIMA_W-02_N-17_D-ideal.xml",
-])
-# mc = Mashcima(use_cache=True)
+# mc = Mashcima([
+#     "CVC-MUSCIMA_W-01_N-10_D-ideal.xml",
+#     "CVC-MUSCIMA_W-01_N-14_D-ideal.xml",
+#     "CVC-MUSCIMA_W-01_N-19_D-ideal.xml",
+#
+#     # "CVC-MUSCIMA_W-02_N-06_D-ideal.xml",
+#     # "CVC-MUSCIMA_W-02_N-13_D-ideal.xml",
+#     # "CVC-MUSCIMA_W-02_N-17_D-ideal.xml",
+# ])
+mc = Mashcima(use_cache=True)
 
 
 def inspect(items: List):

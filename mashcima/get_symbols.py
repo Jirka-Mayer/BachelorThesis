@@ -8,6 +8,7 @@ from mashcima.Sprite import Sprite
 from mashcima.SpriteGroup import SpriteGroup
 from typing import List, Tuple, Dict
 from muscima.io import CropObject
+import cv2
 
 
 ###################
@@ -299,31 +300,62 @@ def get_accidentals(mc: Mashcima) -> Tuple[List[Sprite], List[Sprite], List[Spri
     naturals = []
     
     for o in crop_objects:
+        # obtain sprite from the center of the inner component
+        # and handle open accidentals by repeatedly dilating
+        # (dilate vertically twice as much)
         object_center_x, object_center_y = get_center_of_component(o.mask)
-
-        components = get_connected_components_not_touching_image_border(
-            1 - o.mask
-        )
-        components = sort_components_by_proximity_to_point(
-            components,
-            object_center_x,
-            object_center_y
-        )
-        if len(components) == 0:
-            print(
-                "Skipping an accidental, having no components, in document:",
-                o.doc
+        mask = (o.mask * 255).astype(dtype=np.uint8)
+        sprite = None
+        for i in range(5):
+            components = get_connected_components_not_touching_image_border(
+                1 - (mask // 255)
             )
-            continue
+            components = sort_components_by_proximity_to_point(
+                components,
+                object_center_x,
+                object_center_y
+            )
 
-        component_center_x, component_center_y = get_center_of_component(
-            components[0]
-        )
-        sprite = Sprite(
-            -component_center_x,
-            -component_center_y,
-            o.mask
-        )
+            if len(components) == 0:
+                kernel = np.ones((5, 3), np.uint8)
+                mask = cv2.dilate(mask, kernel, iterations=1)
+                continue
+
+            component_center_x, component_center_y = get_center_of_component(
+                components[0]
+            )
+            sprite = Sprite(
+                -component_center_x,
+                -component_center_y,
+                o.mask
+            )
+            break
+
+        # if it didn't succeed, try pulling the center out by the attached note
+        if sprite is None and len(o.inlinks) == 1:
+            link = mc.CROP_OBJECT_LOOKUP_DICTS[o.doc][o.inlinks[0]]
+            if "notehead" in link.clsname:
+                sprite = Sprite(
+                    -o.width // 2,
+                    o.top - ((link.top + link.bottom) // 2),
+                    o.mask
+                )
+
+        # still nothing, so resort to the crudest method possible
+        if sprite is None:
+            if o.clsname == "flat":
+                sprite = Sprite(
+                    -o.width // 2,
+                    -int(o.height * 0.75),
+                    o.mask
+                )
+            else:
+                sprite = Sprite(
+                    -o.width // 2,
+                    -o.height // 2,
+                    o.mask
+                )
+
         if o.clsname == "sharp":
             sharps.append(sprite)
         elif o.clsname == "flat":
