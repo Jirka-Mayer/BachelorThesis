@@ -55,7 +55,11 @@ class BeamedNote(QuarterNote):
             lengthen = stem_length - stem.y - stem.height
         if stem.height + lengthen < 1:
             lengthen = 1 - stem.height
-            print("Stem length for beamed note clamped to minimal height.")
+            # Silence this warning because it happens quite often.
+            # And the reason is that some notes have stems starting quite
+            # far away from the notehead, therefore the scaled height
+            # would be negative.
+            # print("Stem length for beamed note clamped to minimal height.")
         stem.stretch_height(stem.height + lengthen)
 
         if not self.flipped:

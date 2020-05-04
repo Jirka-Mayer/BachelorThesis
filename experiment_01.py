@@ -1,6 +1,5 @@
 import argparse
 import sys
-import config
 
 
 USAGE_TEXT = '''python experiments/experiment_01.py <command> [<args>]
@@ -70,6 +69,7 @@ class Experiment01(object):
         parser.add_argument('--model', default="experiment_01")
         parser.add_argument('--epochs', default=100, type=int)
         parser.add_argument('--batch_size', default=10, type=int)
+        parser.add_argument('--threads', default=4, type=int)
         args = parser.parse_args(sys.argv[2:])
 
         training_dataset, validation_dataset = self._prepare_datasets()
@@ -81,7 +81,7 @@ class Experiment01(object):
             name=args.model,
             continual_saving=True,
             create_logdir=True,
-            threads=config.NUM_THREADS
+            threads=args.threads
         )
         network.train(
             training_dataset,
