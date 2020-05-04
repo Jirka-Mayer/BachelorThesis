@@ -3,6 +3,7 @@ import os
 import cv2
 import numpy as np
 import datetime
+import shutil
 from typing import List, Optional
 from app.sparse_tensor_from_sequences import sparse_tensor_from_sequences
 from app.vocabulary import VOCABULARY
@@ -657,6 +658,11 @@ class Network:
         with open(self._get_model_path(model_name) + ".edit_distance", "r") as file:
             ed = float(file.read())
         return ed
+
+    @staticmethod
+    def delete_model(model_name: str):
+        if Network._exists(model_name):
+            shutil.rmtree(Network._get_model_directory(model_name))
 
     @staticmethod
     def _load_vocabulary(model_name: str) -> List[str]:

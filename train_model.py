@@ -14,18 +14,18 @@ dev_dataset.check_dataset_visually()
 exit()
 
 # build the network
-# network = Network(
-#     name=config.MODEL_NAME,
-#     continual_saving=True,
-#     create_logdir=True,
-#     threads=config.NUM_THREADS
-# )
-network = Network.load(
+network = Network(
     name=config.MODEL_NAME,
     continual_saving=True,
     create_logdir=True,
     threads=config.NUM_THREADS
 )
+# network = Network.load(
+#     name=config.MODEL_NAME,
+#     continual_saving=True,
+#     create_logdir=True,
+#     threads=config.NUM_THREADS
+# )
 
 # train network
 network.train(
