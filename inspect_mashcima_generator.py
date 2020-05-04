@@ -18,6 +18,7 @@ mc = Mashcima([
 def inspect(generator, samples=10):
     for _ in range(samples):
         canvas = Canvas()
+        canvas.options.random_space_probability = 0  # disable random spaces
 
         generator(canvas)
 
@@ -234,7 +235,7 @@ def staff_beginning_slur(canvas):
 # Running individual inspections #
 ##################################
 
-# inspect(whole_notes, 1)
+# inspect(whole_notes, 10)
 # inspect(half_notes, 1)
 # inspect(quarter_notes, 1)
 # inspect(eighth_notes, 1)

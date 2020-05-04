@@ -138,7 +138,7 @@ def multi_staff_annotation_to_image(
         min_width=0,  # keep some empty staff lines after the end
         crop_horizontally=True,
         crop_vertically=True,
-        transform_image=True,
+        transform_image=True
 ) -> np.ndarray:
     """
     Advanced function that creates image of a staff with staves above and

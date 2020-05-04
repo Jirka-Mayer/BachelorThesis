@@ -168,11 +168,19 @@ class Canvas:
         for item in self.items:
             item.place_sprites()
 
+        def generate_random_space():
+            if self.options.random_space_probability == 0:
+                return 0
+            if random.random() < self.options.random_space_probability:
+                return random.randint(*self.options.random_space_size)
+            return 0
+
         def generate_padding():
             return random.randint(5, 25)
 
         head = head_start
         for i, item in enumerate(self.items):
+            head += generate_random_space()
             head += generate_padding()  # left padding
             head += item.place_item(head, pitch_positions)
             head += generate_padding()  # right padding

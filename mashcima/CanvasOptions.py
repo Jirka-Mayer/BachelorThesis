@@ -8,3 +8,9 @@ class CanvasOptions:
 
         # do barlines point down, below the staff?
         self.barlines_down = False
+
+        # probability that a random space between symbols will be inserted
+        self.random_space_probability = 0.03
+
+        # size range for the random space in pixels
+        self.random_space_size = (50, 300)

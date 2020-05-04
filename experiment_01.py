@@ -59,10 +59,10 @@ class Experiment01(object):
     def inspect(self):
         training_dataset, validation_dataset = self._prepare_datasets()
 
-        print("Inspecting training dataset:")
+        print("\n\nInspecting TRAINING dataset: (20 items)")
         training_dataset.check_dataset_visually(example_count=20)
 
-        print("Inspecting validation dataset:")
+        print("\n\nInspecting VALIDATION dataset: (20 items)")
         validation_dataset.check_dataset_visually(example_count=20)
 
     def train(self):
