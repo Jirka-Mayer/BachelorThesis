@@ -523,6 +523,13 @@ def parse_annotation_into_token_groups(annotation: str) -> Tuple[List[TokenGroup
                 in_beam = True
                 last_beamed_group = group
 
+    if in_beam:
+        # unfinished beam
+        warnings.append(
+            "Non-finished beam: 'x= EOS' at the last token."
+        )
+        _remove_right_beam(last_beamed_group)
+        
     # === Done ===
 
     return groups, warnings

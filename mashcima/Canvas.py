@@ -73,6 +73,8 @@ class Canvas:
                     beam_items.append(i)
                     in_beam = True
 
+        assert not in_beam, "Unfinished beam group added to the canvas"
+
     def _create_slurs(self):
         self.slurs = []
         slur_stack: List[SlurableItem] = []
