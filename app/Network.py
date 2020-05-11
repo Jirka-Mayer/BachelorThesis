@@ -595,7 +595,7 @@ class Network:
     @staticmethod
     def load(name: str, **kwargs):
         """Loads the model of a given name"""
-        if not Network._exists(name):
+        if not Network.exists(name):
             raise Exception("Model %s does not exist" % (name,))
 
         vocabulary = Network._load_vocabulary(name)
@@ -652,7 +652,7 @@ class Network:
 
     def _get_saved_edit_distance(self, model_name: str) -> float:
         """Returns edit distance of the saved model"""
-        if not self._exists(model_name):
+        if not self.exists(model_name):
             return float("inf")
 
         with open(self._get_model_path(model_name) + ".edit_distance", "r") as file:
@@ -661,7 +661,7 @@ class Network:
 
     @staticmethod
     def delete_model(model_name: str):
-        if Network._exists(model_name):
+        if Network.exists(model_name):
             shutil.rmtree(Network._get_model_directory(model_name))
 
     @staticmethod
@@ -670,7 +670,7 @@ class Network:
             return [l.strip() for l in file.readlines()]
 
     @staticmethod
-    def _exists(model_name: str) -> bool:
+    def exists(model_name: str) -> bool:
         """Returns true if a given model exists"""
         return os.path.isdir(Network._get_model_directory(model_name))
 

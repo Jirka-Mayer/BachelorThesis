@@ -147,6 +147,9 @@ _ATTACHMENT_ORDER = [
     *_BEFORE_ATTACHMENTS, *_AFTER_ATTACHMENTS
 ]
 
+# all the attachment symbols
+_ATTACHMENTS = _ATTACHMENT_ORDER
+
 _BEAMED_NOTES = [
     "=e", "=e=", "e=",
     "=s", "=s=", "s=",
@@ -555,3 +558,61 @@ def stringify_token_groups_to_annotation(groups: List[TokenGroup]) -> str:
     canvas = Canvas()
     token_groups_to_canvas(canvas, groups)
     return " ".join(canvas.get_annotations())
+
+
+def repair_annotation(annotation: str) -> Tuple[str, List[str]]:
+    """
+    Repairs attachment ordering, fixes beams, ...
+    Returns the fixed annotation and a list of warnings
+    """
+    groups, warnings = parse_annotation_into_token_groups(annotation)
+    repaired_annotation = stringify_token_groups_to_annotation(groups)
+    return repaired_annotation, warnings
+
+
+#########################################
+# Post-processing gold data for testing #
+#########################################
+
+
+_NON_GENERATED_SYMBOL_REMOVAL = {
+    "?": None,
+
+    "|:": "|",
+    ":|": "|",
+    ":|:": "|",
+
+    "x{p}": None,
+    "bb{p}": None,
+    "tuplet.3": None,
+    "fermata": None,
+    "trill": None,
+    "+": None,
+    "_": None,
+    ">": None,
+    "^": None,
+}
+
+
+def remove_non_generated_symbols_from_gold_data(annotation: str):
+    tokens = annotation.split()
+
+    i: int = 0
+    while i < len(tokens):
+        if tokens[i] in _NON_GENERATED_SYMBOL_REMOVAL:
+            if _NON_GENERATED_SYMBOL_REMOVAL[tokens[i]] is None:
+                del tokens[i]
+                continue
+            else:
+                tokens[i] = _NON_GENERATED_SYMBOL_REMOVAL[tokens[i]]
+        i += 1
+
+    return " ".join(tokens)
+
+
+def remove_attachments_from_annotation(annotation: str):
+    return " ".join(filter(lambda t: t not in _ATTACHMENTS, annotation.split()))
+
+
+def turn_annotation_generic(annotation: str):
+    return " ".join(map(lambda t: to_generic(t), annotation.split()))

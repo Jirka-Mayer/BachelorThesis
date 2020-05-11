@@ -76,7 +76,10 @@ class Experiment01(object):
 
         # train
         from app.Network import Network
-        Network.delete_model(args.model)
+        if Network.exists(args.model):
+            if input("Type 'yes' to delete the old, trained model.") != "yes":
+                exit("No model will be overwritten")
+            Network.delete_model(args.model)
         network = Network(
             name=args.model,
             continual_saving=True,
@@ -92,10 +95,11 @@ class Experiment01(object):
 
     def test(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('repository')
+        parser.add_argument('--model', default="experiment_01")
         args = parser.parse_args(sys.argv[2:])
 
-        print("Test command is not implemented.")
+        from experiment_testing import test_model
+        test_model(args.model)
 
 
 if __name__ == '__main__':
