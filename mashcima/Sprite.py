@@ -2,8 +2,17 @@ import numpy as np
 import cv2
 
 
+PRINT_WARNINGS_DEFAULT = False
+
+
 class Sprite:
-    def __init__(self, x: int, y: int, mask: np.ndarray, print_render_warnings: bool = True):
+    def __init__(
+            self,
+            x: int,
+            y: int,
+            mask: np.ndarray,
+            print_render_warnings: bool = PRINT_WARNINGS_DEFAULT
+    ):
         # local position within a canvas item (upper left corner of the mask)
         self.x = x
         self.y = y
@@ -90,7 +99,8 @@ class Sprite:
             img[y_from:y_to, x_from:x_to] += (1 - img[y_from:y_to, x_from:x_to]) * mask
         except ValueError:
             # NOTE: this is not a warning, this is bad, so print always
-            print("Image does not fit inside the canvas at all")
+            if PRINT_WARNINGS_DEFAULT:
+                print("Image does not fit inside the canvas at all")
 
     def inspect(self) -> np.ndarray:
         from mashcima.debug import draw_cross

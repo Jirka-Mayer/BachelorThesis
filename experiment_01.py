@@ -10,8 +10,8 @@ The available commands are:
    test       Test the trained model against annotated muscima parts
 
 Experiment 01:
-    - Train on 60K Primus incipits
-    - Validate on 4K Primus incipits
+    - Train on 63K Primus incipits
+    - Validate on 1K Primus incipits
     - Generates images with staves above and below
     - Use symbols from all writers except for writers 1 - 5
     - Minimal staff width of 1200px (because Primus incipits are relatively long)
@@ -39,10 +39,10 @@ class Experiment01(object):
 
         from experiment_utils import prepare_annotations
         training_annotations = prepare_annotations(
-            primus_skip=0, primus_take=60000, generated_take=0
+            primus_skip=0, primus_take=63000, generated_take=0
         )
         validation_annotations = prepare_annotations(
-            primus_skip=60000, primus_take=4000, generated_take=0
+            primus_skip=63000, primus_take=1000, generated_take=0
         )
 
         from experiment_utils import prepare_dataset

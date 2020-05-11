@@ -1,5 +1,6 @@
 from typing import List
 from app.AnnotationsDataset import AnnotationsDataset
+from app.ParallelFeedingDataset import ParallelFeedingDataset
 from mashcima import Mashcima
 from mashcima.annotation_to_image import multi_staff_annotation_to_image
 from mashcima.primus_adapter import load_primus_as_mashcima_annotations
@@ -67,4 +68,6 @@ def prepare_dataset(
         return _complex_image_generator(
             mc, annotation_index, annotations, single_staff, min_staff_with
         )
-    return AnnotationsDataset(annotations, _image_generator)
+    dataset = AnnotationsDataset(annotations, _image_generator)
+    dataset = ParallelFeedingDataset(dataset)  # make batch preparation parallel
+    return dataset
