@@ -1,5 +1,6 @@
 import numpy as np
 from app.Dataset import Dataset
+from app.AnnotationsDataset import AnnotationsDataset
 from threading import Thread
 from queue import Queue
 
@@ -33,6 +34,14 @@ class ParallelFeedingDataset(Dataset):
     ######################################
     # Redirect API to the source dataset #
     ######################################
+
+    def check_dataset_visually(self, example_count=10):
+        if isinstance(self.source, AnnotationsDataset):
+            self.source.get_image = self.original_source_get_image
+            self.source.check_dataset_visually(example_count)
+            self.source.get_image = self.get_image_source_replacement
+        else:
+            raise Exception("Source dataset does not allow inspection")
 
     @property
     def size(self) -> int:
