@@ -70,22 +70,36 @@ class Experiment01(object):
         parser.add_argument('--epochs', default=100, type=int)
         parser.add_argument('--batch_size', default=10, type=int)
         parser.add_argument('--threads', default=4, type=int)
+        parser.add_argument('--load_model', action="store_true", help="continue training a model")
         args = parser.parse_args(sys.argv[2:])
 
         training_dataset, validation_dataset = self._prepare_datasets()
 
         # train
         from app.Network import Network
-        if Network.exists(args.model):
-            if input("Type 'yes' to delete the old, trained model.") != "yes":
-                exit("No model will be overwritten")
-            Network.delete_model(args.model)
-        network = Network(
-            name=args.model,
-            continual_saving=True,
-            create_logdir=True,
-            threads=args.threads
-        )
+
+        # continue training
+        if args.load_model:
+            # load old one
+            print("Loading old model...")
+            network = Network.load(args.name)
+        else:
+            # delete old one
+            if Network.exists(args.model):
+                if input("Type 'yes' to delete the old, trained model.") != "yes":
+                    exit("No model will be overwritten")
+                print("Deleting old model...")
+                Network.delete_model(args.model)
+
+            # create new one
+            print("Creating new model...")
+            network = Network(
+                name=args.model,
+                continual_saving=True,
+                create_logdir=True,
+                threads=args.threads
+            )
+
         network.train(
             training_dataset,
             validation_dataset,
