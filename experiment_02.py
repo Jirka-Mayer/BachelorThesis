@@ -2,24 +2,24 @@ import argparse
 import sys
 
 
-USAGE_TEXT = '''python experiment_01.py <command> [<args>]
+USAGE_TEXT = '''python experiment_02.py <command> [<args>]
 
 The available commands are:
    inspect    Inspects datasets that will be used for training and validation
    train      Train new model for the experiment
    test       Test the trained model against annotated muscima parts
 
-Experiment 01:
-    - Train on 63K Primus incipits
-    - Validate on 1K Primus incipits
+Experiment 02:
+    - Train on 63K generated incipits
+    - Validate on 1K generated incipits
     - Generates images with staves above and below
     - Use symbols from all writers except for writers 1 - 5
-    - Minimal staff width of 1200px (because Primus incipits are relatively long)
+    - Minimal staff width of 1000px
 
 '''
 
 
-class Experiment01(object):
+class Experiment02(object):
     def __init__(self):
         parser = argparse.ArgumentParser(usage=USAGE_TEXT)
         parser.add_argument('command', help='Command to run')
@@ -39,18 +39,18 @@ class Experiment01(object):
 
         from experiment_utils import prepare_annotations
         training_annotations = prepare_annotations(
-            primus_skip=0, primus_take=63000, generated_take=0
+            primus_skip=0, primus_take=0, generated_take=63000
         )
         validation_annotations = prepare_annotations(
-            primus_skip=63000, primus_take=1000, generated_take=0
+            primus_skip=0, primus_take=0, generated_take=1000
         )
 
         from experiment_utils import prepare_dataset
         training_dataset = prepare_dataset(
-            mc, training_annotations, min_staff_with=1200, single_staff=False
+            mc, training_annotations, min_staff_with=1000, single_staff=False
         )
         validation_dataset = prepare_dataset(
-            mc, validation_annotations, min_staff_with=1200, single_staff=False
+            mc, validation_annotations, min_staff_with=1000, single_staff=False
         )
 
         return training_dataset, validation_dataset
@@ -66,7 +66,7 @@ class Experiment01(object):
 
     def train(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('--model', default="experiment_01")
+        parser.add_argument('--model', default="experiment_02")
         parser.add_argument('--epochs', default=100, type=int)
         parser.add_argument('--batch_size', default=10, type=int)
         parser.add_argument('--threads', default=4, type=int)
@@ -109,7 +109,7 @@ class Experiment01(object):
 
     def test(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('--model', default="experiment_01")
+        parser.add_argument('--model', default="experiment_02")
         parser.add_argument('--writers', type=str, help="writers to test on e.g. '1,2,3'")
         parser.add_argument('--parts', type=str, help="parts to test on e.g. '1,2,3'")
         args = parser.parse_args(sys.argv[2:])
@@ -119,4 +119,4 @@ class Experiment01(object):
 
 
 if __name__ == '__main__':
-    Experiment01()
+    Experiment02()
