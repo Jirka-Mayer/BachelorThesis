@@ -110,10 +110,12 @@ class Experiment01(object):
     def test(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--model', default="experiment_01")
+        parser.add_argument('--writers', type=str, help="writers to test on e.g. '1,2,3'")
+        parser.add_argument('--parts', type=str, help="parts to test on e.g. '1,2,3'")
         args = parser.parse_args(sys.argv[2:])
 
         from experiment_testing import test_model
-        test_model(args.model)
+        test_model(args.model, args.writers, args.parts)
 
 
 if __name__ == '__main__':

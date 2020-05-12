@@ -8,8 +8,18 @@ from app.vocabulary import repair_annotation, remove_non_generated_symbols_from_
 from app.vocabulary import remove_attachments_from_annotation, turn_annotation_generic
 
 
-def test_model(model_name: str):
+def test_model(model_name: str, writers_filter: str, parts_filter: str):
     """Tests a trained model on annotated cvc muscima parts"""
+    if writers_filter is None:
+        writers_filter = list(range(1, 51))
+    else:
+        writers_filter = [int(w) for w in writers_filter.split(",")]
+
+    if parts_filter is None:
+        parts_filter = list(range(1, 21))
+    else:
+        parts_filter = [int(w) for w in parts_filter.split(",")]
+
     from app.Network import Network
     network = Network.load(model_name)
 
@@ -35,6 +45,12 @@ def test_model(model_name: str):
 
     for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
         for part, staves in parts.items():
+
+            if writer not in writers_filter:
+                continue
+
+            if part not in parts_filter:
+                continue
 
             print("\n")
             print("#############################")
@@ -82,8 +98,11 @@ def test_model(model_name: str):
     print("==========================================")
     print("=                Averages                =")
     print("==========================================")
-    for metric in sums:
-        print("Average {:}: {:.2f}".format(metric, sums[metric] / item_count))
+    if item_count == 0:
+        print("No metrics recorded")
+    else:
+        for metric in sums:
+            print("Average {:}: {:.2f}".format(metric, sums[metric] / item_count))
 
 
 def _calculate_item_metrics(gold: str, prediction: str):
