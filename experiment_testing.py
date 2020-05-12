@@ -6,6 +6,7 @@ from app.get_staff_images_from_sheet_image import get_staff_images_from_sheet_im
 import config
 from app.vocabulary import repair_annotation, remove_non_generated_symbols_from_gold_data
 from app.vocabulary import remove_attachments_from_annotation, turn_annotation_generic
+from app.vocabulary import trim_non_repeat_barlines
 
 
 def test_model(model_name: str, writers_filter: str, parts_filter: str):
@@ -71,6 +72,10 @@ def test_model(model_name: str, writers_filter: str, parts_filter: str):
 
                 # sort attachments, repair beams and stuff
                 repaired_prediction, warnings = repair_annotation(prediction)
+
+                # trim non-important barlines
+                repaired_prediction = trim_non_repeat_barlines(repaired_prediction)
+                gold_annotation = trim_non_repeat_barlines(gold_annotation)
 
                 item_metrics = _calculate_item_metrics(
                     gold_annotation,

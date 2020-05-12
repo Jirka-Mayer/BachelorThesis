@@ -579,6 +579,21 @@ def repair_annotation(annotation: str) -> Tuple[str, List[str]]:
     return repaired_annotation, warnings
 
 
+def trim_non_repeat_barlines(annotation: str) -> str:
+    """Removes all leading and trailing barlines (that are not repeat barlines)"""
+    tokens = annotation.split()
+
+    # leading
+    while len(tokens) > 0 and tokens[0] == "|":
+        del tokens[0]
+
+    # trailing
+    while len(tokens) > 0 and tokens[-1] == "|":
+        del tokens[-1]
+
+    return " ".join(tokens)
+
+
 #########################################
 # Post-processing gold data for testing #
 #########################################
