@@ -548,16 +548,25 @@ def validate_annotation(annotation: str):
 
 
 def stringify_token_groups_to_annotation(groups: List[TokenGroup]) -> str:
-    # NOTE: this method is a bit of a bodge - it crosses different layers
-    # of abstraction and should be refactored in the future.
-    # Annotation and token group logic should not need to touch Canvas.
-    #
-    # WHY? I need to keep attachments sorted properly, and canvas does that.
-    from mashcima.Canvas import Canvas
-    from mashcima.annotation_to_image import token_groups_to_canvas
-    canvas = Canvas()
-    token_groups_to_canvas(canvas, groups)
-    return " ".join(canvas.get_annotations())
+    def sort_attachments(attachments: List[str]):
+        return list(sorted(
+            attachments,
+            key=lambda a: _ATTACHMENT_ORDER.index(to_generic(a))
+        ))
+
+    tokens = []
+    for group in groups:
+        tokens += sort_attachments(group.before_attachments)
+        if isinstance(group, KeySignatureTokenGroup):
+            pass  # attachments will be added, and there's no token
+        elif isinstance(group, TimeSignatureTokenGroup):
+            tokens.append(group.first_token)
+            tokens.append(group.second_token)
+        else:
+            tokens.append(group.token)
+        tokens += sort_attachments(group.after_attachments)
+
+    return " ".join(tokens)
 
 
 def repair_annotation(annotation: str) -> Tuple[str, List[str]]:
