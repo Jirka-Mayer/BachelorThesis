@@ -82,7 +82,7 @@ class Experiment02(object):
         if args.load_model:
             # load old one
             print("Loading old model...")
-            network = Network.load(args.name)
+            network = Network.load(args.model)
         else:
             # delete old one
             if Network.exists(args.model):
