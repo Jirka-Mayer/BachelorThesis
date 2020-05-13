@@ -548,16 +548,25 @@ def validate_annotation(annotation: str):
 
 
 def stringify_token_groups_to_annotation(groups: List[TokenGroup]) -> str:
-    # NOTE: this method is a bit of a bodge - it crosses different layers
-    # of abstraction and should be refactored in the future.
-    # Annotation and token group logic should not need to touch Canvas.
-    #
-    # WHY? I need to keep attachments sorted properly, and canvas does that.
-    from mashcima.Canvas import Canvas
-    from mashcima.annotation_to_image import token_groups_to_canvas
-    canvas = Canvas()
-    token_groups_to_canvas(canvas, groups)
-    return " ".join(canvas.get_annotations())
+    def sort_attachments(attachments: List[str]):
+        return list(sorted(
+            attachments,
+            key=lambda a: _ATTACHMENT_ORDER.index(to_generic(a))
+        ))
+
+    tokens = []
+    for group in groups:
+        tokens += sort_attachments(group.before_attachments)
+        if isinstance(group, KeySignatureTokenGroup):
+            pass  # attachments will be added, and there's no token
+        elif isinstance(group, TimeSignatureTokenGroup):
+            tokens.append(group.first_token)
+            tokens.append(group.second_token)
+        else:
+            tokens.append(group.token)
+        tokens += sort_attachments(group.after_attachments)
+
+    return " ".join(tokens)
 
 
 def repair_annotation(annotation: str) -> Tuple[str, List[str]]:
@@ -568,6 +577,21 @@ def repair_annotation(annotation: str) -> Tuple[str, List[str]]:
     groups, warnings = parse_annotation_into_token_groups(annotation)
     repaired_annotation = stringify_token_groups_to_annotation(groups)
     return repaired_annotation, warnings
+
+
+def trim_non_repeat_barlines(annotation: str) -> str:
+    """Removes all leading and trailing barlines (that are not repeat barlines)"""
+    tokens = annotation.split()
+
+    # leading
+    while len(tokens) > 0 and tokens[0] == "|":
+        del tokens[0]
+
+    # trailing
+    while len(tokens) > 0 and tokens[-1] == "|":
+        del tokens[-1]
+
+    return " ".join(tokens)
 
 
 #########################################
