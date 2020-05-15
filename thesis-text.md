@@ -48,7 +48,7 @@ We needed to obtain training data. We explored the *Collection of datasets for O
 
 Facing this issue we resorted to data augmentation. The idea is to take handwritten musical symbols and place them onto an empty staff to create a new staff image. We called this music engraving system *Mashcima* and the system is explained in the chapter [M](#M). The muscial symbols used by Mashcima come from the MUSCIMA++ dataset (https://ufal.mff.cuni.cz/muscima). This dataset is built on top of CVC-MUSCIMA and provides pixel-perfect symbol segmentation and relationships between symbols. The reason we chose MUSCIMA++, instead of other musical symbol datasets, is that it is built on top of CVC-MUSCIMA. This means the image resolution and overall style is consistent with CVC-MUSCIMA. Also MUSCIMA++ has been developed at Charles University and so it was easy to contact its creator when needed. We however do make sure, that the final evaluation is performed on data the neural network has not seen during training. Specifically it trains on staves by completely different writers than the ones used for evaluation.
 
-Mashcima engraving system is the main feature that sets this thesis apart from other works. Other people, when faced with the lack of training data, use simple data augentation (dilation, blurring, distortion) or transfer learning (https://openreview.net/pdf?id=SygqKLQrXQ). We belive that custom angraving system for hadwritten music is the best way to produce overabundance of high quality training data. Our confidence stems from the fact, that non-trained human has difficulties distinguishing a real-world sample from a well-engraved one.
+Mashcima engraving system is the main feature that sets this thesis apart from other works. Other people, when faced with the lack of training data, use simple data augentation (dilation, blurring, distortion) or transfer learning (https://openreview.net/pdf?id=SygqKLQrXQ). We belive that custom engraving system for hadwritten music is the best way to produce overabundance of high quality training data. Our confidence stems from the fact, that non-trained human has difficulties distinguishing a real-world sample from a well-engraved one.
 
     figure comparing one staff from CVC-MUSCIMA and one from PrIMuS, engraved using Mashcima
 
@@ -64,13 +64,90 @@ The thesis assignment states that output of our model will be a MusicXML file. W
 
 ## Thesis outline
 
-Thesis outline:
-- chapter 1, 2, 3, 4
+**Chapter X:** Proč end-to-end, proč RCNN+CTC, výhody, nevýhody, viz log - proces vymýšlení, vícekanálová CTC, problémy
+
+**Chapter X:** Reprezentace výstupu sítě (Mashcima representation)
+
+**Chapter X:** Engraving system Mashcima, jak funguje, jakou má strukturu
+
+**Chapter X:** Experiments and results (jak vypadají experimenty, jak dopadly)
 
 
-# Content
+# Related Work
 
-*Vymysli, kam strčit následující - jestli je to úvod nebo ne.*
+> TODO ... vypiš hlavní práce o které se opíráš a co zajímavého z nich používáš.
+
+- SimpleHTR
+- Calvo-Zaragoza and Rizo, PrIMuS
+- CVC-MUSCIMA
+- MUSCIMA++
+
+
+# Deep Neural Network
+
+> Tradiční systémy používají pipeline
+
+> deep NN spojují celou pipeline do jednoho celku, learned features
+
+> CTC umožňuje neřešit alignment, snazší anotace
+
+> multi channel CTC attempts
+
+
+# Music Representation
+
+- Inspirováno Primusem, ale drobné změny
+- proč agnostic a ne semantic
+    - menší abeceda, jednodušší generátor mashcima
+- míň ukecaný než u primusu, aby se dalo lépe anotovat ručně - vizuelní podobnost
+- symetrické - pozice 0 je uprostřed
+- Co se generuje vs. co lze anotovat
+- Pitch information
+- Attachments
+- Jak lze rozšířit do budoucna (dynamika, akordy) ... tohle ale spíš do závěru tady jen odkaz
+
+
+## PrIMuS agnostic encoding
+
+The PrIMuS dataset contains over 87 000 items, each with an image of the printed staff and then multiple files describing the music in that staff. There are two standard formats, namely Music Encoding Initiative format (MEI) and the Plaine and Easie code source. Then there are two on-purpouse encodings devised specifically for this dataset. These two encodings are what interests us.
+
+    figure containing a sample incipit
+
+The first of these two encodings is the *semantic encoding*. It represents what the musical symbols mean. Each symbol has a specific pitch that relies on the cleft at the begining of the staff. This makes the vocabulary much larger and any model using this encoding has take the clef into account when reading the symbols. It is however much easier to transform this encoding to some well known format like MusicXML, since these formats tend to represent the meaning of a score, not the score appearence.
+
+    semantic encoding of the incipit above
+
+The second encoding is the *agnostic encoding*. This encoding treats the staff visually as a specific positioning of specific symbols. It tries to capture what is in the staff visually, not what the symbols mean musically. This is comparable to a sentence being thought of as a sequence of letters, whereas the semantic encoding could be thought of as the specific sounds a written sentence represents. This makes the encoding harder to convert to a well known format acceptable by other music software. On the other hand this encoding is formal-enough to be easily converted to the semantic encoding, if read correctly. So this encoding lets the model do less work, therefore the model should do fewer mistakes.
+
+    agnostic encoding of the incipit above
+
+The agnostic encoding has also the advantage, that annotating an image is not as difficult for a human. Annotating an image using the semantic encoding requires the annotator to know pitches for a given key. The situation is even more complicated by key signatures. This means an untrained non-musician has to do a lot of thinking when annotating, which leads to many errors and slow annotation speed.
+
+We've taken this agnostic encoding and modified it slightly to produce our Mashcima music representation.
+
+
+## Mashcima music representation
+
+
+## Differences to PrIMuS
+
+
+## Extensibility
+
+
+# Engraving System
+
+
+# Experiments and Results
+
+
+# Conclusion and Future Works
+
+> - rozšíření na akordy
+> - rozšíření na dynamiku (mf, ff, pp, hairpins, ...)
+
+
+# XXX `Content layout and notes`
 
 V čem je end-to-end výhodné? (tzn. proč to vůbec prozkoumávám?)
 - ručně vybraný fičury nebejvaj nejlepší, lepší je se interní fičury naučit
@@ -122,6 +199,7 @@ Na čem trénovat model?
         - proč? Protože na něm budu testovat
     - popsat architekturu generátoru (třídy v pythonu), prostě dokumentace
         + nejen třídy, ale i jak funguje
+    - problémy s rozlišením a max. délkou výstpu
 - Experimenty
     - účel 1: jak dobrý je model co jsem udělal (evaluace)
     - účel 2: na jakých posloupnostech je nejlépe trénovat (primus / generated)
