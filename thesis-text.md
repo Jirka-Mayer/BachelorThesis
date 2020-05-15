@@ -96,15 +96,26 @@ The thesis assignment states that output of our model will be a MusicXML file. W
 
 # Music Representation
 
-- Inspirováno Primusem, ale drobné změny
-- proč agnostic a ne semantic
-    - menší abeceda, jednodušší generátor mashcima
-- míň ukecaný než u primusu, aby se dalo lépe anotovat ručně - vizuelní podobnost
-- symetrické - pozice 0 je uprostřed
-- Co se generuje vs. co lze anotovat
-- Pitch information
-- Attachments
-- Jak lze rozšířit do budoucna (dynamika, akordy) ... tohle ale spíš do závěru tady jen odkaz
+    - Inspirováno Primusem, ale drobné změny
+    - proč agnostic a ne semantic
+        - menší abeceda, jednodušší generátor mashcima
+    - míň ukecaný než u primusu, aby se dalo lépe anotovat ručně - vizuelní podobnost
+    - symetrické - pozice 0 je uprostřed
+    - Co se generuje vs. co lze anotovat
+    - Pitch information
+    - Attachments
+    - Jak lze rozšířit do budoucna (dynamika, akordy) ... tohle ale spíš do závěru tady jen odkaz
+
+---
+
+This chaptes explores how the music is represented within this thesis. It looks at the encodings devised for the PrIMuS dataset and how they have been modified to produce our Mashcima music encoding. Then we explore how this encoding can be used for annotating datasets and how it can be extended in the future.
+
+All the encodings explored in this chapter are made for a model that produces a sequence of tokens. An encoding then defines a specific set of tokens and describes how they map onto the musical symbols. In the context of a neural network with a CTC loss function, we take all the tokens of an encoding and represent them as the individual classifier classes. How the tokens get indexed and how the blank symbol is represented is considered an implementation detail of the neural network and is not covered in the encoding specification.
+
+We can provide a simple overview of the terms used in this chapter:
+**Token** is a single item of the output sequence produced by a model.
+**Vocabulary** is the set of all tokens in an encoding.
+**Encoding** is a scheme for mapping musical staves onto a sequence of tokens.
 
 
 ## PrIMuS agnostic encoding
@@ -126,7 +137,7 @@ The agnostic encoding has also the advantage, that annotating an image is not as
 We've taken this agnostic encoding and modified it slightly to produce our Mashcima music representation.
 
 
-## Mashcima music representation
+## Mashcima music encoding
 
 
 ## Differences to PrIMuS
