@@ -1,28 +1,21 @@
-https://mj.ucw.cz/vyuka/bc/
+# Some Links
+
+Medvěd: https://mj.ucw.cz/vyuka/bc/
+
+Hajič Jr. thesis proposal: http://ufal.mff.cuni.cz/~zabokrtsky/pgs/thesis_proposal/jan-hajic-jr-proposal.pdf
+A Starting Point for Handwritten Music Recognition: https://openreview.net/pdf?id=SygqKLQrXQ
+From Optical Music Recognition to Handwritten Music Recognition: A baseline: https://www.sciencedirect.com/science/article/abs/pii/S0167865518303386
+Handwritten Music Recognition for Mensural notation with convolutional recurrent neural networks: https://www.sciencedirect.com/science/article/abs/pii/S0167865519302338
+
+HTR (TU Wien): https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742
+
 
 # Abstract
 
-Optical music recognition is a challenging field similar in many ways to optical text recognition. It brings, however, many challenges that traditional pipeline-based recognition systems struggle with. The end-to-end approach has proven to be superior in the domain of handwritten text recognition. We tried to apply this approach to the field of OMR. Specifically, we focused on handwritten music recognition. We evaluated our system on a portion of the CVC-MUSCIMA dataset and the approach seems to be promising.
-
-*Note:* Přidat do abstraktu informace, že handwritten datasetů je fakt málo a že máme sázecí systém, kterej umí generovat fakt podobný syntetický data?
-
-HTR:
-https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742
+Optical music recognition is a challenging field similar in many ways to optical text recognition. It brings, however, many challenges that traditional pipeline-based recognition systems struggle with. The end-to-end approach has proven to be superior in the domain of handwritten text recognition. We tried to apply this approach to the field of OMR. Specifically, we focused on handwritten music recognition. To resolve the lack of training data, we developed an engraving system for handwritten music called Mashcima. This engraving system is successful at mimicking the style of the CVC-MUSCIMA dataset. We evaluated our model on a portion of the CVC-MUSCIMA dataset and the approach seems to be promising.
 
 
 # Introduction
-
-- RCNN sítě jsou úspěšné na OCR a HTR
-- OMR je podobné OCR, ale přináší další komplikace
-- RCNN ještě nebyly použité na OMR pro ručně psané texty
-    - pouze sázené, viz. CalvoRizo
-
-
-**Cílem práce je:**
-**Abstraktně:** Prozkoumat end-to-end přístup k řešení OMR
-**Konkrétně:** Mít end-to-end model, který dává co nejlepší výsledky na prvních pěti přepisovatelích datasetu CVC-MUSCIMA. (Evaluate how this specific RCNN model performs on CVC-MUSCIMA)
-
----
 
 > Co je OMR
 
@@ -45,14 +38,31 @@ The resulting model has been compared against Audiveris, an open-source OMR tool
 
 > my tohle chceme zkusit na ručně psaných *The goal of this thesis is: ...*
 
-Therefore the goal of this thesis is to explore end-to-end approach for optical music recognition of handwritten music scores. More specifically we want to train a RCNN network to yield best possible results on the CVC-MUSCIMA dataset.
+Therefore the goal of this thesis is to explore the end-to-end approach for optical music recognition of handwritten music scores. More specifically we want to train a RCNN network to yield the best possible results on the CVC-MUSCIMA dataset.
 
-> narazili jsme na nedostatek dat, takže součástí práce je taky Mashcima
+> narazili jsme na nedostatek dat
+
+We needed to obtain training data. We explored the *Collection of datasets for OMR* by Alexander Pacha (https://apacha.github.io/OMR-Datasets/) and quickly found out that the only dataset containing entire staves of handwritten sheet music is the CVC-MUSCIMA dataset (http://www.cvc.uab.es/cvcmuscima/index_database.html). Every other handwritten dataset contains only muscial symbols or is derived from CVC-MUSCIMA. Since CVC-MUSCIMA is intended for writer classification and staff removal, it contains only 20 parts, each written by 50 writers. That's far too small variability, given the task we are trying to solve.
+
+> takže součástí práce je taky Mashcima
+
+Facing this issue we resorted to data augmentation. The idea is to take handwritten musical symbols and place them onto an empty staff to create a new staff image. We called this music engraving system *Mashcima* and the system is explained in the chapter [M](#M). The muscial symbols used by Mashcima come from the MUSCIMA++ dataset (https://ufal.mff.cuni.cz/muscima). This dataset is built on top of CVC-MUSCIMA and provides pixel-perfect symbol segmentation and relationships between symbols. The reason we chose MUSCIMA++, instead of other musical symbol datasets, is that it is built on top of CVC-MUSCIMA. This means the image resolution and overall style is consistent with CVC-MUSCIMA. Also MUSCIMA++ has been developed at Charles University and so it was easy to contact its creator when needed. We however do make sure, that the final evaluation is performed on data the neural network has not seen during training. Specifically it trains on staves by completely different writers than the ones used for evaluation.
+
+Mashcima engraving system is the main feature that sets this thesis apart from other works. Other people, when faced with the lack of training data, use simple data augentation (dilation, blurring, distortion) or transfer learning (https://openreview.net/pdf?id=SygqKLQrXQ). We belive that custom angraving system for hadwritten music is the best way to produce overabundance of high quality training data. Our confidence stems from the fact, that non-trained human has difficulties distinguishing a real-world sample from a well-engraved one.
+
+    figure comparing one staff from CVC-MUSCIMA and one from PrIMuS, engraved using Mashcima
 
 > jak práce dopadla - úspěch nebo ne?
 
+It is difficult to evaluate an OMR system in general. This is because there is no standard dataset that can be used and no standard set of metrics. Moreover we proposed a new Mashcima representation for the music engraved in a staff. This representation is based on the agnostic encoding proposed by Calvo-Zaragoza and Rizo (https://grfia.dlsi.ua.es/primus/). Using custom representation makes it yet more difficult to compare our results to other works. That being said, we can still make some comparisons. It seems that having specialized engraving system is a step in the right direction. The results we obained when evaluating are comparable to simmilar works performing simmilar evaluation (https://openreview.net/pdf?id=SygqKLQrXQ).
 
----
+> MusicXML nebylo implementováno
+> Image preprocessing nebyl implementován, máme už binarizovaný vstup
+
+The thesis assignment states that output of our model will be a MusicXML file. We quickly realized that the problem is far larger then anticipated and so we focused on the core features only. Similarly the model input is not a plain photo or scan. It is already preprocessed and binarized. This problem has already been solved during the creation of the CVC-MUSCIMA dataset (http://www.cvc.uab.es/cvcmuscima/index_database.html).
+
+
+## Thesis outline
 
 Thesis outline:
 - chapter 1, 2, 3, 4
