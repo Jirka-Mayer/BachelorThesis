@@ -35,7 +35,7 @@ class Experiment03(object):
 
     def _prepare_datasets(self):
         from mashcima import Mashcima
-        mc = Mashcima(use_cache=True, skip_writers=[1, 2, 3, 4, 5])
+        mc = Mashcima(use_cache=True, skip_writers=[13, 20, 34, 41, 49])
 
         from experiment_utils import prepare_annotations
         training_annotations = prepare_annotations(
