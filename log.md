@@ -244,3 +244,96 @@ Základ generování obrázku z mashcima anotace.
 ## 2020-04-11
 
 Generování obrázku z mashcima anotace.
+
+
+## 2020-05-16
+
+Vybírání děl na evaluaci. Potřebuju vybrat 5 přepisovatelů, kteří jsou co nejpestřejší a od nich vzít ta díla, která mají MUSCIMA++ anotaci - aby se to dalo potažmo dále analyzovat, bylo-li by třeba.
+
+Idea: seřadím si díla podle toho, jak dobře půjdou anotovat. (abych mohl posoudit, která díla brát v potaz)
+
+03 - ok
+12 - ok
+02 - trilky, 2x gracenote
+11 - jeden otazník, fermata
+09 - 2x "?", fermata
+05 - trilky
+01 - triplets, fermata, pomlky v beamed skupinách
+13 - jeden "?", jeden trámec na obě strany
+14 - jeden akord, triplets
+17 - dva řádky s akordy
+15 - trámce na obě strany, pomlky v trámcích
+16 - trámce přes empty noteheads, akcenty "<", chci až na ten jeden řádek
+--------------------------------------------------------------------------------
+06 - spíš nechci - trilky, gracenotes, zapiš gracenotes jako normální noty
+04 - spíš nechci - tenuto, triplets, nested slur, bar repeat, fermata
+18 - spíš nechci - dva řádky akordy, jeden akord i mimo
+07 - ne - současné noty na mnoha místech trilky
+08 - ne - gracenotes, čtvrťové pomlky přes půlové noty, dvojhlas v base
+20 - ne - akordy na mnoha místech, potřeba hodně filtrovat
+10 - ne - akordy
+19 - ne - vícehlas
+
+
+Vybereme všechny přepisovatele, kteří jsou v MUSCIMA++ pro nějaké dílo které prošlo výberem nahoře:
+03 - 06 13 20 27 34 41 49
+12 - 04 11 18 25 32 39 47
+02 - 06 13 20 27 34 41 48
+11 - 05 12 19 26 35 42 49
+09 - 04 11 18 25 28 32 49
+05 - 07 14 21 28 35 42 49
+01 - 03 10 17 24 31 38 45
+13 - 02 09 16 23 30 37 44
+14 - 01 08 15 22 29 36 43
+17 - 02 09 16 23 30 37 44
+15 - 08 15 22 29 36 43 50
+16 - 06 13 20 27 34 41 48
+
+Seřadíme si přepisovatele podle četnosti děl a zjistíme krasopis:
+49 49 49 49 - spíš škrábe, hlavičky jsou čárky                   TAKE
+06 06 06 - spíš úhledné, hlavičky jsou kuličky                    --
+13 13 13 - normální, hlavičky jsou kuličky                       TAKE
+20 20 20 - normální, hlavičky jsou spíš čárky                    TAKE
+27 27 27 - spíš úhledné, hlavičky jsou kuličky                    --
+34 34 34 - normální, hlavičky jsou kuličky, rozházený sklon      TAKE
+41 41 41 - velmi úhledné, hlavičky jsou kuličky                  TAKE
+
+Zbývající přepisovatelé s málo díly:
+02 02           44 44
+04 04           48 48
+08 08           01
+09 09           03
+11 11           05
+15 15           07
+16 16           10
+18 18           12
+22 22           14
+23 23           17
+25 25           19
+28 28           21
+29 29           24
+30 30           26
+32 32           31
+35 35           38
+36 36           39
+37 37           45
+42 42           47
+43 43           50
+
+Jaká díla nám teda zbyla:
+03 - 06 13 20 27 34 41 49
+12 - .. .. .. .. .. .. ..
+02 - 06 13 20 27 34 41 ..
+11 - .. .. .. .. .. .. 49
+09 - .. .. .. .. .. .. 49
+05 - .. .. .. .. .. .. 49
+01 - .. .. .. .. .. .. ..
+13 - .. .. .. .. .. .. ..
+14 - .. .. .. .. .. .. ..
+17 - .. .. .. .. .. .. ..
+15 - .. .. .. .. .. .. ..
+16 - 06 13 20 27 34 41 ..
+     --       --
+
+Autoři, kteří padnou na evaluaci:
+13, 20, 34, 41, 49
