@@ -39,6 +39,16 @@ MUSCIMA_RAW_ANNOTATIONS = {
             "| clef.C0 time.3 time.4 wr | qr #4 q4 q5 | q6 q5 #4 q4 | q5 ( e=5 =e=5 #4 =e=4 #3 =e3 | #4 q4 e=5 ) =e4 #3 e=3 ( ) =e5 | #4 q4 q6 * e7 | q5 #4 e=4 ( ) #3 =e3 q6 | q2 q2 #4 q4 |",
             "| clef.C2 time.3 time.4 wr | wr | wr | qr q2 q3 | q4 ( ) q3 q2 | q3 ( e=4 =e=3 =e=2 =e1 | q2 e=3 ) =e2 e=1 =e2 | q1 q4 q4 |",
             "| clef.F2 time.3 time.4 wr | wr | wr | wr | qr #3 q3 q4 | q5 ( ) q4 #3 q3 | q4 ( e=5 =e=4 #3 =e=3 #2 =e2 | #3 q3 ) e=4 =e3 #2 e=2 ( ) =e1 |"
+        ],
+        16: [
+            "| clef.G-2 #4 qr q3 q4 q5 | h6 #2 q2 | q3 q5 ( q4 ) q3 | qr q5 ( ) q4 q3 | qr q5 ( q4 ) q3 | qr q5 ( ) q4 q3 |",
+            "| clef.G-2 #4 h1 N-1 h-1 | h-3 h-7 | q-4 qr hr | h1 > ** e1 | h1 ** e1 | h1 > ** e1 |",
+            "| clef.G-2 #4 q4 > * ( ) e3 q4 > * ( ) e1 | q0 > * ( ) e-1 q-2 > * ( ) e-3 | q1 qr qr q5 ( | q4 ) q3 qr q5 ( | q4 ) q3 qr q5 ( | q4 ) q3 hr |",
+            "| clef.G-2 #4 e=4 ( ) =e=3 =e=4 . =e3 . e=2 ( ) =e=1 =e=2 . =e1 . | e=0 ( ) =e=-1 =e=0 . =e-1 . e=-2 ( ) =e=-3 =e=-2 . =e-3 . | q-4 q5 ( q4 ) q3 | qr q5 ( q4 ) q3 | qr q5 ( q4 ) q3 | qr q5 ( q4 ) q3 |",
+            "| clef.G-2 #4 e=-1 ( ) =e=-4 =e=-4 . =e-4 . e=-4 ( ) =e=-6 =e=-6 . =e-6 . | e=-6 ( ) =e=-8 =e=-6 ( ) =e-8 e=-7 ( ) =e=-8 =e=-7 ( ) =e-8 | s=-6 =s-4 s=-6 =s-4 | s=-6 =s-4 s=-6 =s-4 | s=-6 =s-4 s=-6 =s-4 | s=-6 =s-4 s=-6 =s-4 |",
+            "| clef.C0 #3 e=-1 ( ) =e=0 =e=0 . =e0 #-3 e=-3 ( ) N-2 =e=-2 =e=-2 . =e-2 . | #-5 e=-5 ( ) =e=-4 . =e=-4 . =e-4 . #-6 e=-6 =e=-6 =e=-6 =e-6 | N-5 q-5 qr qr q4 ( | q3 ) q2 qr q4 ( | q3 q2 qr q4 ( | q3 ) q2 hr |",
+            "| clef.F2 #2 e=5 ( ) =e=6 =e=6 . =e6 . #3 e=3 ( ) N4 =e=4 =e=4 . =e4 . | #1 e=1 ( ) =e=2 =e=2 . =e2 e=-2 ( ) =e=5 =e=5 . =e5 . | N-5 h-5 qr q10 ( | q9 ) q8 qr q10 ( | q9 ) q8 qr q10 | q9 q8 hr |",
+            "| clef.F2 #2 qr q6 qr q4 | qr q2 h-2 | w-3 > | w-3 > | #-3 w-3 > | #-3 w-3 |"
         ]
     },
 
@@ -52,6 +62,16 @@ MUSCIMA_RAW_ANNOTATIONS = {
             "clef.C0 time.3 time.4 wr | qr #4 q4 q5 | q6 q5 #4 q4 | q5 ( e=6 =e=5 #4 =e=4 #3 =e3 | #4 q4 e=5 ) =e4 #3 e=3 ( ) =e5 | #4 q4 q6 * e7 | q5 #4 e=4 ( ) #3 =e3 q6 | q2 q2 #4 q4 |",
             "clef.C2 time.3 time.4 wr | wr | wr | qr q2 q3 | q4 ( ) q3 q2 | q3 ( e=4 =e=3 =e=2 =e1 | q2 e=3 ) =e2 e=1 =e2 | q1 q4 q4 |",
             "clef.F2 time.3 time.4 wr | wr | wr | wr | qr #3 q3 q4 | q5 ( ) q4 #3 q3 | q4 ( e=5 =e=4 #3 =e=3 #2 =e2 | #3 q3 ) e=4 =e3 #2 e=2 ( ) =e1 |"
+        ],
+        16: [
+            "| clef.G-2 #4 qr q3 ( q4 q5 | h6 ) #2 q2 | q3 q5 ( q4 ) q3 | qr q5 ( ) q4 q3 | qr q5 ( q4 ) q3 | qr q5 ( ) q4 q3 |",
+            "| clef.G-2 #4 h1 N-1 h-1 | h-3 h-7 | q-4 qr hr | h1 > ** e1 | h1 > ** e1 | h1 > ** e1 |",
+            "| clef.G-2 #4 q4 > * ( ) e3 q4 > * ( ) e1 | q0 > * ( ) e-1 q-2 * ( ) e-3 | q1 qr qr q5 ( | q4 ) q3 qr q5 ( | q4 ) q3 qr q5 ( | q4 ) q3 hr |",
+            "| clef.G-2 #4 e=4 ( ) =e=3 =e=4 . =e3 . e=2 ( ) =e=1 =e=2 . =e1 . | e=0 ( ) =e=-1 =e=0 . =e-1 . e=-2 ( ) =e=-3 =e=-2 . =e-3 . | q-4 q5 ( q4 ) q3 | qr q5 ( q4 ) q3 | qr q5 ( q4 ) q3 | qr q5 ( q4 ) q3 |",
+            "| clef.G-2 #4 e=-1 ( ) =e=-4 =e=-4 . =e-4 . e=-4 ( ) =e=-6 =e=-6 . =e-6 . | e=-6 ( ) =e=-8 =e=-6 ( ) =e-8 e=-7 ( ) =e=-8 =e=-7 ( ) =e-8 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 |",
+            "| clef.C0 #3 e=-1 ( ) =e=0 =e=0 . =e0 #-3 e=-3 ( ) N-2 =e=-2 =e=-2 . =e-2 . | #-5 e=-5 ( ) =e=-4 . =e=-4 . =e-4 . #-6 e=-6 =e=-6 =e=-6 =e-6 | N-5 q-5 qr qr q4 ( | q3 ) q2 qr q4 ( | q3 q2 qr q4 ( | q3 ) q2 hr |",
+            "| clef.F2 #2 e=5 ( ) =e=6 =e=6 . =e6 . #3 e=3 ( ) N4 =e=4 =e=4 . =e4 . | #1 e=1 ( ) =e=2 =e=2 . =e2 . e=-2 ( ) =e=5 =e=5 . =e5 . | h-3 qr q10 ( | q9 ) q8 qr q10 ( | q9 ) q8 qr q10 | q9 q8 hr |",
+            "| clef.F2 #2 qr q6 qr q4 | qr q2 h-2 | w-3 > | w-3 > | #-3 w-3 > | #-3 w-3 > |"
         ]
     },
 
@@ -65,6 +85,16 @@ MUSCIMA_RAW_ANNOTATIONS = {
             "| clef.C0 time.3 time.4 wr | qr #4 q4 q5 | q6 ( ) q5 #4 q4 | q5 ( e=6 =e=5 #4 =e=4 #3 =e3 | #4 q4 e=5 ) =e4 #3 e=3 ( ) =e5 | #4 q4 q6 * e7 | q5 #4 e=4 ( ) #3 =e3 q6 | q2 q2 #4 q4 |",
             "| clef.C2 time.3 time.4 wr | wr | wr | qr q2 q3 | q4 ( ) q3 q2 | q3 ( e=4 =e=3 =e=2 =e1 | q2 e=3 ) =e2 e=1 ( ) =e2 | q1 q4 q4 |",
             "| clef.F2 time.3 time.4 wr | wr | wr | wr | qr #3 q3 q4 | q5 ( ) q4 #3 q3 | q4 ( e=5 =e=4 #3 =e=3 #2 =e2 | #3 q3 e=4 ) =e3 #2 e=2 ( ) =e1 |"
+        ],
+        16: [
+            "| clef.G-2 #4 qr q3 ( q4 q5 | h6 ) #2 q2 | q3 q5 ( q4 ) q3 | qr q5 ( ) q4 q3 | qr q5 ( q4 ) q3 | qr q5 ( ) q4 q3 |",
+            "| clef.G-2 #4 h1 N-1 h-1 | h-3 h-7 | q-4 qr hr | h1 > ** e1 | h1 > ** e1 | h1 > ** e1 |",
+            "| clef.G-2 #4 q4 > * ( ) e3 q4 > * ( ) e1 | q0 > * ( ) e-1 q-2 * ( ) e-3 | q1 qr qr q5 ( | q4 ) q3 qr q5 ( | q4 ) q3 qr q5 ( | q4 ) q3 hr |",
+            "| clef.G-2 #4 e=4 ( ) =e=3 =e=4 . =e3 . e=2 ( ) =e=1 =e=2 . =e1 . | e=0 ( ) =e=-1 =e=0 . =e-1 . e=-2 ( ) =e=-3 =e=-2 . =e-3 . | q-4 q5 ( q4 ) q3 | qr q5 ( q4 ) q3 | qr q5 ( q4 ) q3 | qr q5 ( q4 ) q3 |",
+            "| clef.G-2 #4 e=-1 ( ) =e=-4 =e=-4 . =e-4 . e=-4 ( ) =e=-6 =e=-6 . =e-6 . | e=-6 ( ) =e=-8 =e=-6 ( ) =e-8 e=-7 ( ) =e=-8 =e=-7 ( ) =e-8 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 |",
+            "| clef.C0 #3 e=-1 ( ) =e=0 =e=0 . =e0 . #-3 e=-3 ( ) N-2 =e=-2 =e=-2 . =e-2 . | #-5 e=-5 ( ) =e=-4 . =e=-4 . =e-4 . #-6 e=-6 . =e=-6 . =e=-6 . =e-6 . | N-5 q-5 qr qr q4 ( | q3 ) q2 qr q4 ( | q3 q2 qr q4 ( | q3 ) q2 hr |",
+            "| clef.F2 #2 e=5 ( ) =e=6 =e=6 . =e6 . #3 e=3 ( ) N4 =e=4 =e=4 . =e4 . | #1 e=1 ( ) =e=2 =e=2 . =e2 . e=-2 ( ) =e=5 =e=5 . =e5 . | h-3 qr q10 ( | q9 ) q8 qr q10 ( | q9 ) q8 qr q10 | q9 q8 hr |",
+            "| clef.F2 #2 qr q6 qr q4 | qr q2 h-2 | w-3 > | w-3 > | #-3 w-3 > | #-3 w-3 > |"
         ]
     },
 
@@ -78,6 +108,16 @@ MUSCIMA_RAW_ANNOTATIONS = {
             "| clef.C0 time.3 time.4 wr | qr #4 q4 q5 | q6 ( ) q5 #4 q4 | q5 ( e=6 =e=5 #4 =e=4 #3 =e3 | #4 q4 e=5 ) =e4 #3 e=3 ( ) =e5 | #4 q4 q6 * e7 | q5 #4 e=4 #3 =e3 q6 | q2 q2 #4 q4 |",
             "| clef.C2 time.3 time.4 wr | wr | wr | qr q2 q3 | q4 ( ) q3 q2 | q3 ( e=4 =e=3 =e=2 =e1 | q2 e=3 ) =e2 e=1 ( ) =e2 | q1 q4 q4 |",
             "| clef.F2 time.3 time.4 wr | wr | wr | wr | qr #3 q3 q4 | q5 ( ) q4 #3 q3 | q4 ( e=5 =e=4 #3 =e=3 #2 =e2 | #3 q3 e=4 ) =e3 #2 e=2 ( ) =e1 |"
+        ],
+        16: [
+            "| clef.G-2 #4 qr q3 ( q4 q5 | h6 ) #2 q2 | q3 ( q5 q4 ) q3 | qr q5 ( ) q4 q3 | qr q5 ( ) q4 q3 | qr q5 ( ) q4 q3 |",
+            "| clef.G-2 #4 h1 N-1 h-1 | h-3 h-7 | q-4 qr hr | h1 > ** e1 | h1 > ** e1 | h1 > ** e1 |",
+            "| clef.G-2 #4 q4 > * ( ) e3 q4 > * ( ) e1 | q0 > * ( ) e-1 q-2 * ( ) e-3 | q1 qr qr q5 ( | q4 ) q3 qr q5 ( | q4 ) q3 qr q5 ( | q4 ) q3 hr |",
+            "| clef.G-2 #4 e=4 ( ) =e=3 =e=4 . =e3 . e=2 ( ) =e=1 =e=2 . =e1 . | e=0 ( ) =e=-1 =e=0 . =e-1 . e=-2 ( ) =e=-3 =e=-2 . =e-3 . | q-4 q5 ( q4 ) q3 | qr q5 ( q4 ) q3 | qr q5 ( q4 ) q3 | qr q5 ( q4 ) q3 |",
+            "| clef.G-2 #4 e=-3 ( ) =e=-4 =e=-4 . =e-4 . e=-4 ( ) =e=-6 =e=-6 . =e-6 . | e=-6 ( ) =e=-8 =e=-6 ( ) =e-8 e=-7 ( ) =e=-8 =e=-7 ( ) =e-8 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 |",
+            "| clef.C0 #3 e=-1 ( ) =e=0 =e=0 . =e0 . #-3 e=-3 ( ) N-2 =e=-2 =e=-2 . =e-2 . | #-5 e=-5 ( ) =e=-4 . =e=-5 . =e-4 . #-6 e=-6 . =e=-6 . =e=-6 . =e-6 . | N-5 q-5 qr qr q4 ( | q3 ) q2 qr q4 ( | q3 q2 qr q4 ( | q3 ) q2 hr |",
+            "| clef.F2 #2 e=5 ( ) =e=6 =e=6 . =e6 . #3 e=3 ( ) N4 =e=4 =e=4 . =e4 . | #1 e=1 ( ) =e=2 =e=2 . =e2 . e=-2 ( ) =e=5 . =e=5 . =e5 . | h-3 qr q10 ( | q9 ) q8 qr q10 ( | q9 ) q8 qr q10 | q9 q8 hr |",
+            "| clef.F2 #2 qr q6 qr q4 | qr q2 h-2 | w-3 > | w-3 > | #-3 w-3 > | #-3 w-3 > |"
         ]
     },
 
