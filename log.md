@@ -345,3 +345,17 @@ Přidání přepisovatele 17 do evaluační množiny.
 
 Protože jsme si přečetli: https://www.sciencedirect.com/science/article/abs/pii/S0167865518303386
 A zjistili, že evaluují na W17P1, takže ho chceme taky přidat do naší validace.
+
+---
+
+Jak vypadá současná evaluační sada?
+115 řádků (staves)
+17 děl (7 různých)
+5840 tokenů
+
+Experiment 03 results: (with writer 17 trained on, however)
+Average RAW: 0.24
+Average GENERATED: 0.22
+Average SLURLESS: 0.19
+Average ATTACHMENTLESS: 0.18
+Average PITCHLESS: 0.13
