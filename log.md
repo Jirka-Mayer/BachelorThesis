@@ -337,3 +337,11 @@ Jaká díla nám teda zbyla:
 
 Autoři, kteří padnou na evaluaci:
 13, 20, 34, 41, 49
+
+
+# 2020-05-18
+
+Přidání přepisovatele 17 do evaluační množiny.
+
+Protože jsme si přečetli: https://www.sciencedirect.com/science/article/abs/pii/S0167865518303386
+A zjistili, že evaluují na W17P1, takže ho chceme taky přidat do naší validace.

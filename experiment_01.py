@@ -13,7 +13,7 @@ Experiment 01:
     - Train on 63K Primus incipits
     - Validate on 1K Primus incipits
     - Generates images with staves above and below
-    - Use symbols from all writers except for writers 1 - 5
+    - Use symbols from all writers except for the evaluating ones
     - Minimal staff width of 1200px (because Primus incipits are relatively long)
 
 '''
@@ -35,7 +35,7 @@ class Experiment01(object):
 
     def _prepare_datasets(self):
         from mashcima import Mashcima
-        mc = Mashcima(use_cache=True, skip_writers=[13, 20, 34, 41, 49])
+        mc = Mashcima(use_cache=True, skip_writers=[13, 17, 20, 34, 41, 49])
 
         from experiment_utils import prepare_annotations
         training_annotations = prepare_annotations(
