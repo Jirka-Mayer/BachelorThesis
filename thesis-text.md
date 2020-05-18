@@ -91,6 +91,8 @@ The thesis assignment states that output of our model will be a MusicXML file. W
 
 > CTC umožňuje neřešit alignment, snazší anotace
 
+> konkrétní architektura mojí sítě (tabulka) + hypotéza o dropout vrstvě
+
 > multi channel CTC attempts
 
 
@@ -285,7 +287,9 @@ There are few notes regarding the ordering:
 
 ### Slurs
 
-<!-- slurs -->
+Slurs and ties are one of the first symbols that make OMR complicated. Slur is a curved line going from one notehead to another. Notes that are under a slur should be played blended together without explicit note beginnings. Tie looks exactly like a slur, just the two notes it joins have the same pitch. This means the notes should be played as one long note. So the difference is only semantic, we will consider ties to be slurs.
+
+CONTINUE HERE
 
 
 ### Beams
