@@ -175,7 +175,31 @@ MUSCIMA_RAW_ANNOTATIONS = {
             "| clef.C0 time.3 time.4 wr | qr #4 q4 q5 | q6 q5 #4 q4 | q5 ( e=6 =e=5 #4 =e=4 #3 =e3 | #4 q4 e=5 ) =e4 #3 e=3 ( ) =e5 | #4 q4 q6 * e7 | q5 #4 e=4 ( ) #3 =e3 q6 | q2 q2 #4 q4 |",
             "| clef.C2 time.3 time.4 wr | wr | wr | qr q2 q3 | q4 ( ) q3 q2 | q3 ( e=4 =e=3 =e=2 =e1 | q2 e=3 ) =e2 e=1 =e2 | q1 q4 q4 |",
             "| clef.F2 time.3 time.4 wr | wr | wr | wr | qr #3 q3 q4 | q5 ( ) q4 #3 q3 | q4 ( e=5 =e=4 #3 =e=3 #2 =e2 | #3 q3 ) e=4 =e3 #2 e=2 ( ) =e1 |"
-        ]
+        ],
+        5: [
+            "| clef.G-2 b0 b3 q1 trill e=0 * =s-1 N0 q0 | e=1 * b0 =s0 trill q-1 q-2 er e1 | e=-3 * =s=-2 =e=-1 * =s0 q1 er e1 | e=0 * =s=1 =e=2 * =e3 q4 q4 ( ) |",
+            "| clef.G-2 b0 b3 e=-3 * =s=-4 trill =e=-5 * =s-6 q-6 e=-3 * N-4 =s-4 | N-4 q-4 q-6 ( ) e=-6 * =s=-7 =e=-8 * =s-9 | q-3 ( ) e=-3 * =s-2 e=-1 * =s=-2 =e=-3 * N-4 =s-4 | q-5 er e0 e=1 * =s=0 =e=-1 * =s-2 |",
+            "| clef.C0 b-1 b2 q5 er e3 e=5 * =s=4 =e=3 * =s4 | e=4 * =s=4 =e=3 * N2 =s2 q2 er e2 | q-2 q3 ( ) e=3 * N2 =s=2 =e=1 * =s0 | q3 * q6 e=5 * =s=4 =e=3 * =s1 |",
+            "| clef.G-2 b0 b3 e1 * s1 e0 * s-1 q-1 N0 q0 | e1 * b0 s0 e-1 * s-2 q-2 er e1 | e=-3 * =s-2 e-1 * s0 q1 er e1 | e=0 * =s1 e2 * N3 s3 q4 q5 ( ) |",
+            "| clef.G-2 b0 b3 q-1 er e-2 e-1 * s-2 e-3 * N-4 s-4 | N-4 s-4 * s-2 e-3 * s-4 q-4 er e-4 | e=-5 * N-4 =s-4 e-3 * s-2 q-1 er e-3 | q-3 e-3 * s-2 q-3 er e-2 * |",
+            "| clef.G-2 b0 b3 e4 * s3 e2 * s1 q1 q2 | e-2 * N-4 s-4 e1 * s2 q1 er e1 | q-1 e-1 * s-2 q-3 er e1 | q2 e1 * s0 q1 er e2 |",
+            "| clef.F2 b-2 b1 ) q2 er e1 e2 * s1 e0 * s-1 | h-1 ( ) q-1 er e-1 | q0 e-1 * s-2 q-3 er e4 | q5 e4 * s3 q4 er e5 |"
+        ],
+        9: [
+            "clef.F2 #2 time.3 time.4 e=-4 ( =e0 ) q5 e=4 ( =s=5 ) =s6 | e=5 ( ) =e=4 =e=3 ( ) =e=2 =e=3 ( ) =e0 | e=1 ( ) =e=3 =e=6 ( ) =e=4 =e=2 ( ) =e7 | trill h7 h0 h-6 ? | e=-3 ( =e2 ) q6 e=5 ( =s=6 ) =s7 | e=6 ( ) =e=5 =e=4 ( ) =e=3 =e=2 ( ) =e1 |",
+            "clef.F2 #2 e=2 ( =s=3 ) =s4 e=3 =e=2 =e=1 =e2 | q0 q-3 q-7 :|: e=0 ( =e2 ) q4 e=3 ( =s=4 ) =s5 | e=4 ( ) =e=3 =e=2 ( ) =e=1 =e=0 ( ) =e2 | e=-2 =e=0 ( #3 =e=3 ) =e=4 =e=5 =e7 | e=-3 =e=7 ( =e=6 ) =e5 q6 |",
+            "clef.F2 #2 #0 e=0 ( =e=2 ) =e=4 =e=6 =e=5 =e4 | e=5 ( =e=1 ) =e=-4 =e=4 =e=6 =e5 | e=4 ( =e=3 ) =e=2 =e=1 =e=-2 #0 =e0 | q-6 * e=1 N0 =e=0 =e-1 | e=-2 ( =e0 ) q3 e=0 ( =s=1 ) N2 =s2 | N2 e=2 ( ) =e=0 =e=1 ( ) =e=-1 =e=-8 =e-2 |",
+            "clef.F2 #2 #-1 e=-1 ( =e1 ) q4 e=1 ( =s=2 ) =s3 | e=3 ( ) =e=1 =e=2 ( ) =e=0 =e=-7 =e-3 | e=0 ( =e=2 ) =e=4 =e=6 =e=5 =e6 | e=1 ( =e=3 ) =e=5 =e=7 =e=6 =e8 | e=7 =e=2 =e=3 =e=-2 =e=-7 =e2 | ? fermata :| N2 b-2",
+            ""
+        ],
+        11: [
+            "clef.F2 #2 time.6 time.8 e0 | e=3 =e=0 ( ) =e1 e=1 =e=-1 ( ) =e0 | e=0 . =e=3 . =e0 e=-2 =e=-4 =e0 | s=3 ( =s=4 ) =e=5 =e4 s=4 ( =s=5 ) =e=6 =e4 | trill q5 * q0 q-4 * ? e4 . | e=5 =e=2 ( ) =e3 e=3 =e=1 ( ) =e3 | e=4 =e=1 ( ) =e2 e=2 =e=0 ( ) =e2 | e=3 . =e=5 . =e3 . e=1 =e=-2 =e1 |",
+            "clef.F2 #2 #0 e=-1 ( =e=1 ) =e4 q-3 e1 | N2 e=2 ( ) =e=1 =e3 e=3 ( ) =e=2 =e4 | e=4 ( ) =e=3 b5 =e5 e=5 ( ) =e=4 =e3 | N2 e=2 ( ) =e=1 =e0 e=-3 ( ) =e=0 #-1 =e-1 | e=0 =e=-3 #-5 =e-5 q-7 :|: e4 | e=4 ( =e=3 ) =e3 e=3 ( =e=1 ) =e3 | s=2 ( =s=3 ) =e=4 =e2 e=0 =e=6 ( ) =e5 |",
+            "clef.F2 #2 e=5 ( ) =e=3 =e5 e=4 ( ) =e=2 =e3 | s=3 ( ) =s=4 =e=5 =e3 e=1 =e=7 ( ) =e6 | e=4 e=7 ( ) =e6 e=0 e=6 ( ) =e5 | e=3 =e=6 ( ) =e5 e=-1 =e=5 ( ) =e4 | e=3 ( ) =e=2 =e1 e=-2 ( ) =e=1 #0 =e0 | e=1 =e=-2 =e-4 q-6 e3 | e=4 =e=2 ( ) =e3 #6 s=6 ( =s=7 ) =e=8 =e2 |",
+            "clef.F2 #2 e=3 =e=1 ( ) N2 =e2 s=5 =s=6 ( ) =e=7 =e1 | N2 e=2 =e=0 ( ) =e1 s=4 ( =s=5 ) =e=6 =e4 | #2 s=2 ( =s=3 ) =e=4 =e2 q0 e4 | b5 e=5 ( =e=4 ) =e6 e=6 ( =e=5 ) =e7 | e=7 ( =e=6 ) b8 =e8 e=8 ( =e=7 ) =e6 | b5 e=5 =e=4 ( ) =e3 e=0 ( ) =e=3 =e2 |",
+            "clef.F2 #2 e=3 N-2 =s=-2 ( =s=-1 ) =e0 e=-4 ( ) =e=-2 =e0 | e=3 =s=1 ( N2 =s=2 ) =e3 e=-2 ( ) =e=-1 =e1 | e=4 #2 =s=2 ( =s=3 ) =e4 #-1 e=-1 =e=0 =e2 | e=5 =s=3 ( =s=4 ) =e5 #0 e=0 ( ) =e=1 =e6 | e=1 ( ) =e=2 =e7 e=2 ( ) =e=3 =e9 | e=0 =s=1 =s=2 =s=3 =s4 e=5 ( ) e=3 =e2 |",
+            "clef.F2 #2 e=3 =e=0 =e-2 q-4 fermata :|"
+        ],
     },
 }
 

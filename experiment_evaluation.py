@@ -114,7 +114,11 @@ def _calculate_item_metrics(gold: str, prediction: str):
     gold_non_generated = remove_non_generated_symbols_from_gold_data(gold)
 
     def relative_edit_distance(g: str, p: str):
-        return editdistance.eval(g.split(), p.split()) / len(g.split())
+        norm_term = len(g.split())
+        if  norm_term == 0:
+            print("Skipping edit distance normalization because gold sequence is empty.")
+            norm_term = 1
+        return editdistance.eval(g.split(), p.split()) / norm_term
 
     def remove_slurs(annotation: str):
         return " ".join(filter(lambda t: t not in ["(", ")"], annotation.split()))
