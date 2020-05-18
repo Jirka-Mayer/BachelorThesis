@@ -54,7 +54,13 @@ MUSCIMA_RAW_ANNOTATIONS = {
 
     # writer 17
     17: {
-        # //
+        1: [
+            "clef.F2 #2 time.5 time.4 q7 ( N6 q6 q4 q3 ) q5 | q7 ( q6 q7 q8 ) q10 | time.7 time.8 er b5 s=5 . =s=4 . =e6 . s=5 . =s=4 . =e6 . e=5 . =e8 . | er b5 s=5 . =s=4 . =e6 . s=5 . =s=4 . =e6 . e=5 . =e8 . | er ( tuplet.3 e3 ) e3 e6 s=4 =s4 s=4 =s6 e1 er | time.3 time.4",
+            "clef.F2 #2 time.3 time.4 e=-2 sr =s-5 e=-2 . =e1 > s=0 . =s=1 . =e-3 . | h-2 . | e=5 . sr =s2 . e=5 . =e8 . s=7 . =s=8 . =e4 . | qr er e5 ( ) q5 | e=2 ( tuplet.3 =e=2 ) =e2 e=4 ( tuplet.3 =e=2 ) =e4 fermata q1 | time.6 time.8 e=-6 ( =e=-7 =e-6 N-5 e=-5 . N-4 =e=-4 ) =e-5 |",
+            "clef.F2 #2 e=-6 =e=-7 =e-6 e=-7 N-8 =e=-8 =e-7 | e=1 =e=0 =e1 N2 e=2 N3 =e=3 =e2 | e=1 =e=0 =e1 e=0 =e=-1 =e0 clef.C2 | e=4 =e=3 =e4 N5 e=5 =e=6 =e5 | e=4 =e=3 =e4 e=3 =e=2 =e3 |",
+            "clef.C2 #5 e=4 =s=3 tuplet.3 =s=3 =s=3 =e4 N5 e=5 =s=6 tuplet.3 =s=6 =s=6 =e5 clef.F2 | #3 e=3 =e=2 =e3 e=4 =e=5 =e4 | #3 e=3 =e=2 =e3 e=2 =e=1 =e2 | #3 e=3 =s=2 tuplet.3 =s=2 =s=2 =e3 e=4 =s=5 tuplet.3 =s=5 =s=5 =e4 clef.C2 |",
+            "clef.C2 #5 #6 e=6 =s=5 tuplet.3 =s=5 =s=5 =e6 e=7 =s=8 tuplet.3 =s=8 =s=8 =e7 | #6 e=6 =s=5 tuplet.3 =s=5 =e=5 =e6 e=7 =s=8 tuplet.3 =s=8 =s=8 =e7 | time.C b0 h0 fermata h0 | N-2 b1 b4 b0 time.3 time.4 h0 ( ) e=0 tuplet.3 =e=-1 =e-2 | h0 ( ) e=0 tuplet.3 =e=-1 =e-2 | ) h0 * ( ) |"
+        ]
     },
 
     # writer 20

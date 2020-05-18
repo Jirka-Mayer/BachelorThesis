@@ -192,6 +192,13 @@ def to_generic(annotation_token: str):
     Converts an annotation token to it's generic version (pitch-less version).
     For generic tokens nothing happens.
     """
+    # these tokens end with a digit, but it isn't a pitch
+    if annotation_token.startswith("tuplet."):
+        return annotation_token
+    if annotation_token.startswith("time."):
+        return annotation_token
+
+    # remove digits at the end
     return annotation_token.rstrip("-0123456789")
 
 
