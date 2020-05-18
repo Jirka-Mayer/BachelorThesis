@@ -55,7 +55,7 @@ MUSCIMA_RAW_ANNOTATIONS = {
     # writer 17
     17: {
         # //
-    }
+    },
 
     # writer 20
     20 : {

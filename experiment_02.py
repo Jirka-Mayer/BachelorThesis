@@ -7,7 +7,7 @@ USAGE_TEXT = '''python experiment_02.py <command> [<args>]
 The available commands are:
    inspect    Inspects datasets that will be used for training and validation
    train      Train new model for the experiment
-   test       Test the trained model against annotated muscima parts
+   evaluate   Evaluate the trained model against annotated muscima parts
 
 Experiment 02:
     - Train on 63K generated incipits
@@ -107,15 +107,15 @@ class Experiment02(object):
             batch_size=args.batch_size
         )
 
-    def test(self):
+    def evaluate(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--model', default="experiment_02")
-        parser.add_argument('--writers', type=str, help="writers to test on e.g. '1,2,3'")
-        parser.add_argument('--parts', type=str, help="parts to test on e.g. '1,2,3'")
+        parser.add_argument('--writers', type=str, help="writers to evaluate on e.g. '1,2,3'")
+        parser.add_argument('--parts', type=str, help="parts to evaluate on e.g. '1,2,3'")
         args = parser.parse_args(sys.argv[2:])
 
-        from experiment_testing import test_model
-        test_model(args.model, args.writers, args.parts)
+        from experiment_evaluation import evaluate_model
+        evaluate_model(args.model, args.writers, args.parts)
 
 
 if __name__ == '__main__':

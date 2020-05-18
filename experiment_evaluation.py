@@ -9,7 +9,7 @@ from app.vocabulary import remove_attachments_from_annotation, turn_annotation_g
 from app.vocabulary import trim_non_repeat_barlines
 
 
-def test_model(model_name: str, writers_filter: str, parts_filter: str):
+def evaluate_model(model_name: str, writers_filter: str, parts_filter: str):
     """Tests a trained model on annotated cvc muscima parts"""
     if writers_filter is None:
         writers_filter = list(range(1, 51))
