@@ -317,13 +317,91 @@ CONTINUE HERE
 
 # Experiments and Results
 
+<!--
+- describe metrics used for evaluation (SER)
+- describe the data we are evaluating on (writer selection, ...)
+- describe the experiments and what their goal is (01 - 03)
+- talk about differences in generated symbols vs. all the symbols, propose new normalization and show the results
+- compare the results to the baseline paper and discuss
+- result of the dropout hypothesis
+
+drobnosti:
+- language model má vliv, ale ne tak zásadní. Například se naučil nevyrábět nedokončené beamy (když splete první notu, tak z "e= =e= =e" vyrobí "q e= =e", ačkoliv prostřední nota má trámec na obě strany)
+- stejně tak se naučí že jeden křížek po klíči má správnou hodnotu i když je nakreslený špatně
+     (tzn. proto je dobré trénovat jak na generovaných, tak na primusu)
+-->
+
+This chapter describes experiments we performed. These experiments aim to measure performance of our approach and test hypotheses postulated in previous chapters.
+
+
+## Evaluation metrics
+
+<!--
+- we evaluate the output = token sequence against a token sequence
+- describe SER = normalized levensten
+- sketch out the problem of comparison when removing symbols
+-->
+
+
+## Evaluation data
+
+<!--
+- why cvc-muscima (see the introduction text and elaborate)
+
+- how we picked the writers (criteria)
+- part sorting, selection
+- addition of writer 17
+-->
+
+
+## Experiments
+
+<!--
+- used architecture, differences in training data, when to stop, validation data
+- list them -> 01, 02, 03 in a table
+- "we proposed three ways of training the model and now we evaluate each one of them"
+-->
+
+
+## Results
+
+<!--
+- tabulka výsledků (pro každý experiment, pro každého přepisovatele, pro každé dílo)
+- jak se SER chová když neřeším legato, attachmenty, pitche, ...
+- diskuze nad language modelem a porovnání experimentů (+regularizace šumem)
+-->
+
+
+## Comparison to other work
+
+<!--
+- the baseline paper - how we compare
+- is the comparison fair? (different vocabulary, different token density)
+    - e.g. dynamics? Text around the staff? ... popsat co všechno může být nefér a pak se podívat, jak moc je to reálně nefér
+    - ALE můžu vzít ten jeden staff co tam mají s obrázkem a přidat můj vysledek
+- what are the numbers for commercial software from that paper?
+
+??? CO VŠECHNO Z TOHO ČLÁNKU SI MŮŽU DOVOLIT SEM DÁT ???
+-->
+
+
+## Dropout layer importance
+
+<!--
+- popiš problém s dropoutem, jak to blblo, jak jsi to řešil, jak jsi zjistil,
+    že by mohl pomoct dropout a jak pak pomohl
+-->
+
 
 # Conclusion and Future Works
 
-> - rozšíření barlines (:|: |: :|, ||) a spoustu dalších symbolů (trill, fermata)
-> - rozšíření na dynamiku (mf, ff, pp, hairpins, ...)
-> - rozšíření na akordy
-> - rozšíření na text kolem not (kvůli regularizaci), e.g. "andante", "T=180", ...
+> - anotace a generátor:
+>   - rozšíření barlines (:|: |: :|, ||) a spoustu dalších symbolů (trill, fermata)
+>   - rozšíření na dynamiku (mf, ff, pp, hairpins, ...)
+>   - rozšíření na akordy
+>   - rozšíření na text kolem not (kvůli regularizaci), e.g. "andante", "T=180", ...
+> - použít úplně jinačí model - zkombinovat baseline paper a můj generátor
+> - nebo vypiplat generátor a postavit na jeho základě novej dataset
 
 
 # XXX `Content layout and notes`
