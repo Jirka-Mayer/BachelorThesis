@@ -290,7 +290,7 @@ There are few notes regarding the ordering:
 
 Slurs and ties are one of the first symbols that make OMR complicated. Slur is a curved line going from one notehead to another. Notes that are under a slur should be played blended together without explicit note beginnings. Tie looks exactly like a slur, just the two notes it joins have the same pitch. This means the notes should be played as one long note. So the difference is only semantic, we will consider ties to be slurs.
 
-CONTINUE HERE
+> CONTINUE HERE
 
 
 ### Beams
@@ -322,7 +322,7 @@ CONTINUE HERE
 - describe metrics used for evaluation (SER)
 - describe the data we are evaluating on (writer selection, ...)
 - describe the experiments and what their goal is (01 - 03)
-- talk about differences in generated symbols vs. all the symbols, propose new normalization and show the results
+- talk about differences in generated symbols vs. all the symbols, propose new levenstein normalization and show the results
 - compare the results to the baseline paper and discuss
 - result of the dropout hypothesis
 
@@ -335,21 +335,41 @@ drobnosti:
 This chapter describes experiments we performed. These experiments aim to measure performance of our approach and test hypotheses postulated in previous chapters.
 
 
-## Evaluation metrics
+## Training data
 
-<!--
-- we evaluate the output = token sequence against a token sequence
-- describe SER = normalized levensten
-- sketch out the problem of comparison when removing symbols ... "important symbols"
--->
+Before we can talk about experiments, we have to explain what the training data looks like. In the [chapter 1](#1) we talked about the network architecture. The model takes an image as the input and produces a sequence of annotation tokens. [Chapter 2](#2) describes how these annotation tokens encode the music in an image. Now we just need to obtain enough pairs of image and annotation to train on.
+
+The [thesis introduction](#intro) stated that the only available dataset is CVC-MUSCIMA (*link*). This dataset contains 1000 images of handwritten sheets of music, consisting of 20 pages, each written by 50 writers. Because of this lack of variability the dataset cannot be used as-is. In [chapter 3](#3) we described our Mashcima engraving system. This system can produce an image of one staff, that corresponds to a given Mashcima annotation. It does that by rendering musical symbols present in CVC-MUSCIMA, which in turn were extracted as part of the MUSCIMA++ dataset (*link*).
+
+We have a system, that can create images for given annotations. All we need to provide are those annotations.
+
+The 20 pages of CVC-MUSCIMA contain this information. The problem is that there is only 20 of them. We ideally need thousands of annotations to account for all the variability in note types and pitches our encoding can capture. Luckily, PrIMuS dataset (*link*) contains exactly what we need. PrIMuS contains over 87 000 incipits of monophonic music. An incipit is the recognizable part of a melody or a song. The incipits have ideal length of a few measures. It's not an entire staff, but not a few symbols either. Also all the incipits are encoded in many formats, but most importantly they are encoded in the agnostic format, that is very simmilar to the Mashcima encoding.
+
+We can take the PrIMuS dataset, engrave all the incipits using Mashcima and train on the result. The only obstacle is converting PrIMuS agnostic encoding to Mashcima encoding.
+
+Converting PrIMuS agnostic encoding to Mashcima encoding is mostly a one-to-one mapping of tokens. Pitches have to be encoded differently, tokens have different names. In PrIMuS, all tokens have pitch information, so for some tokens, it gets stripped away.
+
+Some incipits, however, need to be filtered out. PrIMuS contains symbols, that aren't present in CVC-MUSCIMA, therefore cannot be engraved. These symbols are very long or very short notes (longa, breve, thirty-second). PrIMuS also contains many gracenotes and simmilar symbols that the Mashcima engraving system cannot render, so they get removed. There are a couple of other rules and checks that make the conversion slightly more complicated. The exact code for the conversion can be found in the file `mashcima/primus_adapter.py`.
+
+When the conversion finishes, we are left with 64 000 incipits we can use to train on.
+
+    image of a primus incipit printed and mashcima engraved side-by-side
+    with mashcima encoding tokens
+
+The advantage of this training data is that the music in it comes from the real world. This allows the model to pick up common patterns and possibly learn the language model.
+
+The other option we have is to just simply randomize the training annotations. We throw away the possibility of learning a language model, but we get a different benefit. We can artificially boost frequencies of tokens that appear lass frequently in the real world. This will cause the model to make fewer mistakes on uncommon symbols.
+
+Randomization seems simple at first, but it can be done in many ways. At one extreme, we can simply randomly choose tokens from the vocabulary. This, however, produces sequences that cannot be rendered and are nonsensical. Beamed notes have to have a beginning and an end. We cannot have an unfinished or non-started beam. At another extreme, we can try to mimic the language model by using a lot of rules.
+
+We opted for something in the middle. We make sure, that the generated annotation can be engraved, but we don't ensure anything more. Duration per measure is not correct, pitch is almost random, time signatures can be in the middle of a measure. The resulting image looks nothing like what we are used to seeing in sheet music. The code for generating random annotations can be found in file `app/generate_random_annotation.py`.
+
+    image of a randomized staff, with annotation
+
+We will compare these two approaches later in the experiments. It may come as a surprise, but the best approach will be to combine both randomized and real-world data, effectively training on both.
 
 
 ## Evaluation data
-
-<!--
-    TODO: někde musí bejt informace jak vypadá trénování - na jakých datech a tak
-    a možná by to mohla být sekce na začátku téhle kapitoly, ještě před metrikama
--->
 
 When we faced the lack of training data, we resorted to data augmentation. We cannot do that for evalution, because the evaluation data should be as close to the real-world as possible. Therefore using a well established dataset it the only option.
 
@@ -421,6 +441,15 @@ Lastly we wanted to compare our results with the results of *From Optical Music 
 | 49     | 03, 05, 09, 11 |
 
 We end up with 6 writers, 17 pages (7 distinct), 115 staves and over 5840 tokens. Annotations for these pages can be found in the file `app/muscima_annotations.py`.
+
+
+## Evaluation metrics
+
+<!--
+- we evaluate the output = token sequence against a token sequence
+- describe SER = normalized levensten
+- sketch out the problem of comparison when removing symbols ... "important symbols"
+-->
 
 
 ## Experiments
