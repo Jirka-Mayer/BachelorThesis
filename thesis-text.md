@@ -30,7 +30,7 @@ Deep neural networks have transformed the field of computer vision recently. Esp
 
 <!-- tuhle architekturu zkusil Calvo 2018 na primusu -->
 
-If we limit the complexity of musical scores to the point that a single staff can be represented as a sequence of tokens, we can use this architecture to tackle to problem of OMR. This approach has been tried in 2018 by Calvo-Zaragoza and Rizo in 2018 (https://www.mdpi.com/2076-3417/8/4/606). They created the PrIMuS dataset, which contains 87678 real-music incipits. An incipit is the part of a melody or a musical work that is most recognizable for that work. Each incipit is a few measures long, typically shorter than a single staff of printed sheet music would be.
+If we limit the complexity of musical scores to the point that a single staff can be represented as a sequence of tokens, we can use this architecture to tackle the problem of OMR. This approach has been tried in 2018 by Calvo-Zaragoza and Rizo in 2018 (https://www.mdpi.com/2076-3417/8/4/606). They created the PrIMuS dataset, which contains 87678 real-music incipits. An incipit is the part of a melody or a musical work that is most recognizable for that work. Each incipit is a few measures long, typically shorter than a single staff of printed sheet music would be.
 
 <!-- primus je nice and all, ale je sázenej, jenže hodně not je ručně psanejch (to je ta díra co plním) -->
 
@@ -48,7 +48,7 @@ We needed to obtain training data. We explored the *Collection of datasets for O
 
 Facing this issue we resorted to data augmentation. The idea is to take handwritten musical symbols and place them onto an empty staff to create a new staff image. We called this music engraving system *Mashcima* and the system is explained in the chapter [M](#M). The muscial symbols used by Mashcima come from the MUSCIMA++ dataset (https://ufal.mff.cuni.cz/muscima). This dataset is built on top of CVC-MUSCIMA and provides pixel-perfect symbol segmentation and relationships between symbols. The reason we chose MUSCIMA++, instead of other musical symbol datasets, is that it is built on top of CVC-MUSCIMA. This means the image resolution and overall style is consistent with CVC-MUSCIMA. Also MUSCIMA++ has been developed at Charles University and so it was easy to contact its creator when needed. We however do make sure, that the final evaluation is performed on data the neural network has not seen during training. Specifically it trains on staves by completely different writers than the ones used for evaluation.
 
-Mashcima engraving system is the main feature that sets this thesis apart from other works. Other people, when faced with the lack of training data, use simple data augentation (dilation, blurring, distortion) or transfer learning (https://openreview.net/pdf?id=SygqKLQrXQ). We belive that custom engraving system for hadwritten music is the best way to produce overabundance of high quality training data. Our confidence stems from the fact, that non-trained human has difficulties distinguishing a real-world sample from a well-engraved one.
+Mashcima engraving system is the main feature that sets this thesis apart from other works. Other people, when faced with the lack of training data, used simple data augentation (dilation, blurring, distortion) or transfer learning (https://openreview.net/pdf?id=SygqKLQrXQ). We belive that custom engraving system for hadwritten music is the best way to produce overabundance of high quality training data. Our confidence stems from the fact, that non-trained human has difficulties distinguishing a real-world sample from a well-engraved one.
 
     figure comparing one staff from CVC-MUSCIMA and one from PrIMuS, engraved using Mashcima
 
@@ -59,7 +59,7 @@ It is difficult to evaluate an OMR system in general. This is because there is n
 <!-- MusicXML nebylo implementováno
 Image preprocessing nebyl implementován, máme už binarizovaný vstup -->
 
-The thesis assignment states that output of our model will be a MusicXML file. We quickly realized that the problem is far larger then anticipated and so we focused on the core features only. Similarly the model input is not a plain photo or scan. It is already preprocessed and binarized. This problem has already been solved during the creation of the CVC-MUSCIMA dataset (http://www.cvc.uab.es/cvcmuscima/index_database.html).
+The thesis assignment states that output of our model will be a MusicXML file. We quickly realized that the problem is far larger then anticipated and so we focused on the core features only. Similarly the model input is not a plain photo or scan. It is already preprocessed and binarized. This problem has already been solved during the creation of the CVC-MUSCIMA dataset (http://www.cvc.uab.es/cvcmuscima/index_database.html), therefore we didn't tackle it either.
 
 
 ## Thesis outline
@@ -81,6 +81,7 @@ The thesis assignment states that output of our model will be a MusicXML file. W
 - Calvo-Zaragoza and Rizo, PrIMuS
 - CVC-MUSCIMA
 - MUSCIMA++
+- HMR Baseline paper
 
 
 # Deep Neural Network
@@ -339,19 +340,87 @@ This chapter describes experiments we performed. These experiments aim to measur
 <!--
 - we evaluate the output = token sequence against a token sequence
 - describe SER = normalized levensten
-- sketch out the problem of comparison when removing symbols
+- sketch out the problem of comparison when removing symbols ... "important symbols"
 -->
 
 
 ## Evaluation data
 
 <!--
-- why cvc-muscima (see the introduction text and elaborate)
-
-- how we picked the writers (criteria)
-- part sorting, selection
-- addition of writer 17
+    TODO: někde musí bejt informace jak vypadá trénování - na jakých datech a tak
+    a možná by to mohla být sekce na začátku téhle kapitoly, ještě před metrikama
 -->
+
+When we faced the lack of training data, we resorted to data augmentation. We cannot do that for evalution, because the evaluation data should be as close to the real-world as possible. Therefore using a well established dataset it the only option.
+
+By looking at the *Collection of datasets for OMR* by Alexander Pacha (https://apacha.github.io/OMR-Datasets/) we can see that most existing datasets are for printed music. If we focus on the handwritten datasets, most of those contain only muscial symbols, not entire staves. When we filter those out, what remains is CVC-MUSCIMA (*link*), MUSCIMA++ (*link*) and Baró Single Stave Dataset (http://www.cvc.uab.es/people/abaro/datasets.html). We are already familiar with the first two datasets, since we used them for training. The last dataset is also derived from CVC-MUSCIMA and it is used in the paper for HMR baseline (https://www.sciencedirect.com/science/article/abs/pii/S0167865518303386?via%3Dihub). We will compare our results to the results in the paper in section [x.y.z](#x.y.z).
+
+We decided to evaluate on a portion of the CVC-MUSCIMA dataset. Partly because it is the only dataset available for this purpouse, partly because other people use it for evaluation as well. To learn more about the CVC-MUSCIMA dataset, see the section [related-work x.y.z](#xyz).
+
+The fact that we devised custom encoding means we have to annotate the evaluation data manually. This is not very difficult, because the evaluation set need not be large. It also means the resulting annotations are of high quality and follow the rules of the Mashcima encoding.
+
+We cannot use the entire CVC-MUSCIMA dataset for evaluation, because we already use it for training. Therefore we need to decide what portion is going to be used for evaluation. We definitely need to evaluate on data from different writers than those we train on. This is because seeing the specific writer's handwriting style might help the model score higher during evaluation. Avoiding specific music pages is not necessary, since the data augmentation process completely destroys any rythmic or melodic information. The Mashcima engraving system samples individual symbols, ignoring their placement relative to other symbols in the staff. So the primary concern is to separate writers used for evaluation.
+
+There are additional criteria for selecting the evaluation writers. We want the writer selection to be diverse in terms of handwriting style. Some writers have very clean handwriting, some not so much. Noteheads can be little circles, ellipses or even little dashes. Some writers have note stems slanted, some have straight, vertical stems. Also the width and spacing of symbols differ.
+
+We also want to evaluate on pages that are present in MUSCIMA++. This is because pages in MUSCIMA++ have a lot of additional information available and there exist detailed MusicXML transcriptions for them. Both of these facts may become useful in the future. Each writer has 20 music pages in CVC-MUSCIMA, but only 2 or 3 in MUSCIMA++. Additionally, not all pages can be represented in the Mashcima encoding (some are polyphonic or have multiple voices).
+
+First we sorted the 20 pages by how easily they can be encoded using Mashcima encoding. This sorting is not perfect, the main goal is to separate pages that we cannot encode at all. Some symbols can be encoded, but since the engraving system cannot render them, they are considered slightly problematic. See the section on extending mashcima encoding (*link*).
+
+| Page | Acceptable | Notes                                                |
+| ---- | ---------- | ---------------------------------------------------- |
+| 03   | Yes        | perfect                                              |
+| 12   | Yes        | perfect                                              |
+| 02   | Yes        | trills, gracenotes                                   |
+| 11   | Yes        | `?` token                                            |
+| 09   | Yes        | `?` token, fermata                                   |
+| 05   | Yes        | trills                                               |
+| 01   | Yes        | triplets, fermata, rests in beamed groups            |
+| 13   | Yes        | `?` token                                            |
+| 14   | Yes        | chord, triplets                                      |
+| 17   | Yes        | two staves with chords                               |
+| 15   | Yes        | rests in beamed groups                               |
+| 16   | Yes        | beamed notes with empty noteheads, accents           |
+| 06   | Not ideal  | trills, many gracenotes                              |
+| 04   | Not ideal  | tenuto, triplets, nested slurs, bar repeat, fermata  |
+| 18   | Not ideal  | two staves with chords                               |
+| 07   | No         | trills, many concurrent notes                        |
+| 08   | No         | gracenotes, unsupported symbols, two voices in bass  |
+| 20   | No         | chords in many places                                |
+| 10   | No         | chords                                               |
+| 19   | No         | multiple voices                                      |
+
+> All pages of CVC-MUSCIMA sorted by how easily they can be represented using the Mashcima encoding.
+
+
+Then we took all the acceptable pages and found all writers for those pages that are present in MUSCIMA++. We sorted those writers by the number of pages that satisfied our selection.
+
+| Pages | Writer | Handwriting style                               | Selected |
+| ----- | ------ | ----------------------------------------------- | -------- |
+| 4     | 49     | worse, dash noteheads                           | Yes      |
+| 3     | 06     | nice, round noteheads                           | No       |
+| 3     | 13     | regular, round noteheads                        | Yes      |
+| 3     | 20     | regular, dash noteheads                         | Yes      |
+| 3     | 27     | nice, round noteheads                           | No       |
+| 3     | 34     | regular, round noteheads, slanted               | Yes      |
+| 3     | 41     | beautiful, round noteheads                      | Yes      |
+
+> Table shows the final writers that were considered to be selected for evaulation.
+
+All the remaining writers had only two or less pages from the selection. We took 5 writers out of those 7 writers manually, to keep the handwriting diversity high.
+
+Lastly we wanted to compare our results with the results of *From Optical Music Recognition to Handwritten Music Recognition: A baseline* (*link*), so we added the writer 17. The final writer and page selection can be seen in the table:
+
+| Writer | Pages          |
+| ------ | -------------- |
+| 13     | 02, 03, 16     |
+| 17     | 01             |
+| 20     | 02, 03, 16     |
+| 34     | 02, 03, 16     |
+| 41     | 02, 03, 16     |
+| 49     | 03, 05, 09, 11 |
+
+We end up with 6 writers, 17 pages (7 distinct), 115 staves and over 5840 tokens. Annotations for these pages can be found in the file `app/muscima_annotations.py`.
 
 
 ## Experiments
