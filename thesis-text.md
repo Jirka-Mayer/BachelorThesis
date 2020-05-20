@@ -46,7 +46,7 @@ We needed to obtain training data. We explored the *Collection of datasets for O
 
 <!-- takže součástí práce je taky Mashcima -->
 
-Facing this issue we resorted to data augmentation. The idea is to take handwritten musical symbols and place them onto an empty staff to create a new staff image. We called this music engraving system *Mashcima* and the system is explained in the chapter [M](#M). The muscial symbols used by Mashcima come from the MUSCIMA++ dataset (https://ufal.mff.cuni.cz/muscima). This dataset is built on top of CVC-MUSCIMA and provides pixel-perfect symbol segmentation and relationships between symbols. The reason we chose MUSCIMA++, instead of other musical symbol datasets, is that it is built on top of CVC-MUSCIMA. This means the image resolution and overall style is consistent with CVC-MUSCIMA. Also MUSCIMA++ has been developed at Charles University and so it was easy to contact its creator when needed. We however do make sure, that the final evaluation is performed on data the neural network has not seen during training. Specifically it trains on staves by completely different writers than the ones used for evaluation.
+Facing this issue we resorted to data augmentation. The idea is to take handwritten musical symbols and place them onto an empty staff to create a new staff image. We called this music engraving system *Mashcima* and the system is explained in the chapter [M](#M). The muscial symbols used by Mashcima come from the MUSCIMA++ dataset (https://ufal.mff.cuni.cz/muscima). This dataset is built on top of CVC-MUSCIMA and provides pixel-perfect symbol segmentation and relationships between symbols. The reason we choose MUSCIMA++, instead of other musical symbol datasets, is that it is built on top of CVC-MUSCIMA. This means the image resolution and overall style is consistent with CVC-MUSCIMA. Also MUSCIMA++ has been developed at Charles University and so it was easy to contact its creator when needed. We however do make sure, that the final evaluation is performed on data the neural network has not seen during training. Specifically it trains on staves by completely different writers than the ones used for evaluation.
 
 Mashcima engraving system is the main feature that sets this thesis apart from other works. Other people, when faced with the lack of training data, used simple data augentation (dilation, blurring, distortion) or transfer learning (https://openreview.net/pdf?id=SygqKLQrXQ). We belive that custom engraving system for hadwritten music is the best way to produce overabundance of high quality training data. Our confidence stems from the fact, that non-trained human has difficulties distinguishing a real-world sample from a well-engraved one.
 
@@ -167,7 +167,7 @@ The first symbol we need to encode is a note. A note has some duration and some 
 
 Combining duration information and pitch information into a single token actually ends up being a reasonable solution. That is because the concept of note duration can be extended to a concept of symbol type in general. This is because not only notes have pitches.
 
-The set of pitches we can choose from greatly impacts the vocabulary size. This is not a major issue, because the vocabulary size will still remain relatively small. Currently the vocabulary has about 550 tokens. The pitch range we chose spans from `-12` to `12` - that is from the fourth ledger line below the staff to the fourth ledger line above the staff.
+The set of pitches we can choose from greatly impacts the vocabulary size. This is not a major issue, because the vocabulary size will still remain relatively small. Currently the vocabulary has about 550 tokens. The pitch range we choose spans from `-12` to `12` - that is from the fourth ledger line below the staff to the fourth ledger line above the staff.
 
 The pitch encoding is built such that it would be easy to understand for a non-musician. In western contemporary music notation (**TODO link**) pitch of a note is represented by the vertical position of that note on the staff. An empty staff is composed of 5 stafflines. Mashcima encoding sets the middle staffline position to be zero. Going up, the first space is pitch `1` and the first line is pitch `2`. Going down, the first space is pitch `-1` and the first line is pitch `-2`.
 
@@ -477,7 +477,7 @@ We propose a metric, that is the Levenhstein distance, but normalized by a value
 
 *Important tokens* are notes, rests, barlines, clefs, accidentals and other simmilar tokens. What remains as non-important are slurs, ornaments and the `?` token. The specific list of important tokens can be found in the file `app/vocabulary.py`. We will call this metric Important Token Error Rate (ITER). Remember that this metric should not be used for comparison against other models using different encodings. It is purely to get an idea of what mistakes contribute to the Symbol Error Rate.
 
-With this metric we proposed a set of transformation functions that progressively simplify the sequences:
+With this metric we propose a set of transformation functions that progressively simplify the sequences:
 
 - *ITER_RAW* - No transformation is applied, corresponds to SER, but normalized by the number of important tokens.
 - *ITER_TRAINED* - Tokens that the model hasn't seen during training are removed (`?` token, trills, fermatas, etc.).
@@ -496,6 +496,35 @@ As noted, each metric builds on the previous one, further simplifying the sequen
 - "we proposed three ways of training the model and now we evaluate each one of them"
 -->
 
+In [chapter 1](#1) provided a short introduction to deep neural networks and proposed a specific architecture for solving our problem. Now we will use this network architecture and perform some experiments.
+
+We will use the Adam optimizer (*link*), that comes with Tensorflow (*link*), with the default parameters:
+
+| Parameter     | Value     |
+| ------------- | --------- |
+| Learning rate | 0.001     |
+| $\beta_1$     | 0.9       |
+| $\beta_2$     | 0.999     |
+| $\varepsilon$ | $10^{-8}$ |
+
+We will measure the *edit distance* for each batch of training to see the model learn. After each epoch of training, we will validate model performace on a small validation dataset. Here we will compute the average *edit distance*. Whenever we reach a new minimum in this validation edit distance, we will save the model. This process will repeat, untill the validation error rate starts raising again due to overfitting.
+
+In the section on [training data](#td) we hypothesized some differences between training on PrIMuS incipits and randomly generated data. The main idea is that training on PrIMuS incipits should allow the model to learn the language model. More generally training on real-wold music samples should help the model, since it will be evaluated on real-world music in the CVC-MUSCIMA dataset. Training on randomly generated data should allow the model to learn complicated combinations of symbols, that are not as common in the real-world music.
+
+To test this hypothesis we propose a set of three experiments:
+
+| Experiment | Training data                                  | Validation data       |
+| ---------- | ---------------------------------------------- | --------------------- |
+| 1          | 63 000 PrIMuS incipits                         | 1 000 PrIMuS incipits |
+| 2          | 63 000 random incipits                         | 1 000 random incipits |
+| 3          | 30 000 PrIMuS incipits, 30 000 random incipits | 1 000 PrIMuS incipits |
+
+First experiment trains a model on real-world incipits, second uses randomly generated incipits and te third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits, since the evaluation will also be performed on real-world music. The second experiment validates on random incipits, because we wanted to simulate a scenario where we don't have access to real-world incipits.
+
+We trained each model for 20 epochs and took the one with the lowest edit distance, averaged over the validation dataset.
+
+    graphs of the validation & training edit distances from the tensorboard
+
 
 ## Results
 
@@ -504,6 +533,35 @@ As noted, each metric builds on the previous one, further simplifying the sequen
 - jak se SER chová když neřeším legato, attachmenty, pitche, ...
 - diskuze nad language modelem a porovnání experimentů (+regularizace šumem)
 -->
+
+Here are the resulting symbol error rates, averaged over the entire validation dataset:
+
+| Experiment | Symbol error rate |
+| ---------- | ----------------- |
+| 1          | 0.??              |
+| 2          | 0.??              |
+| 3          | 0.??              |
+
+It seems that training on randomly generated data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Random data is probably better than real-world data simply because all the tokens are represented equally. The language model might help us, but only in very specific ambiguous circumstances. Our model still makes a lot of mistakes for a language model to be helpful.
+
+On the other hand when I was annotating the evaluation dataset, I already had a model trained (from experiment 3) and used it to speed up the annotation process. I noticed, that the model didn't make mistakes in places I would expect it to do. Specifically, when we have a key signature with bass cleff and one sharp, this sharp has always the pitch `2`. The model correctly classified the pitch even though the sharp symbol was written incorrectly by the writer. It seems that the network indeed learned this feature from the real-world incipits from the PrIMuS dataset.
+
+    find image of that place with comparison of individual experiment predictions
+    (01 correct (hopefully), 02 wrong (hopefully), 03 correct)
+
+In [section xyz](#xyz) we proposed a set of metrics, which should give us insight into the mistakes the model makes:
+
+| Experiment | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
+| ---------- | -------- | ------------ | ------------- | ----------------- | -------------- |
+| 1          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 2          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+
+<!-- tabulky: průměrovat chyby přes jednotlivá díla / autory (třeba jen pro experiment 03) -->
+
+<!-- poznamenta, že dílo 03 je idální, protože obsahuje jen to co umíme rozpoznat -->
+
+<!-- porovnat ITER chyby na nějakém díle, co má trilky nebo akcenty -->
 
 
 ## Comparison to other work
