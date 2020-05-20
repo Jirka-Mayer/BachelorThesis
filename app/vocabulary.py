@@ -602,8 +602,11 @@ def trim_non_repeat_barlines(annotation: str) -> str:
 
 
 #########################################
-# Post-processing gold data for testing #
+# Transformation for mistake evaluation #
 #########################################
+
+
+# TODO: specify the list of important tokens here and update the evaluation code
 
 
 _NON_GENERATED_SYMBOL_REMOVAL = {

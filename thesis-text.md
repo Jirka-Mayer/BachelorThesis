@@ -322,7 +322,7 @@ Slurs and ties are one of the first symbols that make OMR complicated. Slur is a
 - describe metrics used for evaluation (SER)
 - describe the data we are evaluating on (writer selection, ...)
 - describe the experiments and what their goal is (01 - 03)
-- talk about differences in generated symbols vs. all the symbols, propose new levenstein normalization and show the results
+- talk about differences in generated symbols vs. all the symbols, propose new levenshtein normalization and show the results
 - compare the results to the baseline paper and discuss
 - result of the dropout hypothesis
 
@@ -447,9 +447,45 @@ We end up with 6 writers, 17 pages (7 distinct), 115 staves and over 5840 tokens
 
 <!--
 - we evaluate the output = token sequence against a token sequence
-- describe SER = normalized levensten
-- sketch out the problem of comparison when removing symbols ... "important symbols"
+- describe SER = normalized levenshtein
+- sketch out the problem of comparison when removing tokens ... "important tokens"
 -->
+
+Now that we have a model producing some token sequences and we have our gold sequences, we need a way to measure the model performance. There are basically three goals for these measurements:
+
+- Compare the model against itself to track improvements.
+- Get an overall idea of the model performance and compare it to other works.
+- Analyze model output to identify common mistakes it makes.
+
+The metric that's commonly used for sequence comparison is the Levenhstein distance (https://ui.adsabs.harvard.edu/abs/1966SPhD...10..707L/abstract). It is defined as the minimum number of single-character edits. We don't work with strings, so we have tokens, instead of characters. The basic edits are insertion, deletion and substitution. The lower this number, the better. Zero means perfect match.
+
+This metric can be used to measure model performance during training. The only problem is that longer sequences are more likely to contain mistakes. This creates a bias in the metric that we can resolve by normalizing the metric by the length of the gold sequence. This produces a number that is typically between 0 and 1, where 0 means the sequences was predicted perfectly and 1 means the sequence is entirely wrong. The normalized distance can be greater than 1, when the predicted sequence is much longer than the gold one, but that happens only when the model is completely useless.
+
+    lev_normalized = \frac{#insertions + #deletions + #substitutions}{gold_length}
+
+Now we can average the normalized distance over a training batch or entire dataset to get a sense of how well the model performs. This metric is sometimes also called *edit distance*. The code for training our model uses Tensorflow library (http://tensorflow.org/), where the term *edit distance* is used.
+
+We will also need a metric to compare our model to other simmilar models. Looking at the work by Calvo-Zaragoza and Rizo (*link*) or the HMR baseline paper (*link*) we can see, that the metric used is Symbol Error Rate (SER). This metric is, however, precisely the normalized Levenhstein distance. The name Symbol Error Rate is used in contrast to Word Error Rate (WER) in the text recognition community. Since we don't work with text, we are left with the Symbol Error Rate only.
+
+Lastly we would like to get an idea on the kind of mistakes our model makes. The [chapter 2](#2) talks about the Mashcima encoding and how it is able to represent symbols that it cannot yet represent (by the `?` token). Having this `?` token in the gold data creates an ever present mistake, that increases our error rate. We would like to get an estimate of how much of the overall error is contributed by such symbols. Also note that `?` is not the only token the model cannot produce. There are symbols that cannot be engraved yet, like trills, accents or fermatas. Being able to measure the error these tokens contribute would give us an idea on how much the model could improve, if we implemented these symbols in the engraving system.
+
+Let's formalize this idea. We have our predicted sequence $p$ and the corresponding gold sequence $g$. We define a function $f$, that transforms a sequence in some way (removes certain tokens, substitutes tokens, etc.). Now we want to find a metric $m$, that produces some error value for a given prediction $m(p, g)$. We want this metric $m$ to yield results that are comparable, when we transform the predictions $m(f(p), f(g))$.
+
+Taking the normalized Levenhstein distance as the metric $m$ is the first idea that one might have. The problem is that the function $f$ might change the length of the gold sequence ($\abs{g} \neq \abs{f(g)}$). Therefore the raw error and the error after the transformation $f$ are not directly comparable. Using the non-normalized Levenhstein distance fixes this issue. Now the error is the absolute number of edits. When it drops, the number of edits went down. But this makes us again face the issue of variable sequence length. We fixed one issue, but re-introduced another.
+
+We propose a metric, that is the Levenhstein distance, but normalized by a value that stays constant under the transformation $f$. More specifically, we want to normalize by the number of *important tokens* in the gold sequence. An *important token* is a token that will never be removed by a transformation $f$. It can be altered, but not removed.
+
+*Important tokens* are notes, rests, barlines, clefs, accidentals and other simmilar tokens. What remains as non-important are slurs, ornaments and the `?` token. The specific list of important tokens can be found in the file `app/vocabulary.py`. We will call this metric Important Token Error Rate (ITER). Remember that this metric should not be used for comparison against other models using different encodings. It is purely to get an idea of what mistakes contribute to the Symbol Error Rate.
+
+With this metric we proposed a set of transformation functions that progressively simplify the sequences:
+
+- *ITER_RAW* - No transformation is applied, corresponds to SER, but normalized by the number of important tokens.
+- *ITER_TRAINED* - Tokens that the model hasn't seen during training are removed (`?` token, trills, fermatas, etc.).
+- *ITER_SLURLESS* - Like the above, but slurs are removed as well (`(`, `)`).
+- *ITER_ORNAMENTLESS* - Like the above, but most of the non-important attachments are removed (trill, accent, staccato, fermata, ...). What has to remain are accidentals and duration dots. Those are important for correct pitch and rythm.
+- *ITER_PITCHLESS* - Like the above, but all pitch information is removed by converting all tokens to their generic variant.
+
+As noted, each metric builds on the previous one, further simplifying the sequences. This means the error rate should decrease as we go down. The amount by which it decreases can tell us how much the given transformation affected the error, therefore how much the removed tokens contributed to the error rate.
 
 
 ## Experiments
