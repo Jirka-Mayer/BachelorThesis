@@ -488,17 +488,15 @@ With this metric we propose a set of transformation functions that progressively
 As noted, each metric builds on the previous one, further simplifying the sequences. This means the error rate should decrease as we go down. The amount by which it decreases can tell us how much the given transformation affected the error, therefore how much the removed tokens contributed to the error rate.
 
 
-## Experiments
+## Architecture, training and evaluation
 
-<!--
-- used architecture, differences in training data, when to stop, validation data
-- list them -> 01, 02, 03 in a table
-- "we proposed three ways of training the model and now we evaluate each one of them"
--->
+In [chapter 1](#1) we provided a short introduction to deep neural networks and described the RCNN architecture. We will use this architecture in the following experiments. Here is the list of layers, used in the neural network:
 
-In [chapter 1](#1) provided a short introduction to deep neural networks and proposed a specific architecture for solving our problem. Now we will use this network architecture and perform some experiments.
+    tabulka s vrstvama sítě a jejich parametrama
 
-We will use the Adam optimizer (*link*), that comes with Tensorflow (*link*), with the default parameters:
+There will be two datasets used for training. One for the actual training - a *training dataset* and one for validation - a *validation dataset* (or "dev dataset"). The training dataset is fed into the model in batches and each batch is used to perform update of the learned parameters of the model. This process is called stochastic gradient descent (*link*). Using the entire training dataset once is called *one epoch*. The validation dataset will be used after each epoch to estimate the true performance of the model (to estimate the generalization error). Edit distance will be measured during training and validation and it will be used to track the learning progress.
+
+Learned parameters will be updated by the adaptive learning rate optimizer (Adam) (*link*), that comes with Tensorflow (*link*), with the default parameters:
 
 | Parameter     | Value     |
 | ------------- | --------- |
@@ -507,7 +505,14 @@ We will use the Adam optimizer (*link*), that comes with Tensorflow (*link*), wi
 | $\beta_2$     | 0.999     |
 | $\varepsilon$ | $10^{-8}$ |
 
-We will measure the *edit distance* for each batch of training to see the model learn. After each epoch of training, we will validate model performace on a small validation dataset. Here we will compute the average *edit distance*. Whenever we reach a new minimum in this validation edit distance, we will save the model. This process will repeat, untill the validation error rate starts raising again due to overfitting.
+We have not tried to fine tune these parameters or any other hyperparameters. Our goal was to try training on engraved handwritten images and see whether this approach is even feasible. Tuning hyperparameters is one of the places where our approach can be improved in the future.
+
+The training will run for a given number of epochs. In each epoch an average edit distance on validation dataset is recorded. The final trained model is the model, that had the lowest validation edit distance, during the whole training. If the number of epochs trained is sufficiently high, this method should return the model at the point, where the generalization error began to rise.
+
+Evaluation will be performed with the trained model, by feeding in the evaluation images and reading the resulting token sequence. There are, however, two additional steps performed. Firstly the prodced token sequence is repaired. This means the rules regarding beamed notes are checked and corrected and attachment tokens are sorted properly. This repairing process is relatively simple and completely rule-based. For the details see the `repair_annotation` function inside `app/vocabulary.py`. After the repairing process, leading and trailing barlines are stripped from both gold data and the prediction. This is because barlines at the beginning and at the end of staff convey no additional meaning. It is analogous to trimming whitespace characters around a sentence. Barlines with repeat signs are not stripped away, since they are important.
+
+
+## Experiments
 
 In the section on [training data](#td) we hypothesized some differences between training on PrIMuS incipits and randomly generated data. The main idea is that training on PrIMuS incipits should allow the model to learn the language model. More generally training on real-wold music samples should help the model, since it will be evaluated on real-world music in the CVC-MUSCIMA dataset. Training on randomly generated data should allow the model to learn complicated combinations of symbols, that are not as common in the real-world music.
 
@@ -521,7 +526,7 @@ To test this hypothesis we propose a set of three experiments:
 
 First experiment trains a model on real-world incipits, second uses randomly generated incipits and te third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits, since the evaluation will also be performed on real-world music. The second experiment validates on random incipits, because we wanted to simulate a scenario where we don't have access to real-world incipits.
 
-We trained each model for 20 epochs and took the one with the lowest edit distance, averaged over the validation dataset.
+We trained each experiment for 20 epochs and took the model with lowest edit distance, averaged over the validation dataset.
 
     graphs of the validation & training edit distances from the tensorboard
 
@@ -540,28 +545,74 @@ Here are the resulting symbol error rates, averaged over the entire validation d
 | ---------- | ----------------- |
 | 1          | 0.??              |
 | 2          | 0.??              |
-| 3          | 0.??              |
+| 3          | 0.24              |
 
 It seems that training on randomly generated data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Random data is probably better than real-world data simply because all the tokens are represented equally. The language model might help us, but only in very specific ambiguous circumstances. Our model still makes a lot of mistakes for a language model to be helpful.
 
-On the other hand when I was annotating the evaluation dataset, I already had a model trained (from experiment 3) and used it to speed up the annotation process. I noticed, that the model didn't make mistakes in places I would expect it to do. Specifically, when we have a key signature with bass cleff and one sharp, this sharp has always the pitch `2`. The model correctly classified the pitch even though the sharp symbol was written incorrectly by the writer. It seems that the network indeed learned this feature from the real-world incipits from the PrIMuS dataset.
+I wanted to note here, that when I was annotating the evaluation dataset, I already had a model trained (from experiment 3) and used it to speed up the annotation process. I noticed, that the model didn't make mistakes in places I would expect it to do. Specifically, when there is a key signature with bass cleff and one sharp, this sharp has always the pitch `2`. The model correctly classified the pitch even though the sharp symbol was written incorrectly by the writer. It seems that the network indeed learned this feature from the real-world incipits from the PrIMuS dataset.
 
     find image of that place with comparison of individual experiment predictions
     (01 correct (hopefully), 02 wrong (hopefully), 03 correct)
 
-In [section xyz](#xyz) we proposed a set of metrics, which should give us insight into the mistakes the model makes:
+In [section xyz](#xyz) we proposed a set of metrics, intended to give us insight into the mistakes the model makes:
 
 | Experiment | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
 | ---------- | -------- | ------------ | ------------- | ----------------- | -------------- |
 | 1          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
 | 2          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3          | 0.31     | 0.29         | 0.21          | 0.19              | 0.14           |
 
-<!-- tabulky: průměrovat chyby přes jednotlivá díla / autory (třeba jen pro experiment 03) -->
+When we compare the *ITER_RAW*, *ITER_TRAINED* and *ITER_SLURLESS*, we can see that reducing our focus to only trained tokens helps slightly, although it's not as big of an impact as I expected. Considerably larger difference is when we remove slur tokens. This confirms, what can be seen by looking manually at the predictions the model makes. There are a lot of mistakes related to slur classification. This might be caused by the fact that the engraving system does not capture all the variability that exists in the real world with regards to slur engraving.
 
-<!-- poznamenta, že dílo 03 je idální, protože obsahuje jen to co umíme rozpoznat -->
+Now that we know the experiment 3 performed the best, we will take a closer look at it. Here is a table of metrics for each evaluation page (averaged over all staves in that page):
 
-<!-- porovnat ITER chyby na nějakém díle, co má trilky nebo akcenty -->
+| Page | Writer | SER  | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
+| ---- | ------ | ---- | -------- | ------------ | ------------- | ----------------- | -------------- |
+| 2    | 13     | 0.19 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 13     | 0.11 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 16   | 13     | 0.29 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 1    | 17     | 0.28 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 2    | 20     | 0.26 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 20     | 0.09 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 16   | 20     | 0.31 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 2    | 34     | 0.24 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 34     | 0.05 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 16   | 34     | 0.32 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 2    | 41     | 0.21 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 41     | 0.15 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 16   | 41     | 0.27 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 49     | 0.27 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 5    | 49     | 0.18 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 9    | 49     | 0.41 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 11   | 49     | 0.41 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+
+We can do an average for each writer and compare the results to the style of their handwriting:
+
+| Writer | SER  | Handwriting style                               |
+| ------ | ---- | ----------------------------------------------- |
+| 13     | 0.20 | regular, round noteheads                        |
+| 34     | 0.21 | regular, round noteheads, slanted               |
+| 41     | 0.21 | beautiful, round noteheads                      |
+| 20     | 0.22 | regular, dash noteheads                         |
+| 17     | 0.28 | regular, round noteheads                        |
+| 49     | 0.32 | worse, dash noteheads                           |
+
+The first four writers are very much comparable, but the writer 49 has the worst handwriting of all the writers an he eded up last, as expected.
+
+Similarly we can average over each music page:
+
+| Page | SER  | Notes                                                |
+| ---- | ---- | ---------------------------------------------------- |
+| 3    | 0.13 | perfect                                              |
+| 5    | 0.18 | trills                                               |
+| 2    | 0.26 | trills, gracenotes                                   |
+| 1    | 0.28 | triplets, fermata, rests in beamed groups            |
+| 16   | 0.30 | beamed notes with empty noteheads, accents           |
+| 9    | 0.41 | `?` token, fermata                                   |
+| 11   | 0.41 | `?` token                                            |
+
+
+Pages 9 and 11 ended up last, because they are only present for writer 49, who ended up as the worst writer. Page 3 is very interesting. It is the only page, that can be fully encoded using Mashcima encoding and all the smybols it contains can be engraved using the Mashcima engraving system. It is, however, also the simplest page in that it does not contain any complicated expressions and contains only few slurs. This is supported by the fact that page 5 ended up also very well and the page 5 is very comparable in its layout and complexity to the page 3.
 
 
 ## Comparison to other work
@@ -572,9 +623,26 @@ In [section xyz](#xyz) we proposed a set of metrics, which should give us insigh
     - e.g. dynamics? Text around the staff? ... popsat co všechno může být nefér a pak se podívat, jak moc je to reálně nefér
     - ALE můžu vzít ten jeden staff co tam mají s obrázkem a přidat můj vysledek
 - what are the numbers for commercial software from that paper?
+- qualitative comparison on the staff from page 003
 
 ??? CO VŠECHNO Z TOHO ČLÁNKU SI MŮŽU DOVOLIT SEM DÁT ???
 -->
+
+
+## Evaluating on Printed PrIMuS incipits
+
+We also wanted to try, how would our model perform on printed music. Models by other people are often pre-trained on printed music and then fine-tuned on handwritten images via transfer learning. Ours is different in that it has never seen an image of printed music. We already have code for parsing PrIMuS dataset and since the dataset contains images as well, we will use those. We just slightly preprocessed the images - inverted them, normalized and slightly scaled down to have dimensions comparable to what the model trained on. We used the model from experiment 3 since it performed the best. The evaluation was performed on 100 incipits that the model hasn't seen during training and these are the results:
+
+| SER  | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
+| ---- | -------- | ------------ | ------------- | ----------------- | -------------- |
+| 0.76 | 0.79     | 0.79         | 0.75          | 0.74              | 0.71           |
+
+You can see, that the performance is not very impressive. I did expect the error rate to be high, but not that high. Although it is understandable, because the printed music is very different to the handwritten. It would be interesting to also train on printed images in the future. This error rate would go down, but maybe the CVC-MUSCIMA error rate would go down as well.
+
+    image of a printed staff and the prediction and the gold
+    + maybe the same staff, engraved using Mashcima
+
+Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expected, because we filter out incipits that can be engraved by Mashcima.
 
 
 ## Dropout layer importance
