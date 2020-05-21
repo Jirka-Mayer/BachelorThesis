@@ -128,6 +128,10 @@ _ACCIDENTALS = [
     "#", "b", "N", "x", "bb"
 ]
 
+_DURATION_DOTS = [
+    "*", "**"
+]
+
 _BEFORE_ATTACHMENTS = [
     # order DOES matter!
     ")",
@@ -138,7 +142,8 @@ _BEFORE_ATTACHMENTS = [
 
 _AFTER_ATTACHMENTS = [
     # order DOES matter!
-    ".", "_", ">", "^", "*", "**",
+    ".", "_", ">", "^",
+    *_DURATION_DOTS,
     "("
 ]
 
@@ -219,6 +224,16 @@ def is_before_attachment(annotation_token: str) -> bool:
 def is_after_attachment(annotation_token: str) -> bool:
     """Returns true if the token is a before attachment (generic or not)"""
     return to_generic(annotation_token) in _AFTER_ATTACHMENTS
+
+
+def is_attachment(annotation_token: str) -> bool:
+    """Returns true if the token is an attachment (generic or not)"""
+    return to_generic(annotation_token) in _ATTACHMENTS
+
+
+def is_duration_dot(annotation_token: str) -> bool:
+    """Returns true if the token is a duration dot"""
+    return annotation_token in _DURATION_DOTS
 
 
 def is_note(annotation_token: str) -> bool:
@@ -601,52 +616,101 @@ def trim_non_repeat_barlines(annotation: str) -> str:
     return " ".join(tokens)
 
 
-#########################################
-# Transformation for mistake evaluation #
-#########################################
+#######################################
+# Transformations for ITER evaluation #
+#######################################
 
 
-# TODO: specify the list of important tokens here and update the evaluation code
+_NON_IMPORTANT_TOKENS = [
+    # question mark
+    "?",
+
+    # all attachments, except for accidentals and duration dots
+    *list(set(_ATTACHMENTS) - set(_ACCIDENTALS) - set(_DURATION_DOTS)),
+
+    # Double sharp and double flat are also non important, because they aren't
+    # present in training or evaluation right now. They should, however,
+    # become important once they are being trained on.
+    "x", "bb",
+]
 
 
-_NON_GENERATED_SYMBOL_REMOVAL = {
-    "?": None,
-
-    "|:": "|",
-    ":|": "|",
-    ":|:": "|",
-
-    "x{p}": None,
-    "bb{p}": None,
-    "tuplet.3": None,
-    "fermata": None,
-    "trill": None,
-    "+": None,
-    "_": None,
-    ">": None,
-    "^": None,
-}
+def is_important_token(token: str) -> bool:
+    if to_generic(token) in _NON_IMPORTANT_TOKENS:
+        return False
+    return True
 
 
-def remove_non_generated_symbols_from_gold_data(annotation: str):
+def count_important_tokens(annotation: str) -> int:
+    return len(list(filter(is_important_token, annotation.split())))
+
+
+def iter_raw_transformation(annotation: str) -> str:
+    return annotation  # raw = identity
+
+
+def iter_trained_transformation(annotation: str):
+    annotation = iter_raw_transformation(annotation)
+
+    TRANSFORMATION_TABLE = {
+        "?": None,
+
+        "|:": "|",
+        ":|": "|",
+        ":|:": "|",
+
+        "x{p}": None,
+        "bb{p}": None,
+        "tuplet.3": None,
+        "fermata": None,
+        "trill": None,
+        "+": None,
+        "_": None,
+        ">": None,
+        "^": None,
+    }
+
     tokens = annotation.split()
-
     i: int = 0
     while i < len(tokens):
-        if tokens[i] in _NON_GENERATED_SYMBOL_REMOVAL:
-            if _NON_GENERATED_SYMBOL_REMOVAL[tokens[i]] is None:
+        if tokens[i] in TRANSFORMATION_TABLE:
+            if TRANSFORMATION_TABLE[tokens[i]] is None:
                 del tokens[i]
                 continue
             else:
-                tokens[i] = _NON_GENERATED_SYMBOL_REMOVAL[tokens[i]]
+                tokens[i] = TRANSFORMATION_TABLE[tokens[i]]
         i += 1
-
     return " ".join(tokens)
 
 
-def remove_attachments_from_annotation(annotation: str):
-    return " ".join(filter(lambda t: t not in _ATTACHMENTS, annotation.split()))
+def iter_slurless_transformation(annotation: str) -> str:
+    annotation = iter_trained_transformation(annotation)
+    return " ".join(
+        filter(
+            lambda t: t not in ["(", ")"],
+            annotation.split()
+        )
+    )
 
 
-def turn_annotation_generic(annotation: str):
+def iter_ornamentless_transformation(annotation: str) -> str:
+    annotation = iter_slurless_transformation(annotation)
+
+    def is_ornament(token: str) -> bool:
+        if is_accidental(token):
+            return False
+        if is_duration_dot(token):
+            return False
+        if is_attachment(token):
+            return True
+        return False
+
+    return " ".join(filter(
+        lambda token: not is_ornament(token),
+        annotation.split()
+    ))
+
+
+def iter_pitchless_transformation(annotation: str) -> str:
+    annotation = iter_ornamentless_transformation(annotation)
     return " ".join(map(lambda t: to_generic(t), annotation.split()))

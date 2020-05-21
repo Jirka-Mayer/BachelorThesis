@@ -267,8 +267,8 @@ class Network:
         # WARNING:
         # my version of tensorflow (1.12.0) uses "num_classes - 1" as the blank
         # index however the new tensorflow uses "0"
-        if tf.__version__ not in ["1.12.0", "1.5.0"]:
-            raise Exception("Make sure you know, how your blank is encoded!")
+        # if tf.__version__ not in ["1.12.0", "1.5.0"]:  # these have been tested to work
+        #     raise Exception("Make sure you know, how your blank is encoded!")
 
         # loss
         losses = tf.nn.ctc_loss(

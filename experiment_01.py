@@ -111,11 +111,11 @@ class Experiment01(object):
         parser = argparse.ArgumentParser()
         parser.add_argument('--model', default="experiment_01")
         parser.add_argument('--writers', type=str, help="writers to evaluate on e.g. '1,2,3'")
-        parser.add_argument('--parts', type=str, help="parts to evaluate on e.g. '1,2,3'")
+        parser.add_argument('--pages', type=str, help="pages to evaluate on e.g. '1,2,3'")
         args = parser.parse_args(sys.argv[2:])
 
         from experiment_evaluation import evaluate_model
-        evaluate_model(args.model, args.writers, args.parts)
+        evaluate_model(args.model, args.writers, args.pages)
 
 
 if __name__ == '__main__':
