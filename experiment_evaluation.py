@@ -140,6 +140,102 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
             print("Average {:}: {:.2f}".format(metric, total_sums[metric] / total_count))
 
 
+def evaluate_on_primus(model_name: str, take_last=100):
+    """Test model on printed primus incipits"""
+    from mashcima.primus_adapter import load_primus_as_mashcima_annotations
+    import tarfile
+    from config import PRIMUS_PATH
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    print("EVALUATING ON THE LAST " + str(take_last) + " PRIMUS INCIPITS")
+
+    # load evaluation data
+    primus = load_primus_as_mashcima_annotations()
+    primus = primus[-take_last:]  # take the last n incipits
+
+    print("Loading primus images...")
+    with tarfile.open(PRIMUS_PATH, "r:gz") as tar:
+        for incipit in primus:
+            member = tar.getmember(
+                incipit["path"].replace(".agnostic", ".png")
+            )
+            with tar.extractfile(member) as f:
+                img = cv2.imdecode(
+                    np.asarray(bytearray(f.read()), dtype=np.uint8),
+                    cv2.IMREAD_GRAYSCALE
+                )
+                img = 255 - img  # flip
+                img = img / img.max()  # normalize
+                # zoom out by 1.5
+                zoomed = np.zeros(shape=(int(img.shape[0] * 1.5), img.shape[1]), dtype=np.float32)
+                top = int(img.shape[0] * 0.25)
+                zoomed[top:top+img.shape[0], :] = img
+                incipit["img"] = zoomed  # save
+
+    # perform the evaluation
+    from app.Network import Network
+    network = Network.load(model_name)
+
+    total_count = 0
+    total_sums = {
+        "SER": 0,
+        "ITER_RAW": 0,
+        "ITER_TRAINED": 0,
+        "ITER_SLURLESS": 0,
+        "ITER_ORNAMENTLESS": 0,
+        "ITER_PITCHLESS": 0,
+    }
+
+    for incipit in primus:
+        gold_annotation = incipit["mashcima"]
+        prediction = network.predict(incipit["img"])
+
+        # sort attachments, repair beams and stuff
+        repaired_prediction, warnings = repair_annotation(prediction)
+
+        # trim non-important barlines
+        repaired_prediction = trim_non_repeat_barlines(repaired_prediction)
+        gold_annotation = trim_non_repeat_barlines(gold_annotation)
+
+        # calculate metrics
+        item_metrics = _calculate_item_metrics(
+            gold_annotation,
+            repaired_prediction
+        )
+
+        # sum metrics
+        for metric in total_sums:
+            total_sums[metric] += item_metrics[metric]
+        total_count += 1
+
+        # report on the staff
+        print("")
+        print("Staff: ", incipit["path"])
+        print("GOLD:       ", gold_annotation)
+        print("PREDICTION: ", prediction)
+        print("REPAIRED:   ", repaired_prediction)
+        print("Warnings:", warnings)
+
+        for metric in item_metrics:
+            print("{:}: {:.2f}".format(metric, item_metrics[metric]))
+
+        # show the incipit image
+        # plt.imshow(incipit["img"])
+        # plt.show()
+
+    # report on the entire run
+    print("\n")
+    print("==========================================")
+    print("=                Averages                =")
+    print("==========================================")
+    if total_count == 0:
+        print("No metrics recorded")
+    else:
+        for metric in total_sums:
+            print("Average {:}: {:.2f}".format(metric, total_sums[metric] / total_count))
+
+
 def _calculate_item_metrics(gold: str, prediction: str):
     def _normalized_edit_distance(p: str, g: str, normalize_by: int) -> float:
         ed = editdistance.eval(g.split(), p.split())

@@ -5,9 +5,10 @@ import sys
 USAGE_TEXT = '''python experiment_03.py <command> [<args>]
 
 The available commands are:
-   inspect    Inspects datasets that will be used for training and validation
-   train      Train new model for the experiment
-   evaluate   Evaluate the trained model against annotated muscima parts
+   inspect             Inspects datasets that will be used for training and validation
+   train               Train new model for the experiment
+   evaluate            Evaluate the trained model against annotated muscima parts
+   evaluate_on_primus  Evaluate trained model against some primus incipits
 
 Experiment 03:
     - Train on 30K Primus incipits and 30K generated incipits
@@ -116,6 +117,14 @@ class Experiment03(object):
 
         from experiment_evaluation import evaluate_model
         evaluate_model(args.model, args.writers, args.pages)
+
+    def evaluate_on_primus(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--model', default="experiment_03")
+        args = parser.parse_args(sys.argv[2:])
+
+        from experiment_evaluation import evaluate_on_primus
+        evaluate_on_primus(args.model)
 
 
 if __name__ == '__main__':
