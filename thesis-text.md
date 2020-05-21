@@ -543,8 +543,8 @@ Here are the resulting symbol error rates, averaged over the entire validation d
 
 | Experiment | Symbol error rate |
 | ---------- | ----------------- |
-| 1          | 0.??              |
-| 2          | 0.??              |
+| 1          | 0.31              |
+| 2          | 0.27              |
 | 3          | 0.24              |
 
 It seems that training on randomly generated data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Random data is probably better than real-world data simply because all the tokens are represented equally. The language model might help us, but only in very specific ambiguous circumstances. Our model still makes a lot of mistakes for a language model to be helpful.
@@ -558,8 +558,8 @@ In [section xyz](#xyz) we proposed a set of metrics, intended to give us insight
 
 | Experiment | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
 | ---------- | -------- | ------------ | ------------- | ----------------- | -------------- |
-| 1          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 2          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 1          | 0.41     | 0.39         | 0.28          | 0.25              | 0.20           |
+| 2          | 0.35     | 0.33         | 0.25          | 0.23              | 0.17           |
 | 3          | 0.31     | 0.29         | 0.21          | 0.19              | 0.14           |
 
 When we compare the *ITER_RAW*, *ITER_TRAINED* and *ITER_SLURLESS*, we can see that reducing our focus to only trained tokens helps slightly, although it's not as big of an impact as I expected. Considerably larger difference is when we remove slur tokens. This confirms, what can be seen by looking manually at the predictions the model makes. There are a lot of mistakes related to slur classification. This might be caused by the fact that the engraving system does not capture all the variability that exists in the real world with regards to slur engraving.
