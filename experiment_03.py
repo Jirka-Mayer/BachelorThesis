@@ -67,7 +67,7 @@ class Experiment03(object):
     def train(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--model', default="experiment_03")
-        parser.add_argument('--epochs', default=100, type=int)
+        parser.add_argument('--epochs', default=20, type=int)
         parser.add_argument('--batch_size', default=10, type=int)
         parser.add_argument('--threads', default=4, type=int)
         parser.add_argument('--load_model', action="store_true", help="continue training a model")
