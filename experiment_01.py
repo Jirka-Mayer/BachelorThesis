@@ -73,6 +73,14 @@ class Experiment01(object):
         parser.add_argument('--load_model', action="store_true", help="continue training a model")
         args = parser.parse_args(sys.argv[2:])
 
+        # set seed
+        import tensorflow as tf
+        import numpy as np
+        import random
+        tf.random.set_random_seed(20200524)
+        np.random.seed(20200524)
+        random.seed(20200524)
+
         training_dataset, validation_dataset = self._prepare_datasets()
 
         # train

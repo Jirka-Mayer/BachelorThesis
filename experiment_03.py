@@ -11,7 +11,7 @@ The available commands are:
    evaluate_on_primus  Evaluate trained model against some primus incipits
 
 Experiment 03:
-    - Train on 30K Primus incipits and 30K generated incipits
+    - Train on 31.5K Primus incipits and 31.5K generated incipits
     - Validate on 1K Primus incipits
     - Generates images with staves above and below
     - Use symbols from all writers except for the evaluating ones
@@ -40,10 +40,10 @@ class Experiment03(object):
 
         from experiment_utils import prepare_annotations
         training_annotations = prepare_annotations(
-            primus_skip=0, primus_take=30000, generated_take=30000
+            primus_skip=0, primus_take=31500, generated_take=31500
         )
         validation_annotations = prepare_annotations(
-            primus_skip=30000, primus_take=1000, generated_take=0
+            primus_skip=31500, primus_take=1000, generated_take=0
         )
 
         from experiment_utils import prepare_dataset
@@ -73,6 +73,14 @@ class Experiment03(object):
         parser.add_argument('--threads', default=4, type=int)
         parser.add_argument('--load_model', action="store_true", help="continue training a model")
         args = parser.parse_args(sys.argv[2:])
+
+        # set seed
+        import tensorflow as tf
+        import numpy as np
+        import random
+        tf.random.set_random_seed(20200524)
+        np.random.seed(20200524)
+        random.seed(20200524)
 
         training_dataset, validation_dataset = self._prepare_datasets()
 

@@ -522,7 +522,7 @@ To test this hypothesis we propose a set of three experiments:
 | ---------- | ---------------------------------------------- | --------------------- |
 | 1          | 63 000 PrIMuS incipits                         | 1 000 PrIMuS incipits |
 | 2          | 63 000 random incipits                         | 1 000 random incipits |
-| 3          | 30 000 PrIMuS incipits, 30 000 random incipits | 1 000 PrIMuS incipits |
+| 3          | 31 500 PrIMuS incipits, 31 500 random incipits | 1 000 PrIMuS incipits |
 
 First experiment trains a model on real-world incipits, second uses randomly generated incipits and te third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits, since the evaluation will also be performed on real-world music. The second experiment validates on random incipits, because we wanted to simulate a scenario where we don't have access to real-world incipits.
 
