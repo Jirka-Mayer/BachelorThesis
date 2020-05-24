@@ -78,7 +78,7 @@ class Experiment03(object):
         import tensorflow as tf
         import numpy as np
         import random
-        tf.random.set_random_seed(20200524)
+        tf.set_random_seed(20200524)
         np.random.seed(20200524)
         random.seed(20200524)
 
