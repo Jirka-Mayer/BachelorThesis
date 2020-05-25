@@ -343,6 +343,9 @@ The [thesis introduction](#intro) stated that the only available dataset is CVC-
 
 We have a system, that can create images for given annotations. All we need to provide are those annotations.
 
+
+### PrIMuS incipits
+
 The 20 pages of CVC-MUSCIMA contain this information. The problem is that there is only 20 of them. We ideally need thousands of annotations to account for all the variability in note types and pitches our encoding can capture. Luckily, PrIMuS dataset (*link*) contains exactly what we need. PrIMuS contains over 87 000 incipits of monophonic music. An incipit is the recognizable part of a melody or a song. The incipits have ideal length of a few measures. It's not an entire staff, but not a few symbols either. Also all the incipits are encoded in many formats, but most importantly they are encoded in the agnostic format, that is very simmilar to the Mashcima encoding.
 
 We can take the PrIMuS dataset, engrave all the incipits using Mashcima and train on the result. The only obstacle is converting PrIMuS agnostic encoding to Mashcima encoding.
@@ -358,15 +361,18 @@ When the conversion finishes, we are left with 64 000 incipits we can use to tra
 
 The advantage of this training data is that the music in it comes from the real world. This allows the model to pick up common patterns and possibly learn the language model.
 
-The other option we have is to just simply randomize the training annotations. We throw away the possibility of learning a language model, but we get a different benefit. We can artificially boost frequencies of tokens that appear lass frequently in the real world. This will cause the model to make fewer mistakes on uncommon symbols.
+
+### Synthetic incipits
+
+The other option we have is to just simply randomize the training annotations, to create some synthetic data. We throw away the possibility of learning a language model, but we get a different benefit. We can artificially boost frequencies of tokens that appear lass frequently in the real world. This will cause the model to make fewer mistakes on uncommon symbols.
 
 Randomization seems simple at first, but it can be done in many ways. At one extreme, we can simply randomly choose tokens from the vocabulary. This, however, produces sequences that cannot be rendered and are nonsensical. Beamed notes have to have a beginning and an end. We cannot have an unfinished or non-started beam. At another extreme, we can try to mimic the language model by using a lot of rules.
 
-We opted for something in the middle. We make sure, that the generated annotation can be engraved, but we don't ensure anything more. Duration per measure is not correct, pitch is almost random, time signatures can be in the middle of a measure. The resulting image looks nothing like what we are used to seeing in sheet music. The code for generating random annotations can be found in file `app/generate_random_annotation.py`.
+We opted for something in the middle. We make sure, that the synthetic annotation can be engraved, but we don't ensure anything more. Duration per measure is not correct, pitch is almost random, time signatures can be in the middle of a measure. The resulting image looks nothing like what we are used to seeing in sheet music. The code for generating synthetic annotations can be found in file `app/generate_random_annotation.py`.
 
-    image of a randomized staff, with annotation
+    image of a synthetic staff, with annotation
 
-We will compare these two approaches later in the experiments. It may come as a surprise, but the best approach will be to combine both randomized and real-world data, effectively training on both.
+We will compare these two approaches later in the experiments. It may come as a surprise, but the best approach will be to combine both synthetic and real-world data, effectively training on both.
 
 
 ## Evaluation data
@@ -490,23 +496,26 @@ Now that we have a model producing some token sequences and we have our gold seq
 - Get an overall idea of the model performance and compare it to other works.
 - Analyze model output to identify common mistakes it makes.
 
-The metric that's commonly used for sequence comparison is the Levenhstein distance (https://ui.adsabs.harvard.edu/abs/1966SPhD...10..707L/abstract). It is defined as the minimum number of single-character edits. We don't work with strings, so we have tokens, instead of characters. The basic edits are insertion, deletion and substitution. The lower this number, the better. Zero means perfect match.
+Looking at the work by Calvo-Zaragoza and Rizo (*link*) or the HMR baseline paper (*link*) we can see, that the metric they use is Symbol Error Rate (SER). This metric is also known as normliazed Levenhstein distance or edit distance. The name Symbol Error Rate is used in contrast to Word Error Rate (WER) in the text recognition community. Since we don't work with text, we are left with the Symbol Error Rate only.
 
-This metric can be used to measure model performance during training. The only problem is that longer sequences are more likely to contain mistakes. This creates a bias in the metric that we can resolve by normalizing the metric by the length of the gold sequence. This produces a number that is typically between 0 and 1, where 0 means the sequences was predicted perfectly and 1 means the sequence is entirely wrong. The normalized distance can be greater than 1, when the predicted sequence is much longer than the gold one, but that happens only when the model is completely useless.
+Regular Levenhstein distance (https://ui.adsabs.harvard.edu/abs/1966SPhD...10..707L/abstract) is defined as the minimum number of single-character edits that turn our prediction into the gold sequence. We don't work with strings, so we use tokens instead of characters. The basic edit operations are insertion, deletion and substitution. The lower this number, the better. Zero means perfect match.
 
-    lev_normalized = \frac{#insertions + #deletions + #substitutions}{gold_length}
+This metric has to be normalized by the length of gold sequence in order to allow for averaging over multiple values. Normalized Levehnstein distance produces a number that is typically between 0 and 1, where 0 means the sequences was predicted perfectly and 1 means the sequence is entirely wrong. The normalized distance can be greater than 1, when the predicted sequence is much longer than the gold one, but that happens only when the model is completely useless.
 
-Now we can average the normalized distance over a training batch or entire dataset to get a sense of how well the model performs. This metric is sometimes also called *edit distance*. The code for training our model uses Tensorflow library (http://tensorflow.org/), where the term *edit distance* is used.
+    SER = lev_normalized = \frac{#insertions + #deletions + #substitutions}{gold_length}
 
-We will also need a metric to compare our model to other simmilar models. Looking at the work by Calvo-Zaragoza and Rizo (*link*) or the HMR baseline paper (*link*) we can see, that the metric used is Symbol Error Rate (SER). This metric is, however, precisely the normalized Levenhstein distance. The name Symbol Error Rate is used in contrast to Word Error Rate (WER) in the text recognition community. Since we don't work with text, we are left with the Symbol Error Rate only.
+Since this metric is also used by other works, we will use it for comparison against these works.
 
-Lastly we would like to get an idea on the kind of mistakes our model makes. The [chapter 2](#2) talks about the Mashcima encoding and how it is able to represent symbols that it cannot yet represent (by the `?` token). Having this `?` token in the gold data creates an ever present mistake, that increases our error rate. We would like to get an estimate of how much of the overall error is contributed by such symbols. Also note that `?` is not the only token the model cannot produce. There are symbols that cannot be engraved yet, like trills, accents or fermatas. Being able to measure the error these tokens contribute would give us an idea on how much the model could improve, if we implemented these symbols in the engraving system.
+When training, we will use the edit distance function implemented in the Tensorflow library (http://tensorflow.org/). Although it is claimed to be the normalized Levenhstein distance, the implementation is different to the one used during evaluation. Therefore these two values should not be compared directly. The training edit distance is only meant for tracking the learning process a determinig the stopping condition.
 
-Let's formalize this idea. We have our predicted sequence $p$ and the corresponding gold sequence $g$. We define a function $f$, that transforms a sequence in some way (removes certain tokens, substitutes tokens, etc.). Now we want to find a metric $m$, that produces some error value for a given prediction $m(p, g)$. We want this metric $m$ to yield results that are comparable, when we transform the predictions $m(f(p), f(g))$.
 
-Taking the normalized Levenhstein distance as the metric $m$ is the first idea that one might have. The problem is that the function $f$ might change the length of the gold sequence ($\abs{g} \neq \abs{f(g)}$). Therefore the raw error and the error after the transformation $f$ are not directly comparable. Using the non-normalized Levenhstein distance fixes this issue. Now the error is the absolute number of edits. When it drops, the number of edits went down. But this makes us again face the issue of variable sequence length. We fixed one issue, but re-introduced another.
+### Understanding model mistakes
 
-We propose a metric, that is the Levenhstein distance, but normalized by a value that stays constant under the transformation $f$. More specifically, we want to normalize by the number of *important tokens* in the gold sequence. An *important token* is a token that will never be removed by a transformation $f$. It can be altered, but not removed.
+We would like to get an idea on the kind of mistakes our trained model makes. The [chapter 2](#2) talks about the Mashcima encoding and how it is able to represent symbols that it cannot yet represent (by the `?` token). Having this `?` token in the gold data creates an ever present mistake, that increases our error rate. We would like to get an estimate of how much of the overall error is contributed by such symbols. Also note that `?` is not the only token the model cannot produce. There are symbols that cannot be engraved yet, like trills, accents or fermatas. Being able to measure the error these tokens contribute would give us an idea on how much the model could improve, if we implemented these symbols in the engraving system.
+
+During evaluation, we will take the prediction and remove certain tokens from it. These same tokens will be removed from the gold sequence as well. We will compute the error of these simplified sequences. Comparing this error to the baseline error should tell us how much the removed tokens contribute to the baseline error.
+
+The metric used for computing this error will be the Levenhstein distance, but normalized by the number of *imporatnt tokens* in the gold sequence. An *important token* is a token that will never be removed. It can be altered, but not removed. This will make sure the normalization term stays constant over all the possible transofrmations and thus all the error values should be comparable.
 
 *Important tokens* are notes, rests, barlines, clefs, accidentals and other simmilar tokens. What remains as non-important are slurs, ornaments and the `?` token. The specific list of important tokens can be found in the file `app/vocabulary.py`. We will call this metric Important Token Error Rate (ITER). Remember that this metric should not be used for comparison against other models using different encodings. It is purely to get an idea of what mistakes contribute to the Symbol Error Rate.
 
@@ -518,7 +527,9 @@ With this metric we propose a set of transformation functions that progressively
 - *ITER_ORNAMENTLESS* - Like the above, but most of the non-important attachments are removed (trill, accent, staccato, fermata, ...). What has to remain are accidentals and duration dots. Those are important for correct pitch and rythm.
 - *ITER_PITCHLESS* - Like the above, but all pitch information is removed by converting all tokens to their generic variant.
 
-As noted, each metric builds on the previous one, further simplifying the sequences. This means the error rate should decrease as we go down. The amount by which it decreases can tell us how much the given transformation affected the error, therefore how much the removed tokens contributed to the error rate.
+Each metric builds on the previous one, further simplifying the sequences. This means the error rate should decrease as we go down. The amount by which it decreases can tell us how much the given transformation affected the error, therefore how much the removed tokens contributed to the error rate.
+
+Also please understand, that all these errors are computed on a single trained model. The gold sequence is modified during evaluation. Not during training. We are trying to understand a specific model we have.
 
 
 ## Architecture, training and evaluation
@@ -540,24 +551,24 @@ Learned parameters will be updated by the adaptive learning rate optimizer (Adam
 
 We have not tried to fine tune these parameters or any other hyperparameters. Our goal was to try training on engraved handwritten images and see whether this approach is even feasible. Tuning hyperparameters is one of the places where our approach can be improved in the future.
 
-The training will run for a given number of epochs. In each epoch an average edit distance on validation dataset is recorded. The final trained model is the model, that had the lowest validation edit distance, during the whole training. If the number of epochs trained is sufficiently high, this method should return the model at the point, where the generalization error began to rise.
+The training will run for a given number of epochs. In each epoch an average symbol error rate on validation dataset is recorded. The final trained model is the model, that had the lowest validation symbol error rate, during the whole training. If the number of epochs trained is sufficiently high, this method should return the model at the point, where the generalization error began to rise. Also note that the symbol error rate here is the edit distance function from Tensorflow. It is a diffenrent implementation of SER, than the one used for evaluation.
 
 Evaluation will be performed with the trained model, by feeding in the evaluation images and reading the resulting token sequence. There are, however, two additional steps performed. Firstly the prodced token sequence is repaired. This means the rules regarding beamed notes are checked and corrected and attachment tokens are sorted properly. This repairing process is relatively simple and completely rule-based. For the details see the `repair_annotation` function inside `app/vocabulary.py`. After the repairing process, leading and trailing barlines are stripped from both gold data and the prediction. This is because barlines at the beginning and at the end of staff convey no additional meaning. It is analogous to trimming whitespace characters around a sentence. Barlines with repeat signs are not stripped away, since they are important.
 
 
 ## Experiments
 
-In the section on [training data](#td) we hypothesized some differences between training on PrIMuS incipits and randomly generated data. The main idea is that training on PrIMuS incipits should allow the model to learn the language model. More generally training on real-wold music samples should help the model, since it will be evaluated on real-world music in the CVC-MUSCIMA dataset. Training on randomly generated data should allow the model to learn complicated combinations of symbols, that are not as common in the real-world music.
+In the section on [training data](#td) we hypothesized some differences between training on PrIMuS incipits and synthetic data. The main idea is that training on PrIMuS incipits should allow the model to learn the language model. More generally training on real-wold music samples should help the model, since it will be evaluated on real-world music in the CVC-MUSCIMA dataset. Training on synthetic data should allow the model to learn complicated combinations of symbols, that are not as common in the real-world music.
 
 To test this hypothesis we propose a set of three experiments:
 
-| Experiment | Training data                                  | Validation data       |
-| ---------- | ---------------------------------------------- | --------------------- |
-| 1          | 63 000 PrIMuS incipits                         | 1 000 PrIMuS incipits |
-| 2          | 63 000 random incipits                         | 1 000 random incipits |
-| 3          | 31 500 PrIMuS incipits, 31 500 random incipits | 1 000 PrIMuS incipits |
+| Experiment | Training data                                     | Validation data          |
+| ---------- | ------------------------------------------------- | ------------------------ |
+| 1          | 63 000 PrIMuS incipits                            | 1 000 PrIMuS incipits    |
+| 2          | 63 000 synthetic incipits                         | 1 000 synthetic incipits |
+| 3          | 31 500 PrIMuS incipits, 31 500 synthetic incipits | 1 000 PrIMuS incipits    |
 
-First experiment trains a model on real-world incipits, second uses randomly generated incipits and te third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits, since the evaluation will also be performed on real-world music. The second experiment validates on random incipits, because we wanted to simulate a scenario where we don't have access to real-world incipits.
+First experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits, since the evaluation will also be performed on real-world music. The second experiment validaates on synthetic incipits, because we wanted to simulate a scenario where we don't have access to real-world incipits.
 
 We trained each experiment for 20 epochs and took the model with lowest edit distance, averaged over the validation dataset.
 
@@ -580,12 +591,7 @@ Here are the resulting symbol error rates, averaged over the entire validation d
 | 2          | 0.27              |
 | 3          | 0.24              |
 
-It seems that training on randomly generated data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Random data is probably better than real-world data simply because all the tokens are represented equally. The language model might help us, but only in very specific ambiguous circumstances. Our model still makes a lot of mistakes for a language model to be helpful.
-
-I wanted to note here, that when I was annotating the evaluation dataset, I already had a model trained (from experiment 3) and used it to speed up the annotation process. I noticed, that the model didn't make mistakes in places I would expect it to do. Specifically, when there is a key signature with bass cleff and one sharp, this sharp has always the pitch `2`. The model correctly classified the pitch even though the sharp symbol was written incorrectly by the writer. It seems that the network indeed learned this feature from the real-world incipits from the PrIMuS dataset.
-
-    find image of that place with comparison of individual experiment predictions
-    (01 correct (hopefully), 02 wrong (hopefully), 03 correct)
+It seems that training on synthetic data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Synthetic data is probably better than real-world data simply because all the tokens are represented equally. The discussion on language model is more complicated and is explored [in a separate section](#123).
 
 In [section xyz](#xyz) we proposed a set of metrics, intended to give us insight into the mistakes the model makes:
 
@@ -646,6 +652,18 @@ Similarly we can average over each music page:
 
 
 Pages 9 and 11 ended up last, because they are only present for writer 49, who ended up as the worst writer. Page 3 is very interesting. It is the only page, that can be fully encoded using Mashcima encoding and all the smybols it contains can be engraved using the Mashcima engraving system. It is, however, also the simplest page in that it does not contain any complicated expressions and contains only few slurs. This is supported by the fact that page 5 ended up also very well and the page 5 is very comparable in its layout and complexity to the page 3.
+
+
+### Language model
+
+TODO: this
+
+The language model might help us, but only in very specific ambiguous circumstances. Our model still makes a lot of mistakes for a language model to be helpful.
+
+I wanted to note here, that when I was annotating the evaluation dataset, I already had a model trained (from experiment 3) and used it to speed up the annotation process. I noticed, that the model didn't make mistakes in places I would expect it to do. Specifically, when there is a key signature with bass cleff and one sharp, this sharp has always the pitch `2`. The model correctly classified the pitch even though the sharp symbol was written incorrectly by the writer. It seems that the network indeed learned this feature from the real-world incipits from the PrIMuS dataset.
+
+    find image of that place with comparison of individual experiment predictions
+    (01 correct (hopefully), 02 wrong (hopefully), 03 correct)
 
 
 ## Comparison to other work
