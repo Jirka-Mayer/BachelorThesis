@@ -656,11 +656,25 @@ Pages 9 and 11 ended up last, because they are only present for writer 49, who e
 
 ### Language model
 
-TODO: this
+<!--
+- language model má vliv, ale ne tak zásadní. Například se naučil nevyrábět nedokončené beamy (když splete první notu, tak z "e= =e= =e" vyrobí "q e= =e", ačkoliv prostřední nota má trámec na obě strany)
+- stejně tak se naučí že jeden křížek po klíči má správnou hodnotu i když je nakreslený špatně
+     (tzn. proto je dobré trénovat jak na generovaných, tak na primusu)
+-->
 
-The language model might help us, but only in very specific ambiguous circumstances. Our model still makes a lot of mistakes for a language model to be helpful.
+When comparing results of training on real-world data vs. synthetic data, it is strange that pure synthetic data outperforms purely real-world data. But it probably has to do with the fact, that the synthetic dataset is balanced with respect to the individual output class abundance. The learned language model of real-world data helps the first experiment, but it's not nearly enough to beat the benefits of a balanced dataset for the second experiment.
 
-I wanted to note here, that when I was annotating the evaluation dataset, I already had a model trained (from experiment 3) and used it to speed up the annotation process. I noticed, that the model didn't make mistakes in places I would expect it to do. Specifically, when there is a key signature with bass cleff and one sharp, this sharp has always the pitch `2`. The model correctly classified the pitch even though the sharp symbol was written incorrectly by the writer. It seems that the network indeed learned this feature from the real-world incipits from the PrIMuS dataset.
+This idea is supported by the fact that the third experiment beats both of the first two. It can benefit from both a balanced dataset and from learning a language model.
+
+The experiment 3 does indeed learn a basic language model. When I was annotating the evaluation dataset I used a trained model from experiment 3 and I noticed, that if often made mistakes in beamed note groups. Especially for the writer 49. It classified the first note of a beamed group as a quarter note. But then it (incorrectly) classified the second note as a beam start note, even though it can be easily seen the beam runs to both sides of the note. It prefered a well-formed beam, rather then the correct token. This property can be learned even from synthetic data, since they contain well-formed beams only.
+
+    image of a misclassified first eight as quarter note
+    predicted: ...
+    gold: ...
+    expected without language model: ...
+
+Then there are couple of places where it correctly predicts key signature, even though an accidental is misplaced by the writer. In a key signature, the number and type of accidentals
+uniquely identifies, what pitches those accidentals have. For example, when there's only a single sharp, it always corresponds to an `F#` note. Combining this with a specific clef gives us a correct position for the sharp.
 
     find image of that place with comparison of individual experiment predictions
     (01 correct (hopefully), 02 wrong (hopefully), 03 correct)
