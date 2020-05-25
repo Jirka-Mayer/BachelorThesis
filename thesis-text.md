@@ -440,7 +440,40 @@ Lastly we wanted to compare our results with the results of *From Optical Music 
 | 41     | 02, 03, 16     |
 | 49     | 03, 05, 09, 11 |
 
-We end up with 6 writers, 17 pages (7 distinct), 115 staves and over 5840 tokens. Annotations for these pages can be found in the file `app/muscima_annotations.py`.
+We end up with 6 writers, 17 pages (7 distinct), 115 staves and over 5840 tokens. Annotations for these pages can be found in the file `app/muscima_annotations.py`. These annotations have been performed by me - the author of this thesis. Experience regarding the annotation process is described in the [following section](#123).
+
+Lastly we want to show a frequency table of the most common tokens in the evaluation dataset. The table contains generic variants of the tokens. Table containing common pitches is the very next table.
+
+    table of generic tokens
+
+    table of pitches
+
+
+### Manual annotation experience
+
+Although the Mashcima encoding attempts to not be ambiguous, there were some places where I had to make some decisions regarding undefined situations. This section goes over these situations.
+
+**Writer 17, Page 1:** The last three measures contain nested slurs. These cannot be represented, so I chose to represent slur beginnings and slur endings as they can be seen in the page. One note cannot have two slur beginings, so only one is annotated. The very last slur is maybe not a slur, but some pitch articulation symbol. I annotated it as a slur continuing onto the next staff.
+
+    image
+
+**Page 2:** The last two staves contain three occurences of gracenotes. They look like regular notes, but are smaller. Gracenotes cannot be represented yet, so I replaced them with a `?` token. I replaced the entire grace note group (two sixteenths with a slur) with a single `?` token.
+
+    image
+
+**Page 9:** There are two measures with notes playing at the same time. The first three half notes are slightly offset, so they are annotated from left to right. The last two quarter notes are right above each other, so I replaced them with the `?` token. I wanted to place at least one `?` token inside the measure and then tried to annotate the rest as best as I could. This way the measure is marked and can be repaired in the future.
+
+    image
+
+**Page 11:** One measure has the same problem as page 9.
+
+**Page 16:** Third staff contains a bracket symbol in the key signature. The bracket symbol is completely ignored, but the clef and key signature is annotated as usual. The fifth staff contains double-beamed notes with empty noteheads. These are not sixteenth notes, but since they look so simmilar, I annotated them as such. These symbols are not very common and the trained model treated them as sixteenth notes as well, so I kept it that way.
+
+    image
+
+Special thick barlines, double barlines or barlines with braces at the begining of a staff are all annotated as simple `|` token. The only exception are repeat signs that do have their corresponding tokens.
+
+There are many trills or accents throughout the pages. Those are not in the training data, but can be represented, so they are annotated just as defined in the chapter on Mashcima encoding.
 
 
 ## Evaluation metrics
