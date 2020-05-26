@@ -112,13 +112,52 @@ The steps described above are shared by both traditional and neural network base
 
 Deep learning is a class of machine learning that focuses on deep neural networks. Deep learning has risen over the past two decades and became a very powerful tool for solving many problems, especially classification problems regarding computer vision. Neural networks can be used in many places throughout the pipeline of a traditional OMR system. They can be used for staffline removal (https://link.springer.com/article/10.1007/s00138-017-0844-4), symbol classification (http://mipal.snu.ac.kr/images/3/3b/ICISS_MuSymb.pdf) or even symbol detection (https://hal.archives-ouvertes.fr/hal-01972424/document).
 
-Recently, neural networks have been used to tackle the problem of OMR in an end-to-end fashion (*link primus, link HTR baseline*). This approach allows us to replace many stages of the pipeline with a single model. The input sheet of music is usually processed staff by staff, so an intial segmentation of staves is required. This step is, however, very robust and can be performed reliably.
+Recently, neural networks have been used to tackle the problem of OMR in an end-to-end fashion (*link primus, link HMR baseline*). This approach allows us to replace many stages of the pipeline with a single model. The input sheet of music is usually processed staff by staff, so an intial segmentation of staves is required. This step is, however, very robust and can be performed reliably.
 
 Main steps unified by an end-to-end system are segmentation, symbol classification and part of the relationship extraction. This means we don't need to explicitly specify structure of this part of the pipeline, which saves a lot of time and thinking. Also any intermediate features that would be extracted (like noteheads) need not be specified. The deep neural network has the ability to learn, what those features are. Moreover it can adapt these features to the problem better than a human could.
 
 Deep learning, especially in an end-to-end approach also has some drawbacks. The first is bound to the ability of the model to learn the solution from data. While it's very helpful, that we don't have to desing part of our OMR system manually, it's often very difficult to acquire enough high-quality data for the training. Also the more complex our model is and the more learned paramateres it has, the more training data it requires. The data also needs to be high quality. Ambiguity and mistakes in annotations lead to poor performance of the resulting model. The trained model can only ever be as good as it's training data.
 
 The second drawback is the very difficult nature of debugging the model. Neural network is by design a black box and we cannot easily assign specific meaning to any of its internal parts. The process of fixing a mistake the model makes is tedious and requires a lot of experimentation and re-training.
+
+
+## Our architecture
+
+As stated in the title of this thesis, we decided to explore the end-to-end approach to OMR using deep neural networks. We were primarily inspired by three related models:
+
+- End-to-End Neural Optical Music Recognition of Monophonic Scores by Calvo-Zaragoza and Rizo (*link*)
+- SimpleHTR by Harald Scheidl (https://github.com/githubharald/SimpleHTR)
+- From Optical Music Recognition to Handwritten Music Recognition: A baseline (*link*)
+
+All of these models share the same high-level structure. They combine a convolutional neural network (CNN) with a recurrent neural network (RNN). This combination is sometimes called the RCNN architecture. Convolutional neural networks are used in image processing. Their architecture is inspired by the way filters work in computer graphics (convolving a kernel over the source image). They learn to extract edges, corners and then even more abstract features like noteheads and stems. Recurrent neural networks are used for sequence processing (text and speech). They have been designed to carry state information throughout the input sequence. In our case they learn to propagate information horizontally - like infering pitch of an accidental from the pitch of a neighbouring note. The CNN block learns to extract features that th RNN block then learns to combine into more abstract features.
+
+    image of the blocks (image -> cnn -> rnn -> ctc -> resulting vectors)
+
+The CNN block can be followed by fully connected layers that further refine the result, although these layers are not necessary and our achitecture doesn't contain them. This may be due to the fact that our encoding is very close to the symbolic visual representation and so most of the heavy lifting is probably performed in the CNN block.
+
+The final layer outputs a sequence of vectors, where each vector represents one time-step (horizontal slice of the input image). Values in such vector correspond to probabilities of individual output classes (tokens) at that given time-step. One additional class *blank* is added, that represents "no symbol present". The most likely class for each time-step is selected and then repetitions of the same class are collapsed into one token. Lastly all the blank symbols are removed. The remaining sequence of classes is mapped directly onto annotation tokens of the Mashcima encoding explained in the [chapter 2](#2). This approach is called greedy CTC decoding (https://www.cs.toronto.edu/~graves/icml_2006.pdf) and is used during training. For evaluation a more advanced method is used, called beam search decoding (https://arxiv.org/pdf/1601.06581.pdf).
+
+When training, loss is computed using connectionist temporal classification (CTC) (https://arxiv.org/pdf/1601.06581.pdf). The loss function provides a gradient for improving the network. This gradient is then calculated for the entire network using the backpropagation algorithm (https://www.deeplearningbook.org/contents/mlp.html#pf25). Parameters are then updated using the adaptive learning rate optimizer (Adam) (*link*).
+
+Values of all hyperparameters, including sizes and types of all layers are specified in the section [1.2.3](#123).
+
+
+### Convolutional neural network
+
+TODO
+
+
+### Recurrent neural network
+
+TODO
+
+
+### Connectionist temporal classification
+
+TODO
+
+<!-- nemusím řešit alignment -->
+<!-- HMR baseline nepoužívá CTC, možná na tom něco bude ohledně akordů -->
 
 
 # Music Representation
@@ -391,7 +430,7 @@ This chapter talks about the Mashcima engraving system. Why we developed this sy
 
 In the [thesis introduction](#123) we stated that there is only a single dataset containing handwritten staves of music. There are other handwritten music datasets, but they either contain only symbols, or they are derived from CVC-MUSCIMA. Using this dataset as-is for training is not plausible, because it contains far too few symbol combinations.
 
-We are not the first to realise this issue. The HTR baseline paper (*link*) talks about using data augmentation and transfer learning to solve the lack of training data. They propose a model to be trained on printed music, of which there's abundance. After that the model is fine-tuned by training on the CVC-MUSCIMA dataset. The results they obtained are impressive, considering the method they used. To help with the process, they used simple data augmentation, like dilation, erosion and blurring.
+We are not the first to realise this issue. The HMR baseline paper (*link*) talks about using data augmentation and transfer learning to solve the lack of training data. They propose a model to be trained on printed music, of which there's abundance. After that the model is fine-tuned by training on the CVC-MUSCIMA dataset. The results they obtained are impressive, considering the method they used. To help with the process, they used simple data augmentation, like dilation, erosion and blurring.
 
 We propose to use more sophisticated data augmentation. Specifically we want to shuffle the data on the level of individual musical symbols. The reason we choose this approach is that we have access to the MUSCIMA++ dataset (*link*). This dataset contains a lot of additional information regarding the CVC-MUSCIMA dataset, which includes segmentation masks of individual symbols and their relationships. We want to use these masks to engrave entirely new staves of music.
 
@@ -714,7 +753,7 @@ We have not tried to fine tune these parameters or any other hyperparameters. Ou
 
 The training will run for a given number of epochs. In each epoch an average symbol error rate on validation dataset is recorded. The final trained model is the model, that had the lowest validation symbol error rate, during the whole training. If the number of epochs trained is sufficiently high, this method should return the model at the point, where the generalization error began to rise. Also note that the symbol error rate here is the edit distance function from Tensorflow. It is a diffenrent implementation of SER, than the one used for evaluation.
 
-Evaluation will be performed with the trained model, by feeding in the evaluation images and reading the resulting token sequence. There are, however, two additional steps performed. Firstly the prodced token sequence is repaired. This means the rules regarding beamed notes are checked and corrected and attachment tokens are sorted properly. This repairing process is relatively simple and completely rule-based. For the details see the `repair_annotation` function inside `app/vocabulary.py`. After the repairing process, leading and trailing barlines are stripped from both gold data and the prediction. This is because barlines at the beginning and at the end of staff convey no additional meaning. It is analogous to trimming whitespace characters around a sentence. Barlines with repeat signs are not stripped away, since they are important.
+During evaluation, the beam search decoding algorithm is used with the beam width of 100 (https://arxiv.org/pdf/1601.06581.pdf). There are two additional steps performed after that. Firstly the produced token sequence is repaired. This means the rules regarding beamed notes are checked and corrected and attachment tokens are sorted properly. This repairing process is relatively simple and completely rule-based. For the details see the `repair_annotation` function inside `app/vocabulary.py`. After the repairing process, leading and trailing barlines are stripped from both gold data and the prediction. This is because barlines at the beginning and at the end of staff convey no additional meaning. It is analogous to trimming whitespace characters around a sentence. Barlines with repeat signs are not stripped away, since they are important.
 
 
 ## Experiments
@@ -888,64 +927,3 @@ Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expect
 >   - rozšíření na text kolem not (kvůli regularizaci), e.g. "andante", "T=180", ...
 > - použít úplně jinačí model - zkombinovat baseline paper a můj generátor
 > - nebo vypiplat generátor a postavit na jeho základě novej dataset
-
-
-# XXX `Content layout and notes`
-
-V čem je end-to-end výhodné? (tzn. proč to vůbec prozkoumávám?)
-- ručně vybraný fičury nebejvaj nejlepší, lepší je se interní fičury naučit
-    (ideálně nějakej odkaz do Deep Leraning book na deep sítě)
-- chyby v prvních fázích pipeline způsobují lavinový efekt chyb
-
-Proč jsem zvolil RCNN+CTC? (jako konkrétní realizaci end-to-end modelu)
-1) používá to SimpleHTR a od něho jsem se odpíchnul
-2) díky CTC nemusím řešit alignment (segmentaci)
-- z čeho jiného bych mohl vybírat?
-
-Proč jsem zvolil CVC-MUSCIMA na evaluaci?
-1) snadno lze anotovat, protože se díla opakují
-2) z datasetů co jsou na výběr vyšel nejlíp https://apacha.github.io/OMR-Datasets/
-    - je handwritten, obsahuje celé sheety, mám k němu MUSCIMA++ na symboly
-    - je to jediný single-staff handwritten na výběr, ostatní na něm staví
-        nebo to jsou pouze datasety symbolů
-
-Na čem trénovat model?
-- CVC-MUSCIMA nestačí, moc malý, malá variabilita
-- žádný jiný na výber není
-- použiju augmentaci dat -> vygeneruju nová data přeházením symoblů z CVC-MUSCIMY
-    - jak dostanu symboly? Ty už mám v MUSCIMA++, použiju tu
-    - dostanu anotace zadarmo
-    - jak dostanu posloupnosti co generovat? Protože nechci totální náhodu.
-        Použiju incipity z Primusu. (hypotéza: naučíme se language model)
-            - odkaz: hypotézu otestujeme v experimentech
-
----
-
-- Co je to RCNN síť
-    - v čem je výhodná CTC loss (není třeba alignment)
-    - Konkrétní architektura mojí sítě
-- Reprezentace výstupu sítě **TODO: tohle rozepiš do detailu**
-    - Inspirováno Primusem, ale drobné změny
-    - proč agnostic a ne semantic
-        - menší abeceda, jednodušší generátor mashcima
-    - míň ukecaný než u primusu, aby se dalo lépe anotovat ručně - vizuelní podobnost
-    - symetrické - pozice 0 je uprostřed
-    - Co se generuje vs. co lze anotovat
-    - Pitch information
-    - Attachments
-    - Jak lze rozšířit do budoucna (dynamika, akordy) ... tohle ale spíš do závěru tady jen odkaz
-- Mashcima **TODO: tohle rozepiš do detailu**
-    - sázení ručně psaných not pomocí symbolů z datasetu MUSCIMA++
-    - proč? Mám málo dat vzhledem k tomu jak mohou být variabilní
-    - cíl - co nejvíce napodobit vzhled dat v CVC-MUSCIMA
-        - tzn. neřeším preprocessing a binarizaci
-        - proč? Protože na něm budu testovat
-    - popsat architekturu generátoru (třídy v pythonu), prostě dokumentace
-        + nejen třídy, ale i jak funguje
-    - problémy s rozlišením a max. délkou výstpu
-- Experimenty
-    - účel 1: jak dobrý je model co jsem udělal (evaluace)
-    - účel 2: na jakých posloupnostech je nejlépe trénovat (primus / generated)
-        + diskuze o language modelu vs. regularizaci
-    - porovnej díla a porovnej writery - jak se liší mezi sebou v úspěšnosti
-    - otestovat hypotézu dropout vrstvy (SimpleHTR ji nemá?, Calvo ji má)
