@@ -64,24 +64,53 @@ The thesis assignment states that output of our model will be a MusicXML file. W
 
 ## Thesis outline
 
-**Chapter X:** Proč end-to-end, proč RCNN+CTC, výhody, nevýhody, viz log - proces vymýšlení, vícekanálová CTC, problémy
+**Chapter 1:** Proč end-to-end, proč RCNN+CTC, výhody, nevýhody, viz log - proces vymýšlení, vícekanálová CTC, problémy
 
-**Chapter X:** Reprezentace výstupu sítě (Mashcima representation)
+**Chapter 2:** Reprezentace výstupu sítě (Mashcima representation)
 
-**Chapter X:** Engraving system Mashcima, jak funguje, jakou má strukturu
+**Chapter 3:** Engraving system Mashcima, jak funguje, jakou má strukturu
 
-**Chapter X:** Experiments and results (jak vypadají experimenty, jak dopadly)
+**Chapter 4:** Experiments and results (jak vypadají experimenty, jak dopadly)
 
 
 # Related Work
 
-> TODO ... vypiš hlavní práce o které se opíráš a co zajímavého z nich používáš.
 
-- SimpleHTR
-- Calvo-Zaragoza and Rizo, PrIMuS
-- CVC-MUSCIMA
-- MUSCIMA++
-- HMR Baseline paper
+## CVC-MUSCIMA dataset
+
+CVC-MUSCIMA is a dataset presented in the article: *[CVC-MUSCIMA: A ground truth of handwritten music score images for writer identification and staff removal](https://www.researchgate.net/publication/225445011_CVC-MUSCIMA_A_ground_truth_of_handwritten_music_score_images_for_writer_identification_and_staff_removal)*. This dataset contains 1000 sheets of music, consisting of 20 pages, each written by 50 different musicians. It's the only publicly available dataset containing entire staves of handwritten music. The dataset has been designed for writer identification and staff (staffline) removal tasks. It contains two sets of images. One set for writer identification (containing gray, binary and staff-less binary images) and one set for staff removal (contains raw, staff-less and staff-only images, all binary).
+
+We will use part of the staff removal set for evaluation. We will also use another part of the staff removal set for engraving, but indirectly via the MUSCIMA++ dataset.
+
+
+## MUSCIMA++ dataset
+
+MUSCIMA++ is a dataset developed by Jan Hajič jr. and Pavel Pecina and has been presented in the article: *[In Search of a Dataset for Handwritten Optical Music Recognition: Introducing MUSCIMA++](https://arxiv.org/abs/1703.04824)*. This dataset provides additional information for a subset of the CVC-MUSCIMA dataset. MUSCIMA++ contains 140 sheets of music. Each sheet is annotated at the level of individual symbols (noteheads, stems, flags, beams, slurs, stafflines). Each one of these symbols is classified, contains a bounding box and a pixel mask. These symbols are then interlinked in a graph that can be traversed to extract higher-level objects (notes, key signatures, beamed note groups).
+
+We will use the dataset as a collection of musical symbols. We will then place those symbols onto an empty staff to create sythetic training data. The additional data (relationship graph) will help us position certain symbols properly.
+
+
+## End-to-End OMR and the PrIMuS dataset
+
+This section refers to the article: *[End-to-End Neural Optical Music Recognition of Monophonic Scores](https://www.mdpi.com/2076-3417/8/4/606)*. This article first discribes the PrIMuS dataset (https://grfia.dlsi.ua.es/primus/). This dataset contains 87678 real-music incipits. An incipit is the part of a melody or a musical work that is most recognizable for that work. Each incipit is a few measures long, typically shorter than a single staff of printed sheet music. Each incipit is encoded in a few widely known encodings (MEI, MIDI) and has a corresponding printed image. This image has been engraved using the music notation engraving library Verovio (https://www.verovio.org/). Each incipit is also encoded using two on-purpose devised encodings - the PrIMuS semantic and agnostic encoding. These encodings are interesting, because they are the output of a model proposed in the article, but also the Mashcima encoding described in [chapter 2](#2) of this thesis is very simmilar to the agnostic encoding.
+
+The article also proposes a neural network architecture for an end-to-end solution of OMR. The architecture is very similar to ours, almost identical. It also uses the connectionist temporal classification as the loss function, which shapes the PrIMuS dataset encoding formats. This thesis  differs from this article mainly in the focus on handwritten music and the introduction of a custom engraving system for handwritten music. This article focuses on printed music only.
+
+We will use the PrIMuS dataset as a source of melodies that can be used as input to our engraving system. The will also take this article as a basis for our Mashcima encoding and our model architecture.
+
+
+## HMR baseline article
+
+This section refers to the article: *[From Optical Music Recognition to Handwritten Music Recognition: A baseline](https://www.sciencedirect.com/science/article/abs/pii/S0167865518303386)*. This paper proposes a model that should serve as a baseline for handwritten music recognition. The model is again a convolutional recurrent neural network that recognises entire staves. The model is trained on printed music and then, using transfer learning, fine-tuned on handwritten music. The handwritten music comes from the MUSCIMA++ dataset and it has been varied using data augmentation (blurring, erosion, dilation, measure shuffling). This model, however, does not use CTC loss function, instead it produces two vectors for each pixel of the input image width. One vector contains symbols that are present in the image at that position and the other vector contains pitches of these symbols. This means annotations have to be aligned with the symbols (unlike with CTC), but it allows the model to recognise dense music sheets and even chords.
+
+We will attempt to compare our model to the one from this article. The comparison will be difficult, because the output formats are so different, but we will mention all the differences and add a qualitative comparison of the final predictions. We want to utilize the fact that our evaluation dataset intersects with theirs and so we can perform direct comparison.
+
+
+
+
+<!--
+SimpleHTR
+-->
 
 
 # Deep Neural Network
@@ -232,7 +261,7 @@ Combining duration information and pitch information into a single token actuall
 
 The set of pitches we can choose from greatly impacts the vocabulary size. This is not a major issue, because the vocabulary size will still remain relatively small. Currently the vocabulary has around 550 tokens. The pitch range we choose spans from `-12` to `12` - that is from the fourth ledger line below the staff to the fourth ledger line above the staff.
 
-The pitch encoding is built such that it would be easy to understand for a non-musician. In western contemporary music notation (**TODO link**) pitch of a note is represented by the vertical position of that note on the staff. An empty staff is composed of 5 stafflines. Mashcima encoding sets the middle staffline position to be zero. Going up, the first space is pitch `1` and the first line is pitch `2`. Going down, the first space is pitch `-1` and the first line is pitch `-2`.
+The pitch encoding is built such that it would be easy to understand for a non-musician. In western music notation, pitch of a note is represented by the vertical position of that note on the staff. An empty staff is composed of 5 stafflines. Mashcima encoding sets the middle staffline position to be zero. Going up, the first space is pitch `1` and the first line is pitch `2`. Going down, the first space is pitch `-1` and the first line is pitch `-2`.
 
     image of rising half notes engraved using Mashcima
     with the corresponding tokens
@@ -411,8 +440,8 @@ As mentioned in previous sections, there are missing some note and rest duration
 <!--tuplets and other attachments-->
 Similarly there are many symbols that are not present in the encoding, but could be easily added. Dynamics cannot be encoded right now. They are ignored as if they wasn't present at all. They could be added as after attachments. Same applies to additional tuplets or simmilar ornaments.
 
-<!--gracenotes-->
-Special place have gracenotes. They look like little notes, they do not affect the rythm and are considered an ornament attached to another note. PrIMuS agnostic encoding can represent them, but at the expense of adding a lot of additional tokens. We decided not to bloat our vocabulary with symbols that aren't very abundant in the CVC-MUSCIMA dataset. They are present in a few places in the evaluation dataset and are represented by the `?` token.
+<!--grace notes-->
+Special place have grace notes. They look like little notes, they do not affect the rythm and are considered an ornament attached to another note. PrIMuS agnostic encoding can represent them, but at the expense of adding a lot of additional tokens. We decided not to bloat our vocabulary with symbols that aren't very abundant in the CVC-MUSCIMA dataset. They are present in a few places in the evaluation dataset and are represented by the `?` token.
 
 <!--chords-->
 A chord is two or more notes played simultaneously. Currently there is no way of encoding simultaneous notes. Since chords usually share a stem, they could maybe be represented via after attachments. Maybe if we encoded the top-most note of a chord as a regular note and then added one "notehead" token for every remaining note, we could represent a chord. But there are problems with having multiple accidentals. Either way it would be interesting to explore in some future work.
@@ -430,7 +459,7 @@ This chapter talks about the Mashcima engraving system. Why we developed this sy
 
 In the [thesis introduction](#123) we stated that there is only a single dataset containing handwritten staves of music. There are other handwritten music datasets, but they either contain only symbols, or they are derived from CVC-MUSCIMA. Using this dataset as-is for training is not plausible, because it contains far too few symbol combinations.
 
-We are not the first to realise this issue. The HMR baseline paper (*link*) talks about using data augmentation and transfer learning to solve the lack of training data. They propose a model to be trained on printed music, of which there's abundance. After that the model is fine-tuned by training on the CVC-MUSCIMA dataset. The results they obtained are impressive, considering the method they used. To help with the process, they used simple data augmentation, like dilation, erosion and blurring.
+We are not the first to realise this issue. The HMR baseline article (*link*) talks about using data augmentation and transfer learning to solve the lack of training data. They propose a model to be trained on printed music, of which there's abundance. After that the model is fine-tuned by training on the CVC-MUSCIMA dataset. The results they obtained are impressive, considering the method they used. To help with the process, they used simple data augmentation, like dilation, erosion and blurring.
 
 We propose to use more sophisticated data augmentation. Specifically we want to shuffle the data on the level of individual musical symbols. The reason we choose this approach is that we have access to the MUSCIMA++ dataset (*link*). This dataset contains a lot of additional information regarding the CVC-MUSCIMA dataset, which includes segmentation masks of individual symbols and their relationships. We want to use these masks to engrave entirely new staves of music.
 
@@ -552,7 +581,7 @@ We can take the PrIMuS dataset, engrave all the incipits using Mashcima and trai
 
 Converting PrIMuS agnostic encoding to Mashcima encoding is mostly a one-to-one mapping of tokens. Pitches have to be encoded differently, tokens have different names. In PrIMuS, all tokens have pitch information, so for some tokens, it gets stripped away.
 
-Some incipits, however, need to be filtered out. PrIMuS contains symbols, that aren't present in CVC-MUSCIMA, therefore cannot be engraved. These symbols are very long or very short notes (longa, breve, thirty-second). PrIMuS also contains many gracenotes and simmilar symbols that the Mashcima engraving system cannot render, so they get removed. There are a couple of other rules and checks that make the conversion slightly more complicated. The exact code for the conversion can be found in the file `mashcima/primus_adapter.py`.
+Some incipits, however, need to be filtered out. PrIMuS contains symbols, that aren't present in CVC-MUSCIMA, therefore cannot be engraved. These symbols are very long or very short notes (longa, breve, thirty-second). PrIMuS also contains many grace notes and simmilar symbols that the Mashcima engraving system cannot render, so they get removed. There are a couple of other rules and checks that make the conversion slightly more complicated. The exact code for the conversion can be found in the file `mashcima/primus_adapter.py`.
 
 When the conversion finishes, we are left with 64 000 incipits we can use to train on.
 
@@ -597,7 +626,7 @@ First we sorted the 20 pages by how easily they can be encoded using Mashcima en
 | ---- | ---------- | ---------------------------------------------------- |
 | 03   | Yes        | perfect                                              |
 | 12   | Yes        | perfect                                              |
-| 02   | Yes        | trills, gracenotes                                   |
+| 02   | Yes        | trills, grace notes                                  |
 | 11   | Yes        | `?` token                                            |
 | 09   | Yes        | `?` token, fermata                                   |
 | 05   | Yes        | trills                                               |
@@ -607,11 +636,11 @@ First we sorted the 20 pages by how easily they can be encoded using Mashcima en
 | 17   | Yes        | two staves with chords                               |
 | 15   | Yes        | rests in beamed groups                               |
 | 16   | Yes        | beamed notes with empty noteheads, accents           |
-| 06   | Not ideal  | trills, many gracenotes                              |
+| 06   | Not ideal  | trills, many grace notes                             |
 | 04   | Not ideal  | tenuto, triplets, nested slurs, bar repeat, fermata  |
 | 18   | Not ideal  | two staves with chords                               |
 | 07   | No         | trills, many concurrent notes                        |
-| 08   | No         | gracenotes, unsupported symbols, two voices in bass  |
+| 08   | No         | grace notes, unsupported symbols, two voices in bass |
 | 20   | No         | chords in many places                                |
 | 10   | No         | chords                                               |
 | 19   | No         | multiple voices                                      |
@@ -663,7 +692,7 @@ Although the Mashcima encoding attempts to not be ambiguous, there were some pla
 
     image
 
-**Page 2:** The last two staves contain three occurences of gracenotes. They look like regular notes, but are smaller. Gracenotes cannot be represented yet, so I replaced them with a `?` token. I replaced the entire grace note group (two sixteenths with a slur) with a single `?` token.
+**Page 2:** The last two staves contain three occurences of grace notes. They look like regular notes, but are smaller. Grace notes cannot be represented yet, so I replaced them with a `?` token. I replaced the entire grace note group (two sixteenths with a slur) with a single `?` token.
 
     image
 
@@ -696,7 +725,7 @@ Now that we have a model producing some token sequences and we have our gold seq
 - Get an overall idea of the model performance and compare it to other works.
 - Analyze model output to identify common mistakes it makes.
 
-Looking at the work by Calvo-Zaragoza and Rizo (*link*) or the HMR baseline paper (*link*) we can see, that the metric they use is Symbol Error Rate (SER). This metric is also known as normliazed Levenhstein distance or edit distance. The name Symbol Error Rate is used in contrast to Word Error Rate (WER) in the text recognition community. Since we don't work with text, we are left with the Symbol Error Rate only.
+Looking at the work by Calvo-Zaragoza and Rizo (*link*) or the HMR baseline article (*link*) we can see, that the metric they use is Symbol Error Rate (SER). This metric is also known as normliazed Levenhstein distance or edit distance. The name Symbol Error Rate is used in contrast to Word Error Rate (WER) in the text recognition community. Since we don't work with text, we are left with the Symbol Error Rate only.
 
 Regular Levenhstein distance (https://ui.adsabs.harvard.edu/abs/1966SPhD...10..707L/abstract) is defined as the minimum number of single-character edits that turn our prediction into the gold sequence. We don't work with strings, so we use tokens instead of characters. The basic edit operations are insertion, deletion and substitution. The lower this number, the better. Zero means perfect match.
 
@@ -844,7 +873,7 @@ Similarly we can average over each music page:
 | ---- | ---- | ---------------------------------------------------- |
 | 3    | 0.13 | perfect                                              |
 | 5    | 0.18 | trills                                               |
-| 2    | 0.26 | trills, gracenotes                                   |
+| 2    | 0.26 | trills, grace notes                                  |
 | 1    | 0.28 | triplets, fermata, rests in beamed groups            |
 | 16   | 0.30 | beamed notes with empty noteheads, accents           |
 | 9    | 0.41 | `?` token, fermata                                   |
@@ -918,7 +947,7 @@ Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expect
 -->
 
 
-# Conclusion and Future Works
+# Conclusion and Future Work
 
 > - anotace a generátor:
 >   - rozšíření barlines (:|: |: :|, ||) a spoustu dalších symbolů (trill, fermata)
