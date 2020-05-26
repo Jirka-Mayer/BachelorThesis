@@ -86,6 +86,7 @@ The thesis assignment states that output of our model will be a MusicXML file. W
 
 # Deep Neural Network
 
+<!--
 > Tradiční systémy používají pipeline
 
 > deep NN spojují celou pipeline do jednoho celku, learned features
@@ -93,8 +94,31 @@ The thesis assignment states that output of our model will be a MusicXML file. W
 > CTC umožňuje neřešit alignment, snazší anotace
 
 > konkrétní architektura mojí sítě (tabulka) + hypotéza o dropout vrstvě
+-->
 
-> multi channel CTC attempts
+This chapter describes the specific model we decide to use for our OMR task. It discusses traditional methods and how deep neural networks help us simplify the process. It describes models other people used for similar tasks and how we've been influenced by them.
+
+
+## Traditional approaches
+
+A musical score intended for OMR typically begins as a raster image. This image is a photo or a scan of a real-world sheet of paper. The image needs to be prepared first. We need to find the sheet of paper in the image and correct any rotation or perspective distortion. Scanned images are easier to prepare, because they don't contain any perspective deformation and lighting artifacts. Searching for the paper in the image can be performed using many approaches, e.g. by using maximally stable extremal regions (http://cmp.felk.cvut.cz/~matas/papers/matas-bmvc02.pdf). We can detect stafflines using probabilistic Hough transform (https://en.wikipedia.org/wiki/Hough_transform). We can then use this information to remove any affine distortion of the image.
+
+Next step is performing some color normalization and binarization. There might be a light-intensity gradient over the image, so we do some automatic contrasting to bring the lightness to a constant level across the image. Median filtering can be applied to remove noise (https://www.uio.no/studier/emner/matnat/ifi/INF2310/v12/undervisningsmateriale/artikler/Huang-etal-median.pdf). Conversion to grayscale image is often used, since color is not useful for OMR. The image can then be binarized to further remove unnecessary information. There are many thresholding algorithms that can be used for this step, many of which are implemented in the OpenCV library (https://opencv.org/). Binarization is important for traditional approaches, since they often use methods based on connected components to detect individual symbols. Neural networks could benefit from non-binarized images, since binarization can create aliasing artifacts that distort the input image on pixel level.
+
+The steps described above are shared by both traditional and neural network based approaches. Traditional approaches now usually perform staffline removal. This step lets methods based on connected components to become useful. Staff localization may be an important part of this step. Symbols then need to be segmented and classified separately. Meaning is then reconstructed by looking at the relationships between all the classified symols. With the musical score understood at the symbol level, the extracted information can be converted to some final representation (MusicXML, MEI, MIDI).
+
+
+## Deep learning approaches
+
+Deep learning is a class of machine learning that focuses on deep neural networks. Deep learning has risen over the past two decades and became a very powerful tool for solving many problems, especially classification problems regarding computer vision. Neural networks can be used in many places throughout the pipeline of a traditional OMR system. They can be used for staffline removal (https://link.springer.com/article/10.1007/s00138-017-0844-4), symbol classification (http://mipal.snu.ac.kr/images/3/3b/ICISS_MuSymb.pdf) or even symbol detection (https://hal.archives-ouvertes.fr/hal-01972424/document).
+
+Recently, neural networks have been used to tackle the problem of OMR in an end-to-end fashion (*link primus, link HTR baseline*). This approach allows us to replace many stages of the pipeline with a single model. The input sheet of music is usually processed staff by staff, so an intial segmentation of staves is required. This step is, however, very robust and can be performed reliably.
+
+Main steps unified by an end-to-end system are segmentation, symbol classification and part of the relationship extraction. This means we don't need to explicitly specify structure of this part of the pipeline, which saves a lot of time and thinking. Also any intermediate features that would be extracted (like noteheads) need not be specified. The deep neural network has the ability to learn, what those features are. Moreover it can adapt these features to the problem better than a human could.
+
+Deep learning, especially in an end-to-end approach also has some drawbacks. The first is bound to the ability of the model to learn the solution from data. While it's very helpful, that we don't have to desing part of our OMR system manually, it's often very difficult to acquire enough high-quality data for the training. Also the more complex our model is and the more learned paramateres it has, the more training data it requires. The data also needs to be high quality. Ambiguity and mistakes in annotations lead to poor performance of the resulting model. The trained model can only ever be as good as it's training data.
+
+The second drawback is the very difficult nature of debugging the model. Neural network is by design a black box and we cannot easily assign specific meaning to any of its internal parts. The process of fixing a mistake the model makes is tedious and requires a lot of experimentation and re-training.
 
 
 # Music Representation
