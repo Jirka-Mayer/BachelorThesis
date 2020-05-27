@@ -235,7 +235,7 @@ def staff_beginning_slur(canvas):
 # Running individual inspections #
 ##################################
 
-# inspect(whole_notes, 10)
+inspect(whole_notes, 1)
 # inspect(half_notes, 1)
 # inspect(quarter_notes, 1)
 # inspect(eighth_notes, 1)

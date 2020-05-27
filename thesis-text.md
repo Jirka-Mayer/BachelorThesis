@@ -802,6 +802,8 @@ In [chapter 1](#1) we provided a short introduction to deep neural networks and 
 
     tabulka s vrstvama sítě a jejich parametrama
 
+The Mashcima engraving system works with images at the resolution of the CVC-MUSCIMA dataset. Image of an engraved staff is about 400px in height and the width varies from 500px to over 2000px. The neural network however requires the input image to be exactly 64px in height. The image will be scaled down because of this, while preserving its aspect ratio.
+
 There will be two datasets used for training. One for the actual training - a *training dataset* and one for validation - a *validation dataset* (or "dev dataset"). The training dataset is fed into the model in batches and each batch is used to perform update of the learned parameters of the model. This process is called stochastic gradient descent (*link*). Using the entire training dataset once is called *one epoch*. The validation dataset will be used after each epoch to estimate the true performance of the model (to estimate the generalization error). Edit distance will be measured during training and validation and it will be used to track the learning progress.
 
 Learned parameters will be updated by the adaptive learning rate optimizer (Adam) (*link*), that comes with Tensorflow (*link*), with the default parameters:
@@ -824,17 +826,18 @@ During evaluation, the beam search decoding algorithm is used with the beam widt
 
 In the section on [training data](#td) we hypothesized some differences between training on PrIMuS incipits and synthetic data. The main idea is that training on PrIMuS incipits should allow the model to learn the language model. More generally training on real-wold music samples should help the model, since it will be evaluated on real-world music in the CVC-MUSCIMA dataset. Training on synthetic data should allow the model to learn complicated combinations of symbols, that are not as common in the real-world music.
 
-To test this hypothesis we propose a set of three experiments:
+To test this hypothesis we propose a set of four experiments:
 
 | Experiment | Training data                                     | Validation data          |
 | ---------- | ------------------------------------------------- | ------------------------ |
 | 1          | 63 000 PrIMuS incipits                            | 1 000 PrIMuS incipits    |
 | 2          | 63 000 synthetic incipits                         | 1 000 synthetic incipits |
 | 3          | 31 500 PrIMuS incipits, 31 500 synthetic incipits | 1 000 PrIMuS incipits    |
+| 4          | 63 000 PrIMuS incipits, 63 000 synthetic incipits | 1 000 PrIMuS incipits    |
 
-First experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits, since the evaluation will also be performed on real-world music. The second experiment validaates on synthetic incipits, because we wanted to simulate a scenario where we don't have access to real-world incipits.
+First experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits, since the evaluation will also be performed on real-world music. The second experiment validaates on synthetic incipits, because we wanted to simulate a scenario where we don't have access to real-world incipits. The fourth experiment is the same as the third one, only utilizing the whole PrIMuS dataset as is available to us.
 
-We trained each experiment for 20 epochs and took the model with lowest edit distance, averaged over the validation dataset.
+We trained each experiment for 20 epochs (except for the fourth that has been trained for only 10 epochs) and took the model with the lowest edit distance, averaged over the validation dataset.
 
     graphs of the validation & training edit distances from the tensorboard
 
@@ -854,6 +857,7 @@ Here are the resulting symbol error rates, averaged over the entire validation d
 | 1          | 0.34              |
 | 2          | 0.28              |
 | 3          | 0.26              |
+| 4          | 0.??              |
 
 It seems that training on synthetic data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Synthetic data is probably better than real-world data simply because all the tokens are represented equally. The discussion on language model is more complicated and is explored [in a separate section](#123).
 
@@ -864,8 +868,9 @@ In [section xyz](#xyz) we proposed a set of metrics, intended to give us insight
 | 1          | 0.44     | 0.42         | 0.30          | 0.26              | 0.21           |
 | 2          | 0.37     | 0.34         | 0.28          | 0.25              | 0.17           |
 | 3          | 0.34     | 0.32         | 0.24          | 0.21              | 0.16           |
+| 3          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
 
-When we compare the *ITER_RAW*, *ITER_TRAINED* and *ITER_SLURLESS*, we can see that reducing our focus to only trained tokens helps slightly, although it's not as big of an impact as I expected. Considerably larger difference is when we remove slur tokens. This confirms, what can be seen by looking manually at the predictions the model makes. There are a lot of mistakes related to slur classification. This might be caused by the fact that the engraving system does not capture all the variability that exists in the real world with regards to slur engraving.
+When we compare the *ITER_RAW*, *ITER_TRAINED* and *ITER_SLURLESS*, we can see that reducing our focus to only trained tokens helps slightly, although it's not as big of an impact as we expected. Considerably larger difference happens when we remove slur tokens. This confirms, what can be seen by looking manually at the predictions the model makes. There are a lot of mistakes related to slur classification. This might be caused by the fact that the engraving system does not capture all the variability that exists in the real world with regards to slur engraving.
 
 Now that we know the experiment 3 performed the best, we will take a closer look at it. Here is a table of metrics for each evaluation page (averaged over all staves in that page):
 
@@ -900,9 +905,9 @@ We can do an average for each writer and compare the results to the style of the
 | 17     | 0.28 | regular, round noteheads                        |
 | 49     | 0.32 | worse, dash noteheads                           |
 
-The first four writers are very much comparable, but the writer 49 has the worst handwriting of all the writers an he eded up last, as expected.
+The first four writers are very much comparable, but the writer 49 has the worst handwriting of all the writers an he ended up last, as expected.
 
-Similarly we can average over each music page:
+Similarly, we can average over each page:
 
 | Page | SER  | Notes                                                |
 | ---- | ---- | ---------------------------------------------------- |
@@ -915,7 +920,7 @@ Similarly we can average over each music page:
 | 11   | 0.41 | `?` token                                            |
 
 
-Pages 9 and 11 ended up last, because they are only present for writer 49, who ended up as the worst writer. Page 3 is very interesting. It is the only page, that can be fully encoded using Mashcima encoding and all the smybols it contains can be engraved using the Mashcima engraving system. It is, however, also the simplest page in that it does not contain any complicated expressions and contains only few slurs. This is supported by the fact that page 5 ended up also very well and the page 5 is very comparable in its layout and complexity to the page 3.
+Pages 9 and 11 ended up last, because they are only present for writer 49, who ended up as the worst writer. Page 3 is very interesting. It is the only page, that can be fully encoded using Mashcima encoding and all the smybols it contains can be engraved using the Mashcima engraving system. It is, however, also the simplest page in that it does not contain any complicated expressions and contains only a few slurs. This is supported by the fact that page 5 ended up with also very low error and the page 5 is very much comparable in its layout and complexity to the page 3.
 
 
 ### Language model
@@ -944,7 +949,7 @@ uniquely identifies, what pitches those accidentals have. For example, when ther
     (01 correct (hopefully), 02 wrong (hopefully), 03 correct)
 
 
-## Comparison to other work
+## Comparison to other works
 
 <!--
 - the baseline paper - how we compare
@@ -957,6 +962,25 @@ uniquely identifies, what pitches those accidentals have. For example, when ther
 ??? CO VŠECHNO Z TOHO ČLÁNKU SI MŮŽU DOVOLIT SEM DÁT ???
 -->
 
+We wanted to make a comparison against the HMR baseline article (*link*), because our evaluation datasets overlap. Specifically, we share the page 3 for writer 13 and the page 1 for writer 17. We both use the symbol error rate metric, although there are many differences that need to be addressed. Their model classifies rythm and pitch separately, so both error rates are provided. There is also a combined error rate that treats the output symbols similar to our Mashcima encoding - having pitch and rythm in one token (this number should be analogous to ours). The last column shows our error rate, given by the experiment XXX.
+
+| Page  | Writer | Rythm SER | Pitch SER | Rythm + Pitch SER | Our SER |
+| ----- | ------ | --------- | --------- | ----------------- | ------- |
+| 1     | 17     | 0.528     | 0.349     | 0.592             | 0.??    |
+| 3     | 13     | 0.226     | 0.175     | 0.270             | 0.??    |
+
+You can see, that our model has much smaller error rate, but we have to consider this result carefully. Their model does not use the CTC loss and the output encoding is very different. While our model might output a sequence of length 50, their model produces sequence of the same length as the width of the input image, that is in the order of hundreds to a thousand sequence items. Also their encoding requires perfect alignment. If the model transitions between output classes at slightly different time-steps then the gold data, it produces a lot of error, even though when collapsed, the resulting sequence is the same. And given the temporal resolution, this might contribute a lot.
+
+More fair comparison would be a qualitative one. Luckily the paper provides qualitative comparison of one staff from the page 3 of their model against a commercial software called PhotoScore (https://www.neuratron.com/photoscore.htm). We can add a prediction by our model and compare all three. Note that the image has been produced by manually engraving the predicted Mashcima annotation.
+
+    image containing the qualitative comparison p03 w13
+
+You can see, that the difference is not as pronounced, although this staff is one of the simpler ones. There is, however, also a qualitative comparison on a staff from the page 1:
+
+    image containing the qualitative comparison p01 w17
+
+It should also be noted, that each model uses different input resolution. The model from HMR article normalizes to height of 100 pixels, whereas ours normalizes to only 64 pixels. This might be a disadvantage to us. Also our model cannot read chords by design, but theirs can. This might very well be required for some task and it would make our model unusable. Their model can also detect presence of dynamics and text.
+
 
 ## Evaluating on Printed PrIMuS incipits
 
@@ -964,7 +988,7 @@ We also wanted to try, how would our model perform on printed music. Models by o
 
 | SER  | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
 | ---- | -------- | ------------ | ------------- | ----------------- | -------------- |
-| 0.76 | 0.79     | 0.79         | 0.75          | 0.74              | 0.71           |
+| 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
 
 You can see, that the performance is not very impressive. I did expect the error rate to be high, but not that high. Although it is understandable, because the printed music is very different to the handwritten. It would be interesting to also train on printed images in the future. This error rate would go down, but maybe the CVC-MUSCIMA error rate would go down as well.
 
@@ -982,7 +1006,7 @@ Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expect
 -->
 
 
-# Conclusion and Future Work
+# Conclusion and Future Works
 
 > - anotace a generátor:
 >   - rozšíření barlines (:|: |: :|, ||) a spoustu dalších symbolů (trill, fermata)
