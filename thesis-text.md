@@ -1,3 +1,4 @@
+<!--
 # Some Links
 
 Medvěd: https://mj.ucw.cz/vyuka/bc/
@@ -8,7 +9,7 @@ From Optical Music Recognition to Handwritten Music Recognition: A baseline: htt
 Handwritten Music Recognition for Mensural notation with convolutional recurrent neural networks: https://www.sciencedirect.com/science/article/abs/pii/S0167865519302338
 
 HTR (TU Wien): https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742
-
+-->
 
 # Abstract
 
@@ -61,16 +62,19 @@ Image preprocessing nebyl implementován, máme už binarizovaný vstup -->
 
 The thesis assignment states that output of our model will be a MusicXML file. We quickly realized that the problem is far larger then anticipated and so we focused on the core features only. Similarly the model input is not a plain photo or scan. It is already preprocessed and binarized. This problem has already been solved during the creation of the CVC-MUSCIMA dataset (http://www.cvc.uab.es/cvcmuscima/index_database.html), therefore we didn't tackle it either.
 
+<!-- odkaz na github -->
+Also there's a Github repository containing all the source code and text of this thesis at https://github.com/Jirka-Mayer/BachelorThesis. There's also a release tag corresponding to the time this thesis was submitted and it contains all the trained models for download.
+
 
 ## Thesis outline
 
-**Chapter 1:** Proč end-to-end, proč RCNN+CTC, výhody, nevýhody, viz log - proces vymýšlení, vícekanálová CTC, problémy
+**Chapter 1:** This chapter describes the specific model we decide to use for our OMR task. It discusses traditional methods and how deep neural networks help us simplify the process. It describes models other people used for similar tasks and how we've been influenced by them.
 
-**Chapter 2:** Reprezentace výstupu sítě (Mashcima representation)
+**Chapter 2:** This chapter mainly describes the Mashcima music encoding - the encoding we used for our model. It describes how it relates to the PrIMuS agnostic encoding, and why we made certain decisions regarding its design.
 
-**Chapter 3:** Engraving system Mashcima, jak funguje, jakou má strukturu
+**Chapter 3:** This chapter talks about the Mashcima engraving system. Why we developed this system and what problem it solves. How it works, what are its limitations and how it can be extended.
 
-**Chapter 4:** Experiments and results (jak vypadají experimenty, jak dopadly)
+**Chapter 4:** This chapter describes experiments we performed. These experiments aim to measure performance of our approach and test hypotheses postulated in previous chapters. We will also attempt to compare our results to other similar works.
 
 
 # Related Work
@@ -108,17 +112,7 @@ We will attempt to compare our model to the one from this article. The compariso
 
 # Deep Neural Network
 
-<!--
-> Tradiční systémy používají pipeline
-
-> deep NN spojují celou pipeline do jednoho celku, learned features
-
-> CTC umožňuje neřešit alignment, snazší anotace
-
-> konkrétní architektura mojí sítě (tabulka) + hypotéza o dropout vrstvě
--->
-
-This chapter describes the specific model we decide to use for our OMR task. It discusses traditional methods and how deep neural networks help us simplify the process. It describes models other people used for similar tasks and how we've been influenced by them.
+This chapter talks mainly about the model we decided to use. First we describes the full pipeline of a traditional OMR system. Many of these steps are shared between traditional and deep learning approaches. Then we will talk about the deep learning approaches that can be taken. Neural networks can replace parts of a traditional pipeline, or they can be used in an end-to-end setting, where the neural network replaces the most difficult core of the pipeline. We will describe our architecture consisting of a convolutional block, recurrent block and the connectionist temporal classification (CTC) loss function. Following sections describe in more detail what a neural network is and how the individual blocks of our model work internally. The last section explains how CTC works and what are its pros and cons, compared to the approach described in the HMR baseline article (*link*).
 
 
 ## Traditional approaches
@@ -226,19 +220,7 @@ The HMR baseline article (*link*) opted not to use CTC and performed manual alig
 
 # Music Representation
 
-<!--
-    - Inspirováno Primusem, ale drobné změny
-    - proč agnostic a ne semantic
-        - menší abeceda, jednodušší generátor mashcima
-    - míň ukecaný než u primusu, aby se dalo lépe anotovat ručně - vizuelní podobnost
-    - symetrické - pozice 0 je uprostřed
-    - Co se generuje vs. co lze anotovat
-    - Pitch information
-    - Attachments
-    - Jak lze rozšířit do budoucna (dynamika, akordy) ... tohle ale spíš do závěru tady jen odkaz
--->
-
-This chaptes explores how the music is represented within this thesis. It looks at the encodings devised for the PrIMuS dataset and how they have been modified to produce our Mashcima music encoding. Then we explore how this encoding can be used for annotating datasets and how it can be extended in the future.
+This chaptes explores how music is represented within this thesis. It looks at the encodings devised for the PrIMuS dataset and how they've been modified to produce our Mashcima music encoding. Then we explore how this encoding can be used for annotating datasets and how it can be extended in the future.
 
 All the encodings explored in this chapter are made for a model that produces a sequence of tokens. An encoding then defines a specific set of tokens and describes how they map onto the musical symbols. In the context of a neural network with a CTC loss function, we take all the tokens of an encoding and represent them as the individual classifier classes. How the tokens get indexed and how the blank symbol is represented is considered an implementation detail of the neural network and is not covered in the encoding specification.
 
@@ -487,7 +469,7 @@ Text (like lyrics and tempo) is also ignored. It is not encoded by even the `?` 
 
 # Engraving System
 
-This chapter talks about the Mashcima engraving system. Why we developed this system and what problem it solves. How it works, what are its limitations and how it can be extended.
+This chapter describes the Mashcima engraving system we developed. We created a custom engraving system for handwritten music to serve as an advanced data augmentation tool. We opted to write a new system from scratch, because of the flexibility we needed. We will talk about the specific requirements for the engraving system. We will briefly overview the inner workings of the system - how it understands the input (Mashcima encoding), what are the basic building blocks from which a staff image is engraved, what are the most important events that happen during engraving. We will talk about shortcommings of the system and how it could be extended in the future.
 
 
 ## Why custom engraving system
@@ -596,7 +578,7 @@ Adding chords is an interesting problem, I think the current system architecture
 
 # Experiments and Results
 
-This chapter describes experiments we performed. These experiments aim to measure performance of our approach and test hypotheses postulated in previous chapters.
+This chapter focuses on experiments we performed. We will first describe the training and evaluation data. How it was chosen, where it comes from and in the case of evaluation data, also the manual annotation process. Then we will talk about the symbol error rate (SER), a metric used for evaluation, as well as additional metrics we propose to understand mistakes our model makes. We will desribe the training and evaluation process in detail and provide values for all hyperparameters. We will describe setup for each experiment and the explore the results from many perspectives. Finally, we will compare our results to the results in the HMR baseline article (*link*).
 
 
 ## Training data
@@ -748,12 +730,6 @@ There are many trills or accents throughout the pages. Those are not in the trai
 
 ## Evaluation metrics
 
-<!--
-- we evaluate the output = token sequence against a token sequence
-- describe SER = normalized levenshtein
-- sketch out the problem of comparison when removing tokens ... "important tokens"
--->
-
 Now that we have a model producing some token sequences and we have our gold sequences, we need a way to measure the model performance. There are basically three goals for these measurements:
 
 - Compare the model against itself to track improvements.
@@ -844,12 +820,6 @@ We trained each experiment for 20 epochs (except for the fourth that has been tr
 
 ## Results
 
-<!--
-- tabulka výsledků (pro každý experiment, pro každého přepisovatele, pro každé dílo)
-- jak se SER chová když neřeším legato, attachmenty, pitche, ...
-- diskuze nad language modelem a porovnání experimentů (+regularizace šumem)
--->
-
 Here are the resulting symbol error rates, averaged over the entire validation dataset:
 
 | Experiment | Symbol error rate |
@@ -925,12 +895,6 @@ Pages 9 and 11 ended up last, because they are only present for writer 49, who e
 
 ### Language model
 
-<!--
-- language model má vliv, ale ne tak zásadní. Například se naučil nevyrábět nedokončené beamy (když splete první notu, tak z "e= =e= =e" vyrobí "q e= =e", ačkoliv prostřední nota má trámec na obě strany)
-- stejně tak se naučí že jeden křížek po klíči má správnou hodnotu i když je nakreslený špatně
-     (tzn. proto je dobré trénovat jak na generovaných, tak na primusu)
--->
-
 When comparing results of training on real-world data vs. synthetic data, it is strange that pure synthetic data outperforms purely real-world data. But it probably has to do with the fact, that the synthetic dataset is balanced with respect to the individual output class abundance. The learned language model of real-world data helps the first experiment, but it's not nearly enough to beat the benefits of a balanced dataset for the second experiment.
 
 This idea is supported by the fact that the third experiment beats both of the first two. It can benefit from both a balanced dataset and from learning a language model.
@@ -950,17 +914,6 @@ uniquely identifies, what pitches those accidentals have. For example, when ther
 
 
 ## Comparison to other works
-
-<!--
-- the baseline paper - how we compare
-- is the comparison fair? (different vocabulary, different token density)
-    - e.g. dynamics? Text around the staff? ... popsat co všechno může být nefér a pak se podívat, jak moc je to reálně nefér
-    - ALE můžu vzít ten jeden staff co tam mají s obrázkem a přidat můj vysledek
-- what are the numbers for commercial software from that paper?
-- qualitative comparison on the staff from page 003
-
-??? CO VŠECHNO Z TOHO ČLÁNKU SI MŮŽU DOVOLIT SEM DÁT ???
--->
 
 We wanted to make a comparison against the HMR baseline article (*link*), because our evaluation datasets overlap. Specifically, we share the page 3 for writer 13 and the page 1 for writer 17. We both use the symbol error rate metric, although there are many differences that need to be addressed. Their model classifies rythm and pitch separately, so both error rates are provided. There is also a combined error rate that treats the output symbols similar to our Mashcima encoding - having pitch and rythm in one token (this number should be analogous to ours). The last column shows our error rate, given by the experiment XXX.
 
@@ -998,14 +951,6 @@ You can see, that the performance is not very impressive. I did expect the error
 Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expected, because we filter out incipits that can be engraved by Mashcima.
 
 
-## Dropout layer importance
-
-<!--
-- popiš problém s dropoutem, jak to blblo, jak jsi to řešil, jak jsi zjistil,
-    že by mohl pomoct dropout a jak pak pomohl
--->
-
-
 # Conclusion and Future Works
 
 > - anotace a generátor:
@@ -1015,3 +960,12 @@ Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expect
 >   - rozšíření na text kolem not (kvůli regularizaci), e.g. "andante", "T=180", ...
 > - použít úplně jinačí model - zkombinovat baseline paper a můj generátor
 > - nebo vypiplat generátor a postavit na jeho základě novej dataset
+
+
+# Appendix
+
+## Conversion table between PrIMuS agnostic and Mashcima encoding
+
+> - describe the issues faced
+> - generic conversion table
+> - link code that does the conversion
