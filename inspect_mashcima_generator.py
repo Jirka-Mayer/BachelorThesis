@@ -27,6 +27,7 @@ def inspect(generator, samples=10):
 
         print(annotation)
         plt.imshow(img)
+        #plt.savefig("test_1.pdf", dpi=300, bbox_inches="tight")
         plt.show()
 
 

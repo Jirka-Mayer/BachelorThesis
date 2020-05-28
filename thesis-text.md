@@ -112,7 +112,7 @@ We will attempt to compare our model to the one from this article. The compariso
 
 # Deep Neural Network
 
-This chapter talks mainly about the model we decided to use. First we describes the full pipeline of a traditional OMR system. Many of these steps are shared between traditional and deep learning approaches. Then we will talk about the deep learning approaches that can be taken. Neural networks can replace parts of a traditional pipeline, or they can be used in an end-to-end setting, where the neural network replaces the most difficult core of the pipeline. We will describe our architecture consisting of a convolutional block, recurrent block and the connectionist temporal classification (CTC) loss function. Following sections describe in more detail what a neural network is and how the individual blocks of our model work internally. The last section explains how CTC works and what are its pros and cons, compared to the approach described in the HMR baseline article (*link*).
+This chapter talks mainly about the model we decided to use. First we describe the full pipeline of a traditional OMR system. Many of these steps are shared between traditional and deep learning approaches. Then we will talk about the deep learning approaches that can be taken. Neural networks can replace parts of a traditional pipeline, or they can be used in an end-to-end setting, where the neural network replaces the most difficult core of the pipeline. We will describe our architecture consisting of a convolutional block, recurrent block and the connectionist temporal classification (CTC) loss function. Following sections describe in more detail what a neural network is and how the individual blocks of our model work internally. The last section explains how CTC works and what are its pros and cons, compared to the approach described in the HMR baseline article (*link*).
 
 
 ## Traditional approaches
@@ -705,7 +705,7 @@ Lastly we want to show a frequency table of the most common tokens in the evalua
 
 Although the Mashcima encoding attempts to not be ambiguous, there were some places where I had to make some decisions regarding undefined situations. This section goes over these situations.
 
-**Writer 17, Page 1:** The last three measures contain nested slurs. These cannot be represented, so I chose to represent slur beginnings and slur endings as they can be seen in the page. One note cannot have two slur beginings, so only one is annotated. The very last slur is maybe not a slur, but some pitch articulation symbol. I annotated it as a slur continuing onto the next staff.
+**Page 1:** The last three measures contain nested slurs. These cannot be represented, so I chose to represent slur beginnings and slur endings as they can be seen in the page. One note cannot have two slur beginings, so only one is annotated. The very last slur is maybe not a slur, but some pitch articulation symbol. I annotated it as a slur continuing onto the next staff.
 
     image
 

@@ -1,0 +1,12 @@
+*.log
+*.dvi
+*.aux
+*.toc
+*.lof
+*.lot
+*.out
+*.bbl
+*.blg
+*.xmpi
+
+*.pdf

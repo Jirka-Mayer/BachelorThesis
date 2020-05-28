@@ -1,0 +1,7 @@
+% Metadata to be stored in PDF, see documentation of the pdfx package for more details.
+
+\Author{Jiří Mayer}
+\Title{Optical Music Recognition using Deep Neural Networks}
+\Keywords{optical music recognition\sep handwritten music recognition\sep deep neural network\sep  muscima++\sep primus}
+\Subject{Optical music recognition is a challenging field similar in many ways to optical text recognition. It brings, however, many challenges that traditional pipeline-based recognition systems struggle with. The end-to-end approach has proven to be superior in the domain of handwritten text recognition. We tried to apply this approach to the field of OMR. Specifically, we focused on handwritten music recognition. To resolve the lack of training data, we developed an engraving system for handwritten music called Mashcima. This engraving system is successful at mimicking the style of the CVC-MUSCIMA dataset. We evaluated our model on a portion of the CVC-MUSCIMA dataset and the approach seems to be promising.}
+\Publisher{Charles University}
