@@ -827,7 +827,7 @@ Here are the resulting symbol error rates, averaged over the entire validation d
 | 1          | 0.34              |
 | 2          | 0.28              |
 | 3          | 0.26              |
-| 4          | 0.??              |
+| 4          | 0.25              |
 
 It seems that training on synthetic data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Synthetic data is probably better than real-world data simply because all the tokens are represented equally. The discussion on language model is more complicated and is explored [in a separate section](#123).
 
@@ -838,42 +838,51 @@ In [section xyz](#xyz) we proposed a set of metrics, intended to give us insight
 | 1          | 0.44     | 0.42         | 0.30          | 0.26              | 0.21           |
 | 2          | 0.37     | 0.34         | 0.28          | 0.25              | 0.17           |
 | 3          | 0.34     | 0.32         | 0.24          | 0.21              | 0.16           |
-| 3          | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3          | 0.33     | 0.31         | 0.23          | 0.21              | 0.16           |
 
 When we compare the *ITER_RAW*, *ITER_TRAINED* and *ITER_SLURLESS*, we can see that reducing our focus to only trained tokens helps slightly, although it's not as big of an impact as we expected. Considerably larger difference happens when we remove slur tokens. This confirms, what can be seen by looking manually at the predictions the model makes. There are a lot of mistakes related to slur classification. This might be caused by the fact that the engraving system does not capture all the variability that exists in the real world with regards to slur engraving.
 
-Now that we know the experiment 3 performed the best, we will take a closer look at it. Here is a table of metrics for each evaluation page (averaged over all staves in that page):
+In a previous [section on evaluation](#xyz) we mentioned, that the prediction, before being evaluated, is repaired by a few rules (attachment sorting, barline trimming). The following table shows how much impact does the repair have on the error rate:
+
+| Experiment | Raw SER | Repaired prediction SER |
+| ---------- | ------- | ----------------------- |
+| 1          | 0.??    | 0.34                    |
+| 2          | 0.??    | 0.28                    |
+| 3          | 0.??    | 0.26                    |
+| 4          | 0.??    | 0.25                    |
+
+Now that we know the experiment 4 performed the best, we will take a closer look at it. Here is a table of metrics for each evaluation page (averaged over all staves in that page):
 
 | Page | Writer | SER  | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
 | ---- | ------ | ---- | -------- | ------------ | ------------- | ----------------- | -------------- |
-| 2    | 13     | 0.19 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 13     | 0.11 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 16   | 13     | 0.29 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 1    | 17     | 0.28 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 2    | 20     | 0.26 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 20     | 0.09 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 16   | 20     | 0.31 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 2    | 34     | 0.24 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 34     | 0.05 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 16   | 34     | 0.32 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 2    | 41     | 0.21 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 41     | 0.15 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 16   | 41     | 0.27 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 49     | 0.27 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 5    | 49     | 0.18 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 9    | 49     | 0.41 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 11   | 49     | 0.41 | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 2    | 13     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 13     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 16   | 13     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 1    | 17     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 2    | 20     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 20     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 16   | 20     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 2    | 34     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 34     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 16   | 34     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 2    | 41     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 41     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 16   | 41     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 3    | 49     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 5    | 49     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 9    | 49     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 11   | 49     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
 
 We can do an average for each writer and compare the results to the style of their handwriting:
 
 | Writer | SER  | Handwriting style                               |
 | ------ | ---- | ----------------------------------------------- |
-| 13     | 0.20 | regular, round noteheads                        |
-| 34     | 0.21 | regular, round noteheads, slanted               |
-| 41     | 0.21 | beautiful, round noteheads                      |
-| 20     | 0.22 | regular, dash noteheads                         |
-| 17     | 0.28 | regular, round noteheads                        |
-| 49     | 0.32 | worse, dash noteheads                           |
+| 13     | 0.?? | regular, round noteheads                        |
+| 34     | 0.?? | regular, round noteheads, slanted               |
+| 41     | 0.?? | beautiful, round noteheads                      |
+| 20     | 0.?? | regular, dash noteheads                         |
+| 17     | 0.?? | regular, round noteheads                        |
+| 49     | 0.?? | worse, dash noteheads                           |
 
 The first four writers are very much comparable, but the writer 49 has the worst handwriting of all the writers an he ended up last, as expected.
 
@@ -881,13 +890,13 @@ Similarly, we can average over each page:
 
 | Page | SER  | Notes                                                |
 | ---- | ---- | ---------------------------------------------------- |
-| 3    | 0.13 | perfect                                              |
-| 5    | 0.18 | trills                                               |
-| 2    | 0.26 | trills, grace notes                                  |
-| 1    | 0.28 | triplets, fermata, rests in beamed groups            |
-| 16   | 0.30 | beamed notes with empty noteheads, accents           |
-| 9    | 0.41 | `?` token, fermata                                   |
-| 11   | 0.41 | `?` token                                            |
+| 3    | 0.?? | perfect                                              |
+| 5    | 0.?? | trills                                               |
+| 2    | 0.?? | trills, grace notes                                  |
+| 1    | 0.?? | triplets, fermata, rests in beamed groups            |
+| 16   | 0.?? | beamed notes with empty noteheads, accents           |
+| 9    | 0.?? | `?` token, fermata                                   |
+| 11   | 0.?? | `?` token                                            |
 
 
 Pages 9 and 11 ended up last, because they are only present for writer 49, who ended up as the worst writer. Page 3 is very interesting. It is the only page, that can be fully encoded using Mashcima encoding and all the smybols it contains can be engraved using the Mashcima engraving system. It is, however, also the simplest page in that it does not contain any complicated expressions and contains only a few slurs. This is supported by the fact that page 5 ended up with also very low error and the page 5 is very much comparable in its layout and complexity to the page 3.
