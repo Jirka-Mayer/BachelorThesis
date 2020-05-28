@@ -829,7 +829,7 @@ Here are the resulting symbol error rates, averaged over the entire validation d
 | 3          | 0.26              |
 | 4          | 0.25              |
 
-It seems that training on synthetic data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Synthetic data is probably better than real-world data simply because all the tokens are represented equally. The discussion on language model is more complicated and is explored [in a separate section](#123).
+It seems that training on synthetic data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Synthetic data is probably better than real-world data simply because all the tokens are represented equally. The discussion on language model is more complicated and is explored [in a separate section](#123). The experiment 4 is slightly better then the experiment 3, because it has twice as much data to train on.
 
 In [section xyz](#xyz) we proposed a set of metrics, intended to give us insight into the mistakes the model makes:
 
@@ -846,43 +846,45 @@ In a previous [section on evaluation](#xyz) we mentioned, that the prediction, b
 
 | Experiment | Raw SER | Repaired prediction SER |
 | ---------- | ------- | ----------------------- |
-| 1          | 0.??    | 0.34                    |
-| 2          | 0.??    | 0.28                    |
-| 3          | 0.??    | 0.26                    |
-| 4          | 0.??    | 0.25                    |
+| 1          | 0.34    | 0.34                    |
+| 2          | 0.28    | 0.28                    |
+| 3          | 0.26    | 0.26                    |
+| 4          | 0.25    | 0.25                    |
+
+You can see, that there's almost no difference. The repairs were indeed disabled, its just that the performance difference was so minor, that the resulting average is the same.
 
 Now that we know the experiment 4 performed the best, we will take a closer look at it. Here is a table of metrics for each evaluation page (averaged over all staves in that page):
 
 | Page | Writer | SER  | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
 | ---- | ------ | ---- | -------- | ------------ | ------------- | ----------------- | -------------- |
-| 2    | 13     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 13     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 16   | 13     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 1    | 17     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 2    | 20     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 20     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 16   | 20     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 2    | 34     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 34     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 16   | 34     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 2    | 41     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 41     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 16   | 41     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 3    | 49     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 5    | 49     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 9    | 49     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
-| 11   | 49     | 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 2    | 13     | 0.16 | 0.18     | 0.17         | 0.17          | 0.14              | 0.12           |
+| 3    | 13     | 0.12 | 0.13     | 0.13         | 0.07          | 0.06              | 0.04           |
+| 16   | 13     | 0.30 | 0.42     | 0.40         | 0.33          | 0.27              | 0.21           |
+| 1    | 17     | 0.28 | 0.37     | 0.31         | 0.26          | 0.23              | 0.16           |
+| 2    | 20     | 0.26 | 0.32     | 0.30         | 0.27          | 0.24              | 0.14           |
+| 3    | 20     | 0.11 | 0.12     | 0.12         | 0.07          | 0.06              | 0.05           |
+| 16   | 20     | 0.32 | 0.48     | 0.44         | 0.27          | 0.22              | 0.15           |
+| 2    | 34     | 0.28 | 0.34     | 0.32         | 0.29          | 0.24              | 0.15           |
+| 3    | 34     | 0.06 | 0.07     | 0.07         | 0.03          | 0.03              | 0.02           |
+| 16   | 34     | 0.34 | 0.49     | 0.47         | 0.35          | 0.29              | 0.19           |
+| 2    | 41     | 0.23 | 0.27     | 0.25         | 0.24          | 0.22              | 0.14           |
+| 3    | 41     | 0.14 | 0.16     | 0.16         | 0.07          | 0.07              | 0.06           |
+| 16   | 41     | 0.28 | 0.41     | 0.37         | 0.29          | 0.23              | 0.14           |
+| 3    | 49     | 0.29 | 0.33     | 0.33         | 0.24          | 0.24              | 0.21           |
+| 5    | 49     | 0.24 | 0.26     | 0.25         | 0.21          | 0.21              | 0.18           |
+| 9    | 49     | 0.42 | 0.61     | 0.59         | 0.36          | 0.35              | 0.33           |
+| 11   | 49     | 0.50 | 0.67     | 0.67         | 0.50          | 0.48              | 0.44           |
 
 We can do an average for each writer and compare the results to the style of their handwriting:
 
 | Writer | SER  | Handwriting style                               |
 | ------ | ---- | ----------------------------------------------- |
-| 13     | 0.?? | regular, round noteheads                        |
-| 34     | 0.?? | regular, round noteheads, slanted               |
-| 41     | 0.?? | beautiful, round noteheads                      |
-| 20     | 0.?? | regular, dash noteheads                         |
-| 17     | 0.?? | regular, round noteheads                        |
-| 49     | 0.?? | worse, dash noteheads                           |
+| 13     | 0.19 | regular, round noteheads                        |
+| 41     | 0.22 | beautiful, round noteheads                      |
+| 34     | 0.23 | regular, round noteheads, slanted               |
+| 20     | 0.23 | regular, dash noteheads                         |
+| 17     | 0.28 | regular, round noteheads                        |
+| 49     | 0.36 | worse, dash noteheads                           |
 
 The first four writers are very much comparable, but the writer 49 has the worst handwriting of all the writers an he ended up last, as expected.
 
@@ -890,14 +892,13 @@ Similarly, we can average over each page:
 
 | Page | SER  | Notes                                                |
 | ---- | ---- | ---------------------------------------------------- |
-| 3    | 0.?? | perfect                                              |
-| 5    | 0.?? | trills                                               |
-| 2    | 0.?? | trills, grace notes                                  |
-| 1    | 0.?? | triplets, fermata, rests in beamed groups            |
-| 16   | 0.?? | beamed notes with empty noteheads, accents           |
-| 9    | 0.?? | `?` token, fermata                                   |
-| 11   | 0.?? | `?` token                                            |
-
+| 3    | 0.14 | perfect                                              |
+| 2    | 0.23 | trills, grace notes                                  |
+| 5    | 0.24 | trills                                               |
+| 1    | 0.28 | triplets, fermata, rests in beamed groups            |
+| 16   | 0.31 | beamed notes with empty noteheads, accents           |
+| 9    | 0.42 | `?` token, fermata                                   |
+| 11   | 0.50 | `?` token                                            |
 
 Pages 9 and 11 ended up last, because they are only present for writer 49, who ended up as the worst writer. Page 3 is very interesting. It is the only page, that can be fully encoded using Mashcima encoding and all the smybols it contains can be engraved using the Mashcima engraving system. It is, however, also the simplest page in that it does not contain any complicated expressions and contains only a few slurs. This is supported by the fact that page 5 ended up with also very low error and the page 5 is very much comparable in its layout and complexity to the page 3.
 
@@ -924,12 +925,12 @@ uniquely identifies, what pitches those accidentals have. For example, when ther
 
 ## Comparison to other works
 
-We wanted to make a comparison against the HMR baseline article (*link*), because our evaluation datasets overlap. Specifically, we share the page 3 for writer 13 and the page 1 for writer 17. We both use the symbol error rate metric, although there are many differences that need to be addressed. Their model classifies rythm and pitch separately, so both error rates are provided. There is also a combined error rate that treats the output symbols similar to our Mashcima encoding - having pitch and rythm in one token (this number should be analogous to ours). The last column shows our error rate, given by the experiment XXX.
+We wanted to make a comparison against the HMR baseline article (*link*), because our evaluation datasets overlap. Specifically, we share the page 3 for writer 13 and the page 1 for writer 17. We both use the symbol error rate metric, although there are many differences that need to be addressed. Their model classifies rythm and pitch separately, so both error rates are provided. There is also a combined error rate that treats the output symbols similar to our Mashcima encoding - having pitch and rythm in one token (this number should be analogous to ours). The last column shows our error rate, given by the experiment 4.
 
 | Page  | Writer | Rythm SER | Pitch SER | Rythm + Pitch SER | Our SER |
 | ----- | ------ | --------- | --------- | ----------------- | ------- |
-| 1     | 17     | 0.528     | 0.349     | 0.592             | 0.??    |
-| 3     | 13     | 0.226     | 0.175     | 0.270             | 0.??    |
+| 1     | 17     | 0.528     | 0.349     | 0.592             | 0.28    |
+| 3     | 13     | 0.226     | 0.175     | 0.270             | 0.12    |
 
 You can see, that our model has much smaller error rate, but we have to consider this result carefully. Their model does not use the CTC loss and the output encoding is very different. While our model might output a sequence of length 50, their model produces sequence of the same length as the width of the input image, that is in the order of hundreds to a thousand sequence items. Also their encoding requires perfect alignment. If the model transitions between output classes at slightly different time-steps then the gold data, it produces a lot of error, even though when collapsed, the resulting sequence is the same. And given the temporal resolution, this might contribute a lot.
 
@@ -941,23 +942,25 @@ You can see, that the difference is not as pronounced, although this staff is on
 
     image containing the qualitative comparison p01 w17
 
+TODO: comment the second qualitative comparison
+
 It should also be noted, that each model uses different input resolution. The model from HMR article normalizes to height of 100 pixels, whereas ours normalizes to only 64 pixels. This might be a disadvantage to us. Also our model cannot read chords by design, but theirs can. This might very well be required for some task and it would make our model unusable. Their model can also detect presence of dynamics and text.
 
 
 ## Evaluating on Printed PrIMuS incipits
 
-We also wanted to try, how would our model perform on printed music. Models by other people are often pre-trained on printed music and then fine-tuned on handwritten images via transfer learning. Ours is different in that it has never seen an image of printed music. We already have code for parsing PrIMuS dataset and since the dataset contains images as well, we will use those. We just slightly preprocessed the images - inverted them, normalized and slightly scaled down to have dimensions comparable to what the model trained on. We used the model from experiment 3 since it performed the best. The evaluation was performed on 100 incipits that the model hasn't seen during training and these are the results:
+We also wanted to try, how would our model perform on printed music. Models by other people are often pre-trained on printed music and then fine-tuned on handwritten images via transfer learning. Ours is different in that it has never seen an image of printed music. We already have code for parsing PrIMuS dataset and since the dataset contains images as well, we will use those. We just slightly preprocessed the images - inverted them, normalized and slightly scaled down to have dimensions comparable to what our model trained on. We used the model from experiment 4 since it performed the best. The evaluation was performed on 100 incipits that the model hasn't seen during training and these are the results:
 
 | SER  | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
 | ---- | -------- | ------------ | ------------- | ----------------- | -------------- |
-| 0.?? | 0.??     | 0.??         | 0.??          | 0.??              | 0.??           |
+| 0.61 | 0.64     | 0.64         | 0.60          | 0.59              | 0.56           |
 
-You can see, that the performance is not very impressive. I did expect the error rate to be high, but not that high. Although it is understandable, because the printed music is very different to the handwritten. It would be interesting to also train on printed images in the future. This error rate would go down, but maybe the CVC-MUSCIMA error rate would go down as well.
+You can see, that the performance is not very impressive. We did expect the error rate to be high, but not that high. Although, it is understandable, because the printed music is very different to the handwritten. It would be interesting to also train on printed images in the future. This error rate would go down, but maybe the CVC-MUSCIMA error rate would go down as well.
 
     image of a printed staff and the prediction and the gold
     + maybe the same staff, engraved using Mashcima
 
-Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expected, because we filter out incipits that can be engraved by Mashcima.
+Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expected, because we filter out incipits that cannot be engraved by Mashcima.
 
 
 # Conclusion and Future Works
@@ -978,3 +981,8 @@ Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expect
 > - describe the issues faced
 > - generic conversion table
 > - link code that does the conversion
+
+<!--
+    TODO: describe all the parameters of Mashcima engraving system
+        (where randomness occurs)
+-->

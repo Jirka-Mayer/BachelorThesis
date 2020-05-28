@@ -86,12 +86,18 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
             for i, gold_annotation in enumerate(staves):
                 prediction = network.predict(staff_images[i])
 
-                # sort attachments, repair beams and stuff
-                repaired_prediction, warnings = repair_annotation(prediction)
+                PERFORM_REPAIR = True
 
-                # trim non-important barlines
-                repaired_prediction = trim_non_repeat_barlines(repaired_prediction)
-                gold_annotation = trim_non_repeat_barlines(gold_annotation)
+                if PERFORM_REPAIR:
+                    # sort attachments, repair beams and stuff
+                    repaired_prediction, warnings = repair_annotation(prediction)
+
+                    # trim non-important barlines
+                    repaired_prediction = trim_non_repeat_barlines(repaired_prediction)
+                    gold_annotation = trim_non_repeat_barlines(gold_annotation)
+                else:
+                    repaired_prediction = prediction
+                    warnings = []
 
                 # calculate metrics
                 item_metrics = _calculate_item_metrics(
