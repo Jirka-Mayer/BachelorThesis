@@ -220,7 +220,7 @@ The HMR baseline article (*link*) opted not to use CTC and performed manual alig
 
 # Music Representation
 
-This chaptes explores how music is represented within this thesis. It looks at the encodings devised for the PrIMuS dataset and how they've been modified to produce our Mashcima music encoding. Then we explore how this encoding can be used for annotating datasets and how it can be extended in the future.
+This chapter explores how music is represented in this thesis. It looks at the encodings devised for the PrIMuS dataset and how they've been modified to produce our Mashcima music encoding. Then we explore how this encoding can be used for annotating datasets and how it can be extended in the future.
 
 All the encodings explored in this chapter are made for a model that produces a sequence of tokens. An encoding then defines a specific set of tokens and describes how they map onto the musical symbols. In the context of a neural network with a CTC loss function, we take all the tokens of an encoding and represent them as the individual classifier classes. How the tokens get indexed and how the blank symbol is represented is considered an implementation detail of the neural network and is not covered in the encoding specification.
 
@@ -234,15 +234,15 @@ We can provide a short overview of the terms used in this chapter:
 
 ## PrIMuS agnostic encoding
 
-The PrIMuS dataset contains over 87 000 items, each with an image of the printed staff and then multiple files describing the music in that staff. There are two standard formats, namely Music Encoding Initiative format (MEI) and the Plaine and Easie code source. Then there are two on-purpouse encodings devised specifically for this dataset. These two encodings are what interests us.
+The PrIMuS dataset contains over 87 000 items, each with an image of the printed staff and then multiple files describing the music in that staff. There are two standard formats, namely Music Encoding Initiative format (MEI) and the Plaine and Easie code source. Then there are two on-purpose encodings devised specifically for this dataset. These two encodings are what interests us.
 
     figure containing a sample incipit
 
-The first of these two encodings is the *semantic encoding*. It represents what the musical symbols mean. Each symbol has a specific pitch that relies on the cleft at the begining of the staff. This makes the vocabulary much larger and any model using this encoding has take the clef into account when reading the symbols. It is however much easier to transform this encoding to some well known format like MusicXML, since these formats tend to represent the meaning of a score, not the score appearence.
+The first of these two encodings is the *semantic encoding*. It represents what the musical symbols mean. Each symbol has a specific pitch that relies on the cleft at the beginning of the staff. This makes the vocabulary much larger and any model using this encoding has taken the clef into account when reading the symbols. It is however much easier to transform this encoding to some well-known format like MusicXML since these formats tend to represent the meaning of a score, not the score appearance.
 
     semantic encoding of the incipit above
 
-The second encoding is the *agnostic encoding*. This encoding treats the staff visually as a specific positioning of specific symbols. It tries to capture what is in the staff visually, not what the symbols mean musically. This is comparable to a sentence being thought of as a sequence of letters, whereas the semantic encoding could be thought of as the specific sounds a written sentence represents. This makes the encoding harder to convert to a well known format acceptable by other music software. On the other hand this encoding is formal-enough to be easily converted to the semantic encoding, if read correctly. So this encoding lets the model do less work, therefore the model should do fewer mistakes.
+The second encoding is the *agnostic encoding*. This encoding treats the staff visually as a specific positioning of specific symbols. It tries to capture what is in the staff visually, not what the symbols mean musically. This is comparable to a sentence being thought of as a sequence of letters, whereas the semantic encoding could be thought of as the specific sounds a written sentence represents. This makes the encoding harder to convert to a well-known format acceptable by other music software. On the other hand, this encoding is formal-enough to be easily converted to the semantic encoding, if read correctly. So this encoding lets the model do less work, therefore the model should do fewer mistakes.
 
     agnostic encoding of the incipit above
 
@@ -276,14 +276,14 @@ The first symbol we need to encode is a note. A note has some duration and some 
 
 Combining duration information and pitch information into a single token actually ends up being a reasonable solution. That is because the concept of note duration can be extended to a concept of symbol type in general. This is because not only notes have pitches.
 
-The set of pitches we can choose from greatly impacts the vocabulary size. This is not a major issue, because the vocabulary size will still remain relatively small. Currently the vocabulary has around 550 tokens. The pitch range we choose spans from `-12` to `12` - that is from the fourth ledger line below the staff to the fourth ledger line above the staff.
+The set of pitches we can choose from greatly impacts the vocabulary size. This is not a major issue, because the vocabulary size will still remain relatively small. Currently, the vocabulary has around 550 tokens. The pitch range we choose spans from `-12` to `12` - that is from the fourth ledger line below the staff to the fourth ledger line above the staff.
 
-The pitch encoding is built such that it would be easy to understand for a non-musician. In western music notation, pitch of a note is represented by the vertical position of that note on the staff. An empty staff is composed of 5 stafflines. Mashcima encoding sets the middle staffline position to be zero. Going up, the first space is pitch `1` and the first line is pitch `2`. Going down, the first space is pitch `-1` and the first line is pitch `-2`.
+The pitch encoding is built such that it would be easy to understand for a non-musician. In western music notation, the pitch of a note is represented by the vertical position of that note on the staff. An empty staff is composed of 5 staff lines. Mashcima encoding sets the middle staff line position to be zero. Going up, the first space is pitch `1` and the first line is pitch `2`. Going down, the first space is pitch `-1` and the first line is pitch `-2`.
 
     image of rising half notes engraved using Mashcima
     with the corresponding tokens
 
-This pitch encoding has the advantage of being vertically symmetric, which speeds up the manual annotation process. First ledger line above the staff is pitch `6`, and the first ledger line below is pitch `-6`. Second property this system has is that pitches placed on lines are even and pitches placed in spaces are odd.
+This pitch encoding has the advantage of being vertically symmetric, which speeds up the manual annotation process. The first ledger line above the staff is pitch `6`, and the first ledger line below is pitch `-6`. The second property this system has is that pitches placed on lines are even and pitches placed in spaces are odd.
 
 
 ### Rests and barlines
@@ -303,9 +303,9 @@ The second most common symbol is probably a rest. A rest has duration, just like
 
 > Table shows tokens for all rests that can be represented in the Mashcima encoding.
 
-You may have noticed, that that there are two extra durations - longa and breve. Also there is missing the sixty-fourth rest. It all has to do with the fact that not all durations are used equally frequently. I based Mashcima on the CVC-MUSCIMA and MUSCIMA++ datasets. There is no occurence of longa or breve note in those datasets. There are, however, occurences of longa and breva rests. Similarly, sixty-fourth notes and rests are also not present. The vocabulary can luckily be extended to accomodate these symbols. See the section [X.Y.Z](#X.Y.Z) for more details.
+You may have noticed, that that there are two extra durations - longa and breve. Also, there is missing the sixty-fourth rest. It all has to do with the fact that not all durations are used equally frequently. I based Mashcima on the CVC-MUSCIMA and MUSCIMA++ datasets. There is no occurrence of longa or breve notes in those datasets. There are, however, occurrences of longa and breve rests. Similarly, sixty-fourth notes and rests are also not present. The vocabulary can luckily be extended to accommodate these symbols. See the section [X.Y.Z](#X.Y.Z) for more details.
 
-Now that we have notes and rests, we can start groupping them into measures (bars). A barline is represented by the "pipe" character (`|`). Barlines separate notes and rests into groups of same total duration. There are many types of barlines (double barline, repeat signs) and although they are used quite often, they have not yet been implemented into the Mashcima engraving system. This is simply because we wanted to see, whether our approach even works. These special barline types can be easily added in the future.
+Now that we have notes and rests, we can start grouping them into measures (bars). A barline is represented by the "pipe" character (`|`). Barlines separate notes and rests into groups of the same total duration. There are many types of barlines (double barline, repeat signs) and although they are used quite often, they have not yet been implemented into the Mashcima engraving system. This is simply because we wanted to see, whether our approach even works. These special barline types can be easily added in the future.
 
     staff with some rests and barlines
     with tokens below
@@ -317,11 +317,11 @@ There are some tokens that contain pitch information and some that do not. Since
 
 Generic tokens are not present in the vocabulary and cannot be produced by the model. They should also never appear in the gold data. They are, however, often used when analyzing a given token sequence.
 
-The only exception are tokens that don't contain pitch information (e.g. rests). They are considered to be their own generic token (i.e. the generic token for a quarter rest `qr` is still just `qr`).
+The only exception make tokens that don't contain pitch information (e.g. rests). They are considered to be their own generic token (i.e. the generic token for a quarter rest `qr` is still just `qr`).
 
 The vocabulary file (`app/vocabulary.py`) has helper methods for working with pitches:
 
-- `to_generic(token: str) -> str` Obtains generic version of a token, unless the given token is already generic.
+- `to_generic(token: str) -> str` Obtains generic version of a token unless the given token is already generic.
 - `get_pitch(token: str) -> Optional[int]` Obtains pitch of a token, or `None` if that token has no pitch.
 
 
@@ -329,7 +329,7 @@ The vocabulary file (`app/vocabulary.py`) has helper methods for working with pi
 
 It's often the case, that notes are decorated with symbols that slightly modify their meaning. Since these decorating symbols are bound to the note itself, we call them *attachments*. An attachment token is simply a token that belongs to some other non-attachment token.
 
-There are many kinds of musical symbols that behave as attachments:
+Many kinds of musical symbols behave as attachments:
 
 - **Accidentals** are symbols placed before a note and they modify their pitch by a semi-tone.
 - **Duration dots** are placed after a note and they extend the duration of a note.
@@ -341,7 +341,7 @@ You can see, that the term *attachment* is not a musical term and it describes m
 
 <!-- accidentals -->
 
-All of these attachments lack pitch information, since the pitch is stored in the note token. The only exception here are accidentals. Accidentals are special, because they need not be attached to a note. They can be standalone in a key signature. This means that they need pitch information. This creates some redundancy in the encoding; when a note has an accidental, they both should have the same pitch. This condition is not ideal, because it may cause the model to make unnecessary errors. It is however better, than having different tokens for standalone accidentals and attached accidentals.
+All of these attachments lack pitch information since the pitch is stored in the note token. The only exception here is accidentals. Accidentals are special because they need not be attached to a note. They can be standalone in a key signature. This means that they need pitch information. This creates some redundancy in the encoding; when a note has an accidental, they both should have the same pitch. This condition is not ideal, because it may cause the model to make unnecessary errors. It is however better than having different tokens for standalone accidentals and attached accidentals.
 
 | Mashcima token | Accidental              | Pitch   |
 | -------------- | ----------------------- | ------- |
@@ -360,7 +360,7 @@ Attachments come in two kinds:
 - **Before attachments** are placed before the target token
 - **After attachments** are placed after the target token
 
-By placement we mean placement in the token sequence. It may not correspond to the visual order of the symbols. The rule of thumb here is that tokens are ordered from left to right and from top to bottom. The problem is that some symbols may be both above and below a note, depending on the note pitch. Therefore we didn't make this into a strict rule and instead devised a specific ordering of the attachments:
+By placement, we mean placement in the token sequence. It may not correspond to the visual order of the symbols. The rule of thumb here is that tokens are ordered from left to right and from top to bottom. The problem is that some symbols may be both above and below a note, depending on the note pitch. Therefore we didn't make this into a strict rule and instead devised a specific ordering of the attachments:
 
 <!-- ordering -->
 
@@ -386,10 +386,10 @@ By placement we mean placement in the token sequence. It may not correspond to t
 
 > After attachments, properly ordered.
 
-Here are few notes regarding the ordering:
+Here are a few notes regarding the ordering:
 
 - Slurs are always the first/last attachment.
-- Some tokens are mutually exclusive, so are placed on the same level.
+- Some tokens are mutually exclusive, so they are placed on the same level.
 - There are many ornaments and this list is not exhaustive. It is meant to be extended in the future.
 - Not all symbols here can be engraved by Mashcima.
 - There can be many more tuplet numbers, only triplets are currently present.
@@ -397,9 +397,9 @@ Here are few notes regarding the ordering:
 
 ### Slurs
 
-Slurs and ties are one of the first symbols that make OMR complicated. Slur is a curved line going from one notehead to another. Notes that are under a slur should be played blended together without explicit note beginnings. Tie looks exactly like a slur, just the two notes it joins have the same pitch. This means the notes should be played as one long note. So the difference is only semantic, we will consider ties to be slurs.
+Slurs and ties are one of the first symbols that make OMR complicated. A slur is a curved line going from one notehead to another. Notes that are under a slur should be played blended without explicit note beginnings. A tie looks exactly like a slur, just the two notes it joins have the same pitch. This means the notes should be played as one long note. So the difference is only semantic, we will consider ties to be just like slurs.
 
-Mashcima encoding does not represents slurs explicitly, but it represents their beginings and ends. This is acomplished by two attachment tokens, `(` and `)`. The problem it creates is that sometimes it's impossible to pair beginings and ends properly. Therefore we can only annotate staves that don't contain nested slurs.
+Mashcima encoding does not represent slurs explicitly, but it represents their beginnings and ends. This is accomplished by two attachment tokens, `(` and `)`. The problem it creates is that sometimes it's impossible to pair beginnings and ends properly. Therefore we can only annotate staves that don't contain nested slurs.
 
 Slurs can also span from one staff to the next. When this happens, the slur ends at a barline. Therefore a barline can also act as a token, on which a slur can start or end.
 
@@ -408,29 +408,29 @@ Slurs can also span from one staff to the next. When this happens, the slur ends
 
 ### Beams
 
-Beamed notes pose simmilar problems as slurs, but they obey some additional constraints that make them easier to deal with. Beams are encoded from the perspective of a single note within the beamed group. Duration of this note depends only on the number of beams passing through its stem. We just need to distinguish the note from it's flag variant, therefore we add some information regarding the beam presence. The last problem is, that having a couple of beamed notes in a row does not tell us about the way the beams are groupped. Therefore we modify the beam presence information into two parts - beam ending and beam starting.
+Beamed notes pose similar problems as slurs, but they obey some additional constraints that make them easier to deal with. Beams are encoded from the perspective of a single note within the beamed group. The duration of this note depends only on the number of beams passing through its stem. We just need to distinguish the note from its flag variant, therefore we add some information regarding the beam presence. The last problem is, that having a couple of beamed notes in a row does not tell us about the way the beams are grouped. Therefore we modify the beam presence information into two parts - beam ending and beam starting.
 
 Therefore for a given note duration, we get three tokens, that represent all the possible beam situations:
 
     image of a sixteenth beamed group (s= =s= =s= =s e= =e)
 
-This, however, allows for nonsensical annotations to exist. We can create un-finished and non-started beams. For this reason there is the `repair_annotation` function in the file `app/vocabulary.py` that can repair such situations or validate correctness of an annotation.
+This, however, lets us create annotations that make no sense. We can create un-finished and non-started beams. For this reason, there is the `repair_annotation` function in the file `app/vocabulary.py` that can repair such situations or validate the correctness of an annotation.
 
 
 ### Key and time signatures
 
-Key signature is just a group of many accidentals, typically at the begining of a staff. These accidentals are not attached to any note, so they have special handling in the source code. They are not a problem from the annotaion point of view.
+A key signature is just a group of many accidentals, typically at the beginning of a staff. These accidentals are not attached to any note, so they have special handling in the source code. They are not a problem from the annotation point of view.
 
-Time signature is either a symbol C, or a pair of two numbers on top of each other. The standalone C symbol can be represented easily using the `time.C` token. A pair of numbers is represented by two tokens, e.g. `time.3 time.4`. Numbers have to be paired. Non-paired time number is considered an invalid annotation.
+A time signature is either a symbol C or a pair of two numbers on top of each other. The standalone C symbol can be represented easily using the `time.C` token. A pair of numbers is represented by two tokens, e.g. `time.3 time.4`. Numbers have to be paired. Non-paired time number is considered an invalid annotation.
 
     image of clef, time and key signatures
 
-Time signature numbers are also treated specially, since they always come in pairs.
+Time signature numbers are also treated specially since they always come in pairs.
 
 
 ### Clefs and repeats
 
-Clefs are encoded similar to rests, with the only difference of having a pitch assicoated. Not all pitches are allowed, though. There are three types of clefs (G, C, F). Each of these clefs has a set of pitches it can have.
+Clefs are encoded similarly to rests, with the only difference of having a pitch associated. Not all pitches are allowed, though. There are three types of clefs (G, C, F). Each of these clefs has a set of pitches it can have.
 
     image of all clefs
 
@@ -439,29 +439,29 @@ There are special barlines that mark a part of music to be repeated. These barli
 
 ## Differences to PrIMuS
 
-Mashcima encoding is very similar to the agnostic PrIMuS encoding, but there are some deliberate changes introduced. Mashcima encoding has on purpouse shorter token names. This aims to aid readability, when manually annotating. The goal is to fit one staff of tokens onto the screen. Common tokens, like quarter notes (`q5`), are also quick to get typed. We also decided to use characters that look like the musical symbols they encode (sharps `#5`, flats `b5`, barlines `|`).
+Mashcima encoding is very similar to the agnostic PrIMuS encoding, but there are some deliberate changes introduced. Mashcima encoding has on purpose shorter token names. This aims to aid readability when manually annotating. The goal is to fit one staff of tokens onto the screen. Common tokens, like quarter notes (`q5`), are also quick to get typed. We also decided to use characters that look like the musical symbols they encode (sharps `#5`, flats `b5`, barlines `|`).
 
-The pitch is also encoded differently. In PrIMuS agnostic encoding, every token has a pitch - even a barline. The pitch might not be useful, but it's present, to smplify working with the encoding. We decided to leave some tokens without pitch information. That complicates the code, but makes the annotation more user-friendly.
+The pitch is also encoded differently. In PrIMuS agnostic encoding, every token has a pitch - even a barline. The pitch might not be useful, but it's present, to simplify working with the encoding. We decided to leave some tokens without pitch information. That complicates the code but makes the annotation more user-friendly.
 
-Also the specific pitch values are different. PrIMuS indexes lines and spaces separately and the line zero is the first ledger line below the staff. We tried to improve on this by putting the line zero at the center of the staff. This makes the pitch values vertically symmetric. We also removed the separation of lines and spaces and we use just an integer value. That simplifies the code that deals with pitch information. This integer value is then odd in spaces and even on lines.
+Also, the specific pitch values are different. PrIMuS indexes lines and spaces separately and line zero is the first ledger line below the staff. We tried to improve on this by putting the line zero at the center of the staff. This makes the pitch values vertically symmetric. We also removed the separation of lines and spaces and we use just an integer value. That simplifies the code that deals with pitch information. This integer value is then odd in spaces and even on lines.
 
 
 ## Extensibility
 
-Because the CVC-MUSCIMA dataset contains such a wide range of symbols, we didn't want to create an encoding that would capture every possible symbol in the dataset. Most of these unusual symbols are present in only a few places and adding them to the encoding would make everything much more complicated, for little to no return. Therefore the Mashcima encoding contains the `?` token. This token should be placed into gold data whenever we encounter a symbol (or a group of symbols) that cannot be represented by our encoding. This `?` token acts as a marker, that we cannot fully represent specific place in the staff. It can then be used to filter out such bars or just to find such places if the encoding was ever extended in the future.
+Because the CVC-MUSCIMA dataset contains such a wide range of symbols, we didn't want to create an encoding that would capture every possible symbol in the dataset. Most of these unusual symbols are present in only a few places and adding them to the encoding would make everything much more complicated, for little to no return. Therefore the Mashcima encoding contains the `?` token. This token should be placed into gold data whenever we encounter a symbol (or a group of symbols) that cannot be represented by our encoding. This `?` token acts as a marker, that we cannot fully represent a specific place in the staff. It can then be used to filter out such bars or just to find such places if the encoding was ever extended in the future.
 
 <!--note durations-->
-As mentioned in previous sections, there are missing some note and rest durations. These can be easily added when needed. These new tokens would follow the rules that are posed onto all the current notes and rests.
+As mentioned in previous sections, there are missing some note and rest durations. These can be easily added when needed. These new tokens would follow the rules that are imposed onto all the current notes and rests.
 
 <!--dynamics-->
 <!--tuplets and other attachments-->
-Similarly there are many symbols that are not present in the encoding, but could be easily added. Dynamics cannot be encoded right now. They are ignored as if they wasn't present at all. They could be added as after attachments. Same applies to additional tuplets or simmilar ornaments.
+Similarly, many symbols are not present in the encoding but could be easily added. Dynamics cannot be encoded right now. They are ignored as if they weren't present at all. They could be added as *after attachments*. The same applies to additional tuplets or similar ornaments.
 
 <!--grace notes-->
-Special place have grace notes. They look like little notes, they do not affect the rythm and are considered an ornament attached to another note. PrIMuS agnostic encoding can represent them, but at the expense of adding a lot of additional tokens. We decided not to bloat our vocabulary with symbols that aren't very abundant in the CVC-MUSCIMA dataset. They are present in a few places in the evaluation dataset and are represented by the `?` token.
+Grace notes are special. They look like little notes, they do not affect the rhythm and are considered an ornament attached to another note. PrIMuS agnostic encoding can represent them but at the expense of adding a lot of additional tokens. We decided not to bloat our vocabulary with symbols that aren't very abundant in the CVC-MUSCIMA dataset. They are present in a few places in the evaluation dataset and are represented by the `?` token.
 
 <!--chords-->
-A chord is two or more notes played simultaneously. Currently there is no way of encoding simultaneous notes. Since chords usually share a stem, they could maybe be represented via after attachments. Maybe if we encoded the top-most note of a chord as a regular note and then added one "notehead" token for every remaining note, we could represent a chord. But there are problems with having multiple accidentals. Either way it would be interesting to explore in some future work.
+A chord is two or more notes played simultaneously. Currently, there is no way of encoding simultaneous notes. Since chords usually share a stem, they could maybe be represented via after attachments. Maybe if we encoded the top-most note of a chord as a regular note and then added one "notehead" token for every remaining note, we could represent a chord. But there are problems with having multiple accidentals. Either way, it would be interesting to explore in some future work.
 
 <!--text-->
 Text (like lyrics and tempo) is also ignored. It is not encoded by even the `?` token.
