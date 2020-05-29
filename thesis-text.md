@@ -937,10 +937,12 @@ You can see, that our model has much smaller error rate, but we have to consider
 More fair comparison would be a qualitative one. Luckily the paper provides qualitative comparison of one staff from the page 3 of their model against a commercial software called PhotoScore (https://www.neuratron.com/photoscore.htm). We can add a prediction by our model and compare all three. Note that the image has been produced by manually engraving the predicted Mashcima annotation.
 
     image containing the qualitative comparison p03 w13
+    do caption dát, že je to převzaté!
 
 You can see, that the difference is not as pronounced, although this staff is one of the simpler ones. There is, however, also a qualitative comparison on a staff from the page 1:
 
     image containing the qualitative comparison p01 w17
+    do caption dát, že je to převzaté!, odebrané modré rámečky
 
 TODO: comment the second qualitative comparison
 

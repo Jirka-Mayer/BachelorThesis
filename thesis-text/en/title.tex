@@ -2,6 +2,7 @@
 
 %%% SPECIMEN
 %%% Inscriptions at the opening page of the hard cover
+\iffalse % disable the hard cover page
 
 \pagestyle{empty}
 \hypersetup{pageanchor=false}
@@ -27,6 +28,7 @@ Faculty of Mathematics and Physics
 
 \newpage\openright
 
+\fi
 %%% NEMICEPS
 
 %%% Title page of the thesis
@@ -78,7 +80,9 @@ Prague \YearSubmitted
 %%% Here should be a bound sheet included -- a signed copy of the "bachelor
 %%% thesis assignment". This assignment is NOT a part of the electronic
 %%% version of the thesis. DO NOT SCAN.
+\iffalse % hide the red text
 \XXX{Bound into the introductory part must be the form with signed approval of the thesis topic (a photocopy suffices). This is not a~part of the electronic version of the thesis, do not scan!}
+\fi
 %%% PHDNO
 
 %%% A page with a solemn declaration to the bachelor thesis
@@ -146,7 +150,7 @@ Abstract:
 Keywords:
 \Keywords
 
-\XXX{This information must be stored as PDF meta-data, too. Please refer to the {\tt README} file.}
+%\XXX{This information must be stored as PDF meta-data, too. Please refer to the {\tt README} file.}
 \vss}
 
 \newpage

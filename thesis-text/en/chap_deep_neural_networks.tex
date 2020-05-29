@@ -1,10 +1,10 @@
-\chapter{Deep Neural Network}
+\chapter{Deep Neural Networks}
 \label{chap:DeepNeuralNetwork}
 
 This chapter talks mainly about the~model we decided to use. First, we describe the~full pipeline of a~traditional OMR system. Many of these steps are shared between traditional and deep learning approaches. Then we will talk about the~deep learning approaches that can be taken. Neural networks can replace parts of a~traditional pipeline, or they can be used in an~end-to-end setting, where the~neural network replaces the~most difficult core of the~pipeline. We will describe our architecture consisting of a~convolutional block, recurrent block, and the~connectionist temporal classification (CTC) loss function. The~following sections describe in more detail what a~neural network is and how the~individual blocks of our model work internally. The~last section explains how CTC works and what are its pros and cons, compared to the~approach described in the~HMR baseline article (\cite{HmrBaseline}).
 
 
-\section{Traditional approaches}
+\section{Traditional Approaches}
 
 A~musical score intended for OMR typically begins as a~raster image. This image is a~photo or a~scan of a~real-world sheet of paper. The~image needs to be prepared first. We need to find the~sheet of paper in the~image and correct any rotation or~perspective distortion. Scanned images are easier to~prepare because they don't contain any perspective deformation and lighting artifacts. Searching for the~paper in the~image can be performed using many approaches, e.g. by using maximally stable extremal regions (\cite{MSER}). We can detect staff lines using Hough transform (\cite{Hough}). We can then use this information to remove any affine distortion of the~image.
 
@@ -13,7 +13,7 @@ The~next step is performing some color normalization and binarization. There mig
 The~steps described above are shared by both traditional and neural network-based approaches. Traditional approaches now usually perform staff line removal. This step lets methods based on~connected components to become useful. Staff localization may be an~important part of this step. Symbols then need to be segmented and classified separately. Meaning is then reconstructed by looking at the~relationships between all the~classified symbols. With the~musical score understood at the~symbol level, the~extracted information can be converted to some final representation (MusicXML, MEI, MIDI).
 
 
-\section{Deep learning approaches}
+\section{Deep Learning Approaches}
 
 Deep learning is a~class of machine learning that focuses on deep neural networks. Deep learning has risen over the~past two decades and became a~very powerful tool for solving many problems, especially classification problems regarding computer vision. Neural networks can be used in many places throughout the~pipeline of a~traditional OMR system. They can be used for staff line removal (\cite{CalvoZaragoza2017}), symbol classification (\cite{Lee2016}), or even symbol detection (\cite{Pacha2018}).
 
@@ -26,7 +26,7 @@ Deep learning, especially in an~end-to-end approach also has some drawbacks. The
 The second drawback is the~very difficult nature of debugging the~model. A neural network is by design a~black box and we cannot easily assign specific meaning to any of its internal parts. The process of fixing a~mistake the model makes is tedious and requires a~lot of experimentation and re-training.
 
 
-\section{Our architecture}
+\section{Our Architecture}
 
 As stated in the~title of this thesis, we decided to explore the~end-to-end approach to OMR using deep neural networks. We were primarily inspired by these three models:
 
@@ -52,13 +52,13 @@ When training, the~loss is computed using the~connectionist temporal classificat
 The~values of all hyperparameters, including sizes and types of all layers, are specified in the~section \ref{sec:ArchitectureTrainingEvaluation}.
 
 
-\subsection{Neural network}
+\section{Neural Network}
 
 
-\subsection{Convolutional neural network}
+\section{Convolutional Neural Network}
 
 
-\subsection{Recurrent neural network}
+\section{Recurrent Neural Network}
 
 
-\subsection{Connectionist temporal classification}
+\section{Connectionist Temporal Classification}

@@ -85,8 +85,8 @@
 \def\SupervisorsDepartment{Institute of Formal and Applied Linguistics}
 
 % Study programme and specialization
-\def\StudyProgramme{study programme} % Informatika (B1801)
-\def\StudyBranch{study branch} % Obecná informatika IOI (1801R008)
+\def\StudyProgramme{Computer Science} % Informatika (B1801)
+\def\StudyBranch{General Computer Science} % Obecná informatika IOI (1801R008)
 
 % An optional dedication: you can thank whomever you wish (your supervisor,
 % consultant, a person who lent the software, etc.)
@@ -101,8 +101,7 @@ Optical music recognition is a~challenging field similar in many ways to optical
 
 % 3 to 5 keywords (recommended), each enclosed in curly braces
 \def\Keywords{%
-{optical music recognition} {handwritten music recognition}
-{deep neural network} {muscima++} {primus}
+{optical music recognition}, {handwritten music recognition}, {deep neural network}
 }
 
 %% The hyperref package for clickable links in PDF and also for storing
@@ -123,14 +122,13 @@ Optical music recognition is a~challenging field similar in many ways to optical
 \tableofcontents
 
 %%% Each chapter is kept in a separate file
-\include{introduction}
-\include{related_work}
-\include{chap01}
-\include{chap02}
-\include{chap03}
-\include{chap04}
-
-\include{epilog}
+\include{chap_introduction}
+\include{chap_related_work}
+\include{chap_deep_neural_networks}
+\include{chap_music_representation}
+\include{chap_engraving_system}
+\include{chap_experiments_and_results}
+\include{chap_conclusion_and_future_work}
 
 %%% Bibliography
 \include{bibliography}
