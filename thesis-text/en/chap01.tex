@@ -1,18 +1,64 @@
 \chapter{Deep Neural Network}
 \label{chap:DeepNeuralNetwork}
 
-This chapter talks mainly about the model we decided to use. First we describe the full pipeline of a traditional OMR system. Many of these steps are shared between traditional and deep learning approaches. Then we will talk about the deep learning approaches that can be taken. Neural networks can replace parts of a traditional pipeline, or they can be used in an end-to-end setting, where the neural network replaces the most difficult core of the pipeline. We will describe our architecture consisting of a convolutional block, recurrent block and the connectionist temporal classification (CTC) loss function. Following sections describe in more detail what a neural network is and how the individual blocks of our model work internally. The last section explains how CTC works and what are its pros and cons, compared to the approach described in the HMR baseline article (\cite{HmrBaseline}).
+This chapter talks mainly about the~model we decided to use. First, we describe the~full pipeline of a~traditional OMR system. Many of these steps are shared between traditional and deep learning approaches. Then we will talk about the~deep learning approaches that can be taken. Neural networks can replace parts of a~traditional pipeline, or they can be used in an~end-to-end setting, where the~neural network replaces the~most difficult core of the~pipeline. We will describe our architecture consisting of a~convolutional block, recurrent block, and the~connectionist temporal classification (CTC) loss function. The~following sections describe in more detail what a~neural network is and how the~individual blocks of our model work internally. The~last section explains how CTC works and what are its pros and cons, compared to the~approach described in the~HMR baseline article (\cite{HmrBaseline}).
+
 
 \section{Traditional approaches}
 
+A~musical score intended for OMR typically begins as a~raster image. This image is a~photo or a~scan of a~real-world sheet of paper. The~image needs to be prepared first. We need to find the~sheet of paper in the~image and correct any rotation or~perspective distortion. Scanned images are easier to~prepare because they don't contain any perspective deformation and lighting artifacts. Searching for the~paper in the~image can be performed using many approaches, e.g. by using maximally stable extremal regions (\cite{MSER}). We can detect staff lines using Hough transform (\cite{Hough}). We can then use this information to remove any affine distortion of the~image.
+
+The~next step is performing some color normalization and binarization. There might be a~light-intensity gradient over the~image, so we do some automatic contrasting to bring the~lightness to a~constant level across the~image. Median filtering can be applied to remove noise (\cite{MedianFiltering}). Conversion to a~grayscale image is often used since colors are not useful to OMR. The~image can then be binarized to further remove unnecessary information. Many thresholding algorithms can be used for this step, many of which are implemented in the~OpenCV\footnote{\href{https://opencv.org/}{https://opencv.org/}} library. Binarization is important for traditional approaches since they often use methods based on connected components to detect individual symbols. Neural networks could benefit from non-binarized images since binarization can create aliasing artifacts that distort the~input image on the~pixel level.
+
+The~steps described above are shared by both traditional and neural network-based approaches. Traditional approaches now usually perform staff line removal. This step lets methods based on~connected components to become useful. Staff localization may be an~important part of this step. Symbols then need to be segmented and classified separately. Meaning is then reconstructed by looking at the~relationships between all the~classified symbols. With the~musical score understood at the~symbol level, the~extracted information can be converted to some final representation (MusicXML, MEI, MIDI).
+
+
 \section{Deep learning approaches}
+
+Deep learning is a~class of machine learning that focuses on deep neural networks. Deep learning has risen over the~past two decades and became a~very powerful tool for solving many problems, especially classification problems regarding computer vision. Neural networks can be used in many places throughout the~pipeline of a~traditional OMR system. They can be used for staff line removal (\cite{CalvoZaragoza2017}), symbol classification (\cite{Lee2016}), or even symbol detection (\cite{Pacha2018}).
+
+Recently, neural networks have been used to tackle the~problem of~OMR in an~end-to-end fashion (\cite{Primus}, \cite{HmrBaseline}). This approach allows us to replace many stages of the~pipeline with a~single model. The input sheet of music is usually processed staff by staff, so an~initial segmentation of staves is required. This step is, however, very robust and can be performed reliably.
+
+The~main steps unified by an~end-to-end system are segmentation, symbol classification, and part of the~relationship extraction. This means we don't need to explicitly specify the~structure of this part of the~pipeline, which saves a~lot of time and thinking. Also, any intermediate features that would be extracted (like noteheads) need not be specified. The deep neural network can learn, what those features are. Moreover, it can adapt these features to the problem better than a~human could.
+
+Deep learning, especially in an~end-to-end approach also has some drawbacks. The first is bound to the ability of the~model to learn the~solution from data. While it's very helpful, that we don't have to design part of our OMR system manually, it's often very difficult to acquire enough high-quality data for the~training. Also, the~more complex our model is and the~more learned parameters it has, the~more training data it requires. The~data also needs to be of high quality. Ambiguity and mistakes in annotations lead to poor performance of the~resulting model. The~trained model can only ever be as good as it's training data.
+
+The second drawback is the~very difficult nature of debugging the~model. A neural network is by design a~black box and we cannot easily assign specific meaning to any of its internal parts. The process of fixing a~mistake the model makes is tedious and requires a~lot of experimentation and re-training.
+
 
 \section{Our architecture}
 
+As stated in the~title of this thesis, we decided to explore the~end-to-end approach to OMR using deep neural networks. We were primarily inspired by these three models:
+
+\begin{itemize}
+\item End-to-End Neural Optical Music Recognition of Monophonic Scores by Calvo-Zaragoza and Rizo (\cite{Primus})
+\item SimpleHTR by Harald Scheidl\footnote{\href{https://github.com/githubharald/SimpleHTR}{https://github.com/githubharald/SimpleHTR}}
+\item From Optical Music Recognition to Handwritten Music Recognition: A baseline (\cite{HmrBaseline})
+\end{itemize}
+
+All of these models share the~same high-level structure. They combine a~convolutional neural network (CNN) with a~recurrent neural network (RNN). This combination is sometimes called RCNN architecture. Convolutional neural networks are used in image processing. Their architecture is inspired by the~way filters work in computer graphics (convolving a~kernel over the~source image). They learn to extract edges, corners, and then even more abstract features like noteheads and stems. Recurrent neural networks are used for sequence processing (text and speech). They have been designed to carry state information throughout the~input sequence. In our case, they learn to propagate information horizontally - like inferring pitch of an~accidental from the~pitch of a~neighboring note. The CNN block learns to extract features that the RNN block then learns to combine into more abstract features.
+
+\begin{code}
+image of the blocks
+(image -> cnn -> rnn -> ctc -> resulting vectors)
+\end{code}
+
+The~CNN block can be followed by fully connected layers that further refine the~result, although these layers are not necessary and our architecture doesn't contain them. This may be due to the fact that our encoding is very close to the~symbolic visual representation and~so most of the~heavy lifting is probably performed in the~CNN block.
+
+The~final layer outputs a~sequence of vectors, where each vector represents one time-step (horizontal slice of the~input image). Values in such vector correspond to probabilities of individual output classes (tokens) at that given time-step. One additional class \emph{blank} is added, which represents "no symbol present". The~most likely class for each time-step is selected and then repetitions of the~same class are collapsed into one token. Lastly, all the~blank symbols are removed. The~remaining sequence of classes is mapped directly onto annotation tokens of the~Mashcima encoding explained in the~chapter \ref{chap:MusicRepresentation}. This approach is called greedy CTC decoding (\cite{CTC}) and is used during training. For evaluation, a more advanced method is used, called beam search decoding (\cite{CtcBeamSearch}).
+
+When training, the~loss is computed using the~connectionist temporal classification. The~loss function provides a~gradient for improving the~network. This gradient is then calculated for the~entire network using the~backpropagation algorithm (\cite{Goodfellow-et-al-2016}). Parameters are then updated using the~adaptive learning rate optimizer (Adam) (\cite{AdamOptimizer}).
+
+The~values of all hyperparameters, including sizes and types of all layers, are specified in the~section \ref{sec:ArchitectureTrainingEvaluation}.
+
+
 \subsection{Neural network}
+
 
 \subsection{Convolutional neural network}
 
+
 \subsection{Recurrent neural network}
+
 
 \subsection{Connectionist temporal classification}
