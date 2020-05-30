@@ -48,4 +48,5 @@ class KeySignature(CanvasItem):
             local_head += s.width
             if i < len(self.item_sprites) - 1:
                 local_head += random.randint(0, 5)  # padding between items
+        self.sprites.recalculate_bounding_box()
         return local_head

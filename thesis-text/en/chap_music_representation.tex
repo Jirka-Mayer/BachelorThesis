@@ -109,6 +109,9 @@ Mashcima music encoding is an~encoding that attempts to improve upon the PrIMuS 
     \verb`h-3 e=-2 =e-3 e=0 =e-1 | q-1 * e-1 q0 q1 | q2`
     \caption{Mashcima encoding of the incipit from figure~\ref{fig4:PrimusIncipit}.}
     \label{fig4:PrimusIncipitMashcimaEncoded}
+    \medskip
+    \small
+    The top image is taken from the PrIMuS dataset. The bottom image is the same music engraved using our engraving system. Below that is the Mashcima encoding of the music.
 \end{figure}
 
 The first symbol we need to encode is a~note. A~note has some duration and some pitch. These two pieces of information can vary independently, so it can seem logical to represent them using two vectors. The problem is that the connectionist temporal classification can output only one vector at a~time. To solve this, we take every possible combination of note duration and pitch and create a~token for that case.
@@ -140,8 +143,11 @@ The pitch encoding is built such that it would be easy to understand for a~non-m
     \centering
     \includegraphics[width=120mm]{../img/rising-half-notes}
     \verb`h-8 h-7 h-6 h-5 h-4 h-3 h-2 h-1 h0 h1 h2 h3 h4 h5 h6 h7 h8`
-    \caption{Half notes with pitches from -8 to 8. You can see flag orientation being randomized around the center staff line.}
+    \caption{Half notes with pitches from -8 to 8.}
     \label{fig4:RisingHalfNotes}
+    \medskip
+    \small
+    The image was engraved using Mashcima. You can see the stem orientation being randomized for pitches between -2 and 2.
 \end{figure}
 
 This pitch encoding has the advantage of being vertically symmetric, which speeds up the manual annotation process. The first ledger line above the staff is pitch \texttt{6}, and the first ledger line below is pitch \texttt{-6}. The second property this system has is that pitches placed on lines are even and pitches placed in spaces are odd.
@@ -180,6 +186,9 @@ Now that we have notes and rests, we can start grouping them into measures (bars
     \verb`clef.G-2 time.C wr | hr qr er sr sr | lr lr br | wr |`
     \caption{Rests and barlines.}
     \label{fig4:RestsAndBarlines}
+    \medskip
+    \small
+    The image was engraved using Mashcima. The symbols were taken from all writers and chosen randomly, therefore the two sixteenth rests look very different.
 \end{figure}
 
 
@@ -299,8 +308,11 @@ Slurs and ties are one of the first symbols that make OMR complicated. A~slur is
     \includegraphics[width=140mm]{../img/slurs}
     \verb`q-4 ( ) q-4 q4 ( ) q4 | q-8 ( ) q-4 q-4 ( ) q-8 |`
     \verb`q4 ( ) q5 ( ) q6 | q4 ( ) | qr | ( ) q-4`
-    \caption{Ties, slurs, slurs sharing a note, slur ending on a barline (e.g. at the end of staff).}
+    \caption{Ties and slurs.}
     \label{fig4:Slurs}
+    \medskip
+    \small
+    Image of various slur situations, engraved using Mashcima. The first two slurs are actually ties. One note is simultaneously a slur ending and a slur beginning. Two slurs end on a barline.
 \end{figure}
 
 Mashcima encoding does not represent slurs explicitly, but it represents their beginnings and ends. This is accomplished by two attachment tokens, \verb`(` and \verb`)`. The problem it creates is that sometimes it's impossible to pair beginnings and ends properly. Therefore we can only annotate staves that don't contain nested slurs.
@@ -318,7 +330,7 @@ Therefore for a~given note duration, we get three tokens, that represent all the
     \centering
     \includegraphics[width=100mm]{../img/beams}
     \verb`s=-3 =s=-1 =s=2 =s1 e=-3 =e-6 | e=-3 * =s-1 e=6 * =s4`
-    \caption{Beams are rendered as simple lines. This could be improved in the future.}
+    \caption{Beamed notes use the \texttt{=} sign in token names.}
     \label{fig4:Beams}
 \end{figure}
 
@@ -336,7 +348,7 @@ A time signature is either a~symbol $C$ or a~pair of two numbers on top of each 
     \includegraphics[width=100mm]{../img/key-and-time-signatures}
     \verb`clef.G-2 b0 b3 b-1 b2 time.C | time.C/ |`
     \verb`time.3 time.4 | time.6 time.8`
-    \caption{Various clefs by various writers.}
+    \caption{Examples of a key signature and various time signatures.}
     \label{fig4:KeyAndTimeSignatures}
 \end{figure}
 

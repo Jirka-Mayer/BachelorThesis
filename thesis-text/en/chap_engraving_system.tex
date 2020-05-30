@@ -21,9 +21,12 @@ We are not trying to produce PDF files as the other engraving systems do. Our go
 
 This similarity can be accomplished by using symbols from MUSCIMA++. On page 19 of writer 1, there's an~empty staff. We take the mask of the staff lines and produce an~empty image of proper dimensions containing the empty staff lines. The staff lines are almost perfectly horizontal (they wobble up and down by a~few pixels, but don't drift), therefore we will use them to create a~lookup table for converting pitch numbers to pixel offset in the $y$ axis. This will act as our blank canvas, from which we will start. \emph{Canvas} is an~actual term used in the codebase.
 
-\begin{code}
-image of an~empty staff + show the padding in the staff height on it
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/staff-padding}
+    \caption{Empty staff and the padding to the edge of the engraved image.}
+    \label{fig5:EmptyStaffWithPadding}
+\end{figure}
 
 By trying to mimic the look of CVC-MUSCIMA, we will remove a~lot of problems that we would otherwise face. We don't need to perform any distortion removal, alignment, cropping, preprocessing, and binarization. All this is already performed on the source data we use. This lets us focus only on the engraving system, which is complicated enough by itself.
 
@@ -36,11 +39,17 @@ Token groups are used in Mashcima annotation validation. When proper attachment 
 
 Two special kinds of token groups are key signatures and numeric time signatures. It again makes sense to treat a~time signature as a~single object and since it's a~multitude of tokens, it's represented by a~token group.
 
-Token groups are important because they map directly onto canvas items. A~\emph{canvas item} is something on the staff, that takes up horizontal space and can be rendered. Canvas item represents a~barline, a~note, a~rest. Attachments, like accidentals and dots, are not canvas items but are part of some given canvas item and they modify its appearance. Canvas items are placed on the staff right after each other with some randomized amount of padding between them. A~canvas item has all the vertical space it can have and it decides, where to draw itself vertically. You can see the bounding boxes of individual canvas items in the following figure:
+Token groups are important because they map directly onto canvas items. A~\emph{canvas item} is something on the staff, that takes up horizontal space and can be rendered. Canvas item represents a~barline, a~note, a~rest. Attachments, like accidentals and dots, are not canvas items but are part of some given canvas item and they modify its appearance. Canvas items are placed on the staff right after each other with some randomized amount of padding between them. A~canvas item has all the vertical space it can have and it decides, where to draw itself vertically. You can see the bounding boxes of individual canvas items in figure~\ref{fig5:CanvasItems}.
 
-\begin{code}
-image of some music with bounding boxes around canvas items
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/canvas-items}
+    \caption{Canvas items with bounding boxes.}
+    \label{fig5:CanvasItems}
+    \medskip
+    \small
+    A bounding box encloses all sprites of a canvas item. The large cross is the origin and it used to position the items vertically. Smaller crosses are marking where a stem ends and a beam attaches. A key signature does not use its origin point, so it's left at the top of the image.
+\end{figure}
 
 Each canvas item type is represented by a~class and the inheritance hierarchy can be seen in this diagram:
 
@@ -77,15 +86,19 @@ There are only a~few symbols that are not taken from the MUSCIMA++ dataset as im
 
 Slurs have some pre-defined attachment points they can use and the specific attachment point is chosen by the way a~note is flipped. Once the two points are chosen, the slur is rendered as a~parabola. This approach far too naive and simplified, so it doesn't capture the whole variability of a~handwritten slur. We think this is the reason the model makes so many mistakes regarding slur placement.
 
-\begin{code}
-some slur image
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=120mm]{../img/failed-slurs}
+    \verb`e6 ( ) e-4 | h-4 ( qr qr ) h8 | h0 ( ) h0 ( ) h0 |`
+    \verb`h-6 ( h-4 ( ) h-4 ) h-6`
+    \caption{Sometimes slur rendering doesn't look nice.}
+    \label{fig5:FailedSlurs}
+    \medskip
+    \small
+    Slurs cannot move other items around or create additional space. Slur doesn't move away when it intersects other symbols. Nested slurs are allowed, although not recommended.
+\end{figure}
 
 Beams face many similar problems as slurs. They are also rendered manually, as straight lines. This again does not capture the real world. Beams are often curved or they have a~gap between itself and a~note stem. This again seems to be the source of many mistakes, especially with the writer 49, who leaves a~lot of gaps between beams and stems.
-
-\begin{code}
-some beam image
-\end{code}
 
 
 \section{Multi-staff images}
@@ -96,9 +109,12 @@ We can take our rendering system and run it three times to render three staves i
 
 Multi-staff rendering can be performed by the \verb`multi_`\allowbreak\verb`staff_`\allowbreak\verb`annotation_`\allowbreak\verb`to_image` function inside \verb`mashcima/`\allowbreak\verb`annotation_`\allowbreak\verb`to_image.py` file.
 
-\begin{code}
-multi-staff image here
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=120mm]{../img/multi-staff}
+    \caption{Rendering staves above and below with long barlines.}
+    \label{fig5:MultiStaff}
+\end{figure}
 
 
 \section{Additional Deformation and Normalization}
@@ -107,9 +123,12 @@ Affine transformation is applied to the produced image to make the model resilie
 
 Finally, before the image is fed into the model, it's normalized to a~specified height, while preserving the aspect ratio. The resulting image can look like this:
 
-\begin{code}
-heavily skewed, normalized image of multi-staff
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=120mm]{../img/normalized-image}
+    \caption{Skewed and normalized to 64 pixels in height.}
+    \label{fig5:NormalizedImage}
+\end{figure}
 
 
 \section{Extensibility}

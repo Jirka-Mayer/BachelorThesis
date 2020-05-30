@@ -26,10 +26,16 @@ Some incipits, however, need to be filtered out. PrIMuS contains symbols, that a
 
 When the conversion finishes, we are left with 64~000~incipits we can use to train on.
 
-\begin{code}
-image of a primus incipit printed and mashcima engraved side-by-side
-with mashcima encoding tokens
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/primus-incipit-2}
+    \verb`package_aa/000102439-1_1_1/000102439-1_1_1.png`
+    \includegraphics[width=140mm]{../img/primus-incipit-2-engraved}
+    \verb`clef.G-2 time.C/ q-1 | q1 q-1 q3 q6 | #5 q5 * e6 q7 q3 |`
+    \verb`e=6 =e5 e=4 =e3 e=4 =e3 e=2 =e1 | q5 h3 * |`
+    \caption{An image engraved from an annotation taken from the PrIMuS dataset.}
+    \label{fig6:PrimusIncipit}
+\end{figure}
 
 The advantage of this training data is that the music in it comes from the real world. This allows the model to pick up common patterns and possibly learn the language model.
 
@@ -42,9 +48,14 @@ Randomization seems simple at first, but it can be done in many ways. At one ext
 
 We opted for something in the middle. We make sure, that the synthetic annotation can be engraved, but we don't ensure anything more. Duration per measure is not correct, pitch is almost random, time signatures can be in the middle of a measure. The resulting image looks nothing like what we are used to seeing in sheet music. The code for generating synthetic annotations can be found in file \verb`app/`\allowbreak\verb`generate_`\allowbreak\verb`random_`\allowbreak\verb`annotation.py`.
 
-\begin{code}
-image of a synthetic staff, with annotation
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/synthetic-incipit}
+    \verb`| | b3 s6 N-12 w-12 e=-3 =t=2 =e=1 =t1 * |`
+    \verb`b9 h9 | #4 #-1 b2 N1 N-3 N1 N-4 | time.C`
+    \caption{An image engraved from a synthetic annotation.}
+    \label{fig6:SyntheticIncipit}
+\end{figure}
 
 We will compare these two approaches later in the experiments. It may come as a surprise, but the best approach will be to combine both synthetic and real-world data, effectively training on both.
 
@@ -162,29 +173,47 @@ Although the Mashcima encoding attempts to not be ambiguous, there were some pla
 
 \paragraph{Page 1:} The last three measures contain nested slurs. These cannot be represented, so we chose to represent slur beginnings and slur endings as they appear on the page. One note cannot have two slur beginnings, so only one is annotated. The very last slur is maybe not a slur, but some pitch articulation symbol. We annotated it as a slur continuing onto the next staff.
 
-\begin{code}
-image
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/ae-01}
+    \verb`=s=8 =e7 | time.C b0 h0 fermata h0 | N-2 b1 b4 b0 time.3 time.4`
+    \verb`h0 ( ) e=0 tuplet.3 =e=-1 =e-2 | h0 ( ) e=0 tuplet.3 =e=-1 =e-2`
+    \verb`| ) h0 * ( ) |`
+    \caption{Last three measures of page 01, writer 17.}
+    \label{fig6:AnnotationExperience01}
+\end{figure}
 
 \paragraph{Page 2:} The last two staves contain three occurrences of grace notes. They look like regular notes but are smaller. Grace notes cannot be represented yet, so we replaced them with a \verb`?` token. We replaced the entire grace note group (two sixteenths with a slur) with a single \verb`?` token.
 
-\begin{code}
-image
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=80mm]{../img/ae-02}
+    \verb`| w1 | q2 qr ? q9 * e9 | e8 er e7`
+    \caption{Grace notes in page 02, writer 13.}
+    \label{fig6:AnnotationExperience02}
+\end{figure}
 
 \paragraph{Page 9:} There are two measures with notes playing at the same time. The first three half notes are slightly offset, so we annotated them from left to right. The last two quarter notes are right above each other, so we replaced them with the \verb`?` token. We wanted to place at least one \verb`?` token inside the measure and then we tried to annotate the rest as good as we could. This way the measure is marked and can be repaired in the future.
 
-\begin{code}
-image
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=90mm]{../img/ae-09}
+    \verb`| e=1 ( ) =e=3 =e=6 ( ) =e=4 =e=2 ( ) =e7 | trill h7 h0 h-6 ? |`
+    \caption{Simultaneous notes in page 09, writer 49.}
+    \label{fig6:AnnotationExperience09}
+\end{figure}
 
 \paragraph{Page 11:} One measure has the same problem as page 9.
 
 \paragraph{Page 16:} Third staff contains a bracket symbol in the key signature. The bracket symbol is completely ignored, but the clef and key signature are annotated as usual. The fifth staff contains double-beamed notes with empty noteheads. These are not sixteenth notes, but since they look so similar, we annotated them as such. These symbols are not very common and the trained model treated them as sixteenth notes as well, so we kept it that way.
 
-\begin{code}
-image
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=100mm]{../img/ae-16}
+    \verb`| s=-6 ( ) =s-4 s=-6 ( ) =s-4 | s=-6 ( ) =s-4 s=-6 ( ) =s-4 |`
+    \caption{Beamed notes with empty noteheads in page 16, writer 34.}
+    \label{fig6:AnnotationExperience16}
+\end{figure}
 
 Special thick barlines, double barlines, or barlines with braces at the beginning of a staff are all annotated as simple \verb`|` token. The only exception is repeat signs that do have their corresponding tokens.
 
@@ -542,9 +571,26 @@ We also wanted to try, how would our model perform on printed music. Models by o
 
 You can see, that the performance is not very impressive. We did expect the error rate to be high, but not that high. Although, it is understandable because the printed music is very different from the handwritten. It would be interesting to also train on printed images in the future. This error rate would go down, but maybe the CVC-MUSCIMA error rate would go down as well.
 
-\begin{code}
-image of a printed staff and the prediction and the gold
-+ maybe the same staff, engraved using Mashcima
-\end{code}
+\begin{figure}[h]
+    \centering
+    \verb`package_ab/211002723-1_1_1/211002723-1_1_1.agnostic`
+    \\
+    \medskip
+    \includegraphics[width=140mm]{../img/evaluation-on-printed}
+    \textbf{Gold:}
+    \verb`clef.C-4 #-1 #-4 #0 time.3 time.4 qr qr q1 |`
+    \verb`q5 * e6 e=5 =e4 | h3 q3 | q2 . e3 e=4 =e5 | h3`
+    \\
+    \medskip
+    \textbf{Prediction:}
+    \verb`clef.C-4 #-1 #-4 #0 time.8 time.2 qr q1 |`
+    \verb`q5 * s7 s=5 =e4 | h3 q3 | h2 ( time.9 time.4 e=4 =e5 | h3`
+    \\
+    \medskip
+    \textbf{SER:}
+    \verb`0.35`
+    \caption{Evaluation on printed PrIMuS incipits.}
+    \label{fig6:EvaluatinoOnPrinted}
+\end{figure}
 
 Also, note that \verb`ITER_RAW` and \verb`ITER_TRAINED` have the same value. This is expected because we filter out incipits that cannot be engraved by Mashcima.
