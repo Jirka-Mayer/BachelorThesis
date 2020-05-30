@@ -19,21 +19,75 @@ We can provide a~short overview of the terms used in this chapter:
 
 The PrIMuS dataset contains over 87~000~items, each with an~image of the printed staff and then multiple files describing the music in that staff. There are two standard formats, namely Music Encoding Initiative format (MEI) and the Plaine and Easie code source. Then there are two on-purpose encodings devised specifically for this dataset. These two encodings are what interests us.
 
-\begin{code}
-figure containing a~sample incipit
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/primus-incipit}
+    \verb`package_aa/000112602-1_1_1/000112602-1_1_1.png`
+    \caption{An incipit from the PrIMuS dataset.}
+    \label{fig4:PrimusIncipit}
+\end{figure}
 
 The first of these two encodings is the \emph{semantic encoding}. It represents what the musical symbols mean. Each symbol has a~specific pitch that relies on the cleft at the beginning of the staff. This makes the vocabulary much larger and any model using this encoding has taken the clef into account when reading the symbols. It is however much easier to transform this encoding to some well-known format like MusicXML since these formats tend to represent the meaning of a~score, not the score appearance.
 
-\begin{code}
-semantic encoding of the incipit above
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/primus-incipit}
+    \verb`clef-G2`
+    \quad\verb`keySignature-DM`
+    \quad\verb`timeSignature-C/`
+    \quad\verb`note-D4_half`
+    \quad\verb`note-E4_eighth`
+    \quad\verb`note-D4_eighth`
+    \quad\verb`note-G4_eighth`
+    \quad\verb`note-F#4_eighth`
+    \quad\verb`barline`
+    \quad\verb`note-F#4_half`
+    \quad\verb`note-G4_eighth`
+    \quad\verb`note-F#4_eighth`
+    \quad\verb`note-B4_eighth`
+    \quad\verb`note-A4_eighth`
+    \quad\verb`barline`
+    \quad\verb`note-A4_quarter.`
+    \quad\verb`note-A4_eighth`
+    \quad\verb`note-B4_quarter`
+    \quad\verb`note-C#5_quarter`
+    \quad\verb`barline`
+    \quad\verb`note-D5_quarter`
+    \caption{Semantic encoding of the incipit from figure~\ref{fig4:PrimusIncipit}.}
+    \label{fig4:PrimusIncipitSemanticEncoded}
+\end{figure}
 
 The second encoding is the \emph{agnostic encoding}. This encoding treats the staff visually as a~specific positioning of specific symbols. It tries to capture what is in the staff visually, not what the symbols mean musically. This is comparable to a~sentence being thought of as a~sequence of letters, whereas the semantic encoding could be thought of as the specific sounds a~written sentence represents. This makes the encoding harder to convert to a~well-known format acceptable by other music software. On the other hand, this encoding is formal-enough to be easily converted to the semantic encoding, if read correctly. So this encoding lets the model do less work, therefore the model should do fewer mistakes.
 
-\begin{code}
-agnostic encoding of the incipit above
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/primus-incipit}
+    \verb`clef.G-L2`
+    \quad\verb`accidental.sharp-L5`
+    \quad\verb`accidental.sharp-S3`
+    \quad\verb`metersign.C/-L3`
+    \quad\verb`note.half-S0`
+    \quad\verb`note.beamedRight1-L1`
+    \quad\verb`note.beamedLeft1-S0`
+    \quad\verb`note.beamedRight1-L2`
+    \quad\verb`note.beamedLeft1-S1`
+    \quad\verb`barline-L1`
+    \quad\verb`note.half-S1`
+    \quad\verb`note.beamedRight1-L2`
+    \quad\verb`note.beamedLeft1-S1`
+    \quad\verb`note.beamedRight1-L3`
+    \quad\verb`note.beamedLeft1-S2`
+    \quad\verb`barline-L1`
+    \quad\verb`note.quarter-S2`
+    \quad\verb`dot-S2`
+    \quad\verb`note.eighth-S2`
+    \quad\verb`note.quarter-L3`
+    \quad\verb`note.quarter-S3`
+    \quad\verb`barline-L1`
+    \quad\verb`note.quarter-L4`
+    \caption{Agnostic encoding of the incipit from figure~\ref{fig4:PrimusIncipit}.}
+    \label{fig4:PrimusIncipitAgnosticEncoded}
+\end{figure}
 
 The agnostic encoding has also the advantage, that annotating an~image is not as difficult for a~human. Annotating an~image using the semantic encoding requires the annotator to know pitches for a~given key. The situation is even more complicated by key signatures. This means an~untrained non-musician has to do a~lot of thinking when annotating, which leads to many errors and slow annotation speed.
 
@@ -47,10 +101,15 @@ We've taken this agnostic encoding and modified it slightly to produce our Mashc
 
 Mashcima music encoding is an~encoding that attempts to improve upon the PrIMuS agnostic encoding. In the source code, most of the logic regarding this encoding is placed inside the \texttt{app/vocabulary.py} file. Each token of this encoding represents some musical symbol.
 
-\begin{code}
-figure containing primus incipit engraved using Mashcima
-with the corresponding Mashcima encoding
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/primus-incipit}
+    \includegraphics[width=140mm]{../img/primus-incipit-engraved}
+    \verb`clef.G-2 #4 #1 time.C/ h-5 e=-4 =e-5 e=-2 =e-3 |`
+    \verb`h-3 e=-2 =e-3 e=0 =e-1 | q-1 * e-1 q0 q1 | q2`
+    \caption{Mashcima encoding of the incipit from figure~\ref{fig4:PrimusIncipit}.}
+    \label{fig4:PrimusIncipitMashcimaEncoded}
+\end{figure}
 
 The first symbol we need to encode is a~note. A~note has some duration and some pitch. These two pieces of information can vary independently, so it can seem logical to represent them using two vectors. The problem is that the connectionist temporal classification can output only one vector at a~time. To solve this, we take every possible combination of note duration and pitch and create a~token for that case.
 
@@ -77,10 +136,13 @@ The set of pitches we can choose from greatly impacts the vocabulary size. This 
 
 The pitch encoding is built such that it would be easy to understand for a~non-musician. In western music notation, the pitch of a~note is represented by the vertical position of that note on the staff. An~empty staff is composed of 5 staff lines. Mashcima encoding sets the middle staff line position to be zero. Going up, the first space is pitch \texttt{1} and the first line is pitch \texttt{2}. Going down, the first space is pitch \texttt{-1} and the first line is pitch \texttt{-2}.
 
-\begin{code}
-image of rising half notes engraved using Mashcima
-with the corresponding tokens
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=120mm]{../img/rising-half-notes}
+    \verb`h-8 h-7 h-6 h-5 h-4 h-3 h-2 h-1 h0 h1 h2 h3 h4 h5 h6 h7 h8`
+    \caption{Half notes with pitches from -8 to 8. You can see flag orientation being randomized around the center staff line.}
+    \label{fig4:RisingHalfNotes}
+\end{figure}
 
 This pitch encoding has the advantage of being vertically symmetric, which speeds up the manual annotation process. The first ledger line above the staff is pitch \texttt{6}, and the first ledger line below is pitch \texttt{-6}. The second property this system has is that pitches placed on lines are even and pitches placed in spaces are odd.
 
@@ -112,10 +174,13 @@ You may have noticed, that that there are two extra durations --- longa and brev
 
 Now that we have notes and rests, we can start grouping them into measures (bars). A~barline is represented by the "pipe" character (\texttt{|}). Barlines separate notes and rests into groups of the same total duration. There are many types of barlines (double barline, repeat signs) and although they are used quite often, they have not yet been implemented into the Mashcima engraving system. This is simply because we wanted to see, whether our approach even works. These special barline types can be easily added in the future.
 
-\begin{code}
-staff with some rests and barlines
-with tokens below
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/rests-and-barlines}
+    \verb`clef.G-2 time.C wr | hr qr er sr sr | lr lr br | wr |`
+    \caption{Rests and barlines.}
+    \label{fig4:RestsAndBarlines}
+\end{figure}
 
 
 \subsection{Generic Tokens}
@@ -229,13 +294,18 @@ Here are a~few notes regarding the ordering:
 
 Slurs and ties are one of the first symbols that make OMR complicated. A~slur is a~curved line going from one notehead to another. Notes that are under a~slur should be played blended without explicit note beginnings. A~tie looks exactly like a~slur, just the two notes it joins have the same pitch. This means the notes should be played as one long note. So the difference is only semantic, we will consider ties to be just like slurs.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/slurs}
+    \verb`q-4 ( ) q-4 q4 ( ) q4 | q-8 ( ) q-4 q-4 ( ) q-8 |`
+    \verb`q4 ( ) q5 ( ) q6 | q4 ( ) | qr | ( ) q-4`
+    \caption{Ties, slurs, slurs sharing a note, slur ending on a barline (e.g. at the end of staff).}
+    \label{fig4:Slurs}
+\end{figure}
+
 Mashcima encoding does not represent slurs explicitly, but it represents their beginnings and ends. This is accomplished by two attachment tokens, \verb`(` and \verb`)`. The problem it creates is that sometimes it's impossible to pair beginnings and ends properly. Therefore we can only annotate staves that don't contain nested slurs.
 
 Slurs can also span from one staff to the next. When this happens, the slur ends at a~barline. Therefore a~barline can also act as a~token, on which a~slur can start or end.
-
-\begin{code}
-image showing different slur variants
-\end{code}
 
 
 \subsection{Beams}
@@ -244,9 +314,13 @@ Beamed notes pose similar problems as slurs, but they obey some additional const
 
 Therefore for a~given note duration, we get three tokens, that represent all the possible beam situations:
 
-\begin{code}
-image of a~sixteenth beamed group (s= =s= =s= =s e= =e)
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=100mm]{../img/beams}
+    \verb`s=-3 =s=-1 =s=2 =s1 e=-3 =e-6 | e=-3 * =s-1 e=6 * =s4`
+    \caption{Beams are rendered as simple lines. This could be improved in the future.}
+    \label{fig4:Beams}
+\end{figure}
 
 This, however, lets us create annotations that make no sense. We can create un-finished and non-started beams. For this reason, there is the \verb`repair_`\allowbreak\verb`annotation` function in the file \verb`app/vocabulary.py` that can repair such situations or validate the correctness of an~annotation.
 
@@ -257,9 +331,14 @@ A key signature is just a~group of many accidentals, typically at the beginning 
 
 A time signature is either a~symbol $C$ or a~pair of two numbers on top of each other. The standalone $C$ symbol can be represented easily using the \verb`time.C` token. A~pair of numbers is represented by two tokens, e.g. \verb`time.3 time.4`. Numbers have to be paired. Non-paired time number is considered an~invalid annotation.
 
-\begin{code}
-image of clef, time and key signatures
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=100mm]{../img/key-and-time-signatures}
+    \verb`clef.G-2 b0 b3 b-1 b2 time.C | time.C/ |`
+    \verb`time.3 time.4 | time.6 time.8`
+    \caption{Various clefs by various writers.}
+    \label{fig4:KeyAndTimeSignatures}
+\end{figure}
 
 Time signature numbers are also treated specially since they always come in pairs.
 
@@ -268,9 +347,14 @@ Time signature numbers are also treated specially since they always come in pair
 
 Clefs are encoded similarly to rests, with the only difference of having a~pitch associated. Not all pitches are allowed, though. There are three types of clefs (G, C, F). Each of these clefs has a~set of pitches it can have.
 
-\begin{code}
-image of all clefs
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=120mm]{../img/clefs}
+    \verb`clef.G-4 clef.G-2 clef.F0 clef.F2 clef.F3`
+    \verb`clef.C-4 clef.C-2 clef.C0 clef.C2 clef.C4`
+    \caption{Various clefs by various writers.}
+    \label{fig4:Clefs}
+\end{figure}
 
 There are special barlines that mark a~part of music to be repeated. These barlines cannot be engraved yet, but they do have corresponding tokens in the encoding: \verb`:|`, \verb`|:`, \verb`:|:`.
 
