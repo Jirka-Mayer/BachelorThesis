@@ -578,27 +578,27 @@ Adding chords is an interesting problem, I think the current system architecture
 
 # Experiments and Results
 
-This chapter focuses on experiments we performed. We will first describe the training and evaluation data. How it was chosen, where it comes from and in the case of evaluation data, also the manual annotation process. Then we will talk about the symbol error rate (SER), a metric used for evaluation, as well as additional metrics we propose to understand mistakes our model makes. We will desribe the training and evaluation process in detail and provide values for all hyperparameters. We will describe setup for each experiment and the explore the results from many perspectives. Finally, we will compare our results to the results in the HMR baseline article (*link*).
+This chapter focuses on the experiments we performed. We will first describe the training and evaluation data. How it was chosen, where it comes from, and in the case of evaluation data, also the manual annotation process. Then we will talk about the symbol error rate (SER), a metric used for evaluation, as well as additional metrics we propose to understand mistakes our model makes. We will describe the training and evaluation process in detail and provide values for all hyperparameters. We will describe the setup for each experiment and explore the results from many perspectives. Finally, we will compare our results to the results in the HMR baseline article (*link*).
 
 
 ## Training data
 
-Before we can talk about experiments, we have to explain what the training data looks like. In the [chapter 1](#1) we talked about the network architecture. The model takes an image as the input and produces a sequence of annotation tokens. [Chapter 2](#2) describes how these annotation tokens encode the music in an image. Now we just need to obtain enough pairs of image and annotation to train on.
+Before we can talk about experiments, we have to explain what the training data looks like. In the [chapter 1](#1) we talked about the network architecture. The model takes an image as the input and produces a sequence of annotation tokens. [Chapter 2](#2) describes how these annotation tokens encode the music in an image. Now we just need to obtain enough pairs of images and annotations to train on.
 
-The [thesis introduction](#intro) stated that the only available dataset is CVC-MUSCIMA (*link*). This dataset contains 1000 images of handwritten sheets of music, consisting of 20 pages, each written by 50 writers. Because of this lack of variability the dataset cannot be used as-is. In [chapter 3](#3) we described our Mashcima engraving system. This system can produce an image of one staff, that corresponds to a given Mashcima annotation. It does that by rendering musical symbols present in CVC-MUSCIMA, which in turn were extracted as part of the MUSCIMA++ dataset (*link*).
+The [thesis introduction](#intro) stated that the only available dataset is CVC-MUSCIMA (*link*). This dataset contains 1000 images of handwritten sheets of music, consisting of 20 pages, each written by 50 writers. Because of this lack of variability, the dataset cannot be used as-is. In [chapter 3](#3) we described our Mashcima engraving system. This system can produce an image of one staff, that corresponds to a given Mashcima annotation. It does that by rendering musical symbols present in CVC-MUSCIMA, which in turn were extracted as part of the MUSCIMA++ dataset (*link*).
 
 We have a system, that can create images for given annotations. All we need to provide are those annotations.
 
 
 ### PrIMuS incipits
 
-The 20 pages of CVC-MUSCIMA contain this information. The problem is that there is only 20 of them. We ideally need thousands of annotations to account for all the variability in note types and pitches our encoding can capture. Luckily, PrIMuS dataset (*link*) contains exactly what we need. PrIMuS contains over 87 000 incipits of monophonic music. An incipit is the recognizable part of a melody or a song. The incipits have ideal length of a few measures. It's not an entire staff, but not a few symbols either. Also all the incipits are encoded in many formats, but most importantly they are encoded in the agnostic format, that is very simmilar to the Mashcima encoding.
+The 20 pages of CVC-MUSCIMA contain this information. The problem is that there are only 20 of them. We ideally need thousands of annotations to account for all the variability in note types and pitches our encoding can capture. Luckily, the PrIMuS dataset (*link*) contains exactly what we need. PrIMuS contains over 87 000 incipits of monophonic music. An incipit is the recognizable part of a melody or a song. The incipits have the ideal length of a few measures. It's not an entire staff, but not a few symbols either. Also, all the incipits are encoded in many formats, but most importantly they are encoded in the agnostic format, which is very similar to the Mashcima encoding.
 
-We can take the PrIMuS dataset, engrave all the incipits using Mashcima and train on the result. The only obstacle is converting PrIMuS agnostic encoding to Mashcima encoding.
+We can take the PrIMuS dataset, engrave all the incipits using Mashcima, and train on the result. The only obstacle is converting PrIMuS agnostic encoding to Mashcima encoding.
 
 Converting PrIMuS agnostic encoding to Mashcima encoding is mostly a one-to-one mapping of tokens. Pitches have to be encoded differently, tokens have different names. In PrIMuS, all tokens have pitch information, so for some tokens, it gets stripped away.
 
-Some incipits, however, need to be filtered out. PrIMuS contains symbols, that aren't present in CVC-MUSCIMA, therefore cannot be engraved. These symbols are very long or very short notes (longa, breve, thirty-second). PrIMuS also contains many grace notes and simmilar symbols that the Mashcima engraving system cannot render, so they get removed. There are a couple of other rules and checks that make the conversion slightly more complicated. The exact code for the conversion can be found in the file `mashcima/primus_adapter.py`.
+Some incipits, however, need to be filtered out. PrIMuS contains symbols, that aren't present in CVC-MUSCIMA, therefore they cannot be engraved. These symbols are very long or very short notes (longa, breve, thirty-second). PrIMuS also contains many grace notes and similar symbols that the Mashcima engraving system cannot render, so they get removed. There are a couple of other rules and checks that make the conversion slightly more complicated. The exact code for the conversion can be found in the file `mashcima/primus_adapter.py`.
 
 When the conversion finishes, we are left with 64 000 incipits we can use to train on.
 
@@ -623,21 +623,21 @@ We will compare these two approaches later in the experiments. It may come as a 
 
 ## Evaluation data
 
-When we faced the lack of training data, we resorted to data augmentation. We cannot do that for evalution, because the evaluation data should be as close to the real-world as possible. Therefore using a well established dataset it the only option.
+When we faced the lack of training data, we resorted to data augmentation. We cannot do that for evaluation, because the evaluation data should be as close to the real-world as possible. Therefore using a well-established dataset it the only option.
 
-By looking at the *Collection of datasets for OMR* by Alexander Pacha (https://apacha.github.io/OMR-Datasets/) we can see that most existing datasets are for printed music. If we focus on the handwritten datasets, most of those contain only muscial symbols, not entire staves. When we filter those out, what remains is CVC-MUSCIMA (*link*), MUSCIMA++ (*link*) and Baró Single Stave Dataset (http://www.cvc.uab.es/people/abaro/datasets.html). We are already familiar with the first two datasets, since we used them for training. The last dataset is also derived from CVC-MUSCIMA and it is used in the paper for HMR baseline (https://www.sciencedirect.com/science/article/abs/pii/S0167865518303386?via%3Dihub). We will compare our results to the results in the paper in section [x.y.z](#x.y.z).
+By looking at the *Collection of datasets for OMR* by Alexander Pacha (https://apacha.github.io/OMR-Datasets/) we can see that most existing datasets are for printed music. If we focus on the handwritten datasets, most of those contain only musical symbols, not entire staves. When we filter those out, what remains is CVC-MUSCIMA (*link*), MUSCIMA++ (*link*), and Baró Single Stave Dataset (http://www.cvc.uab.es/people/abaro/datasets.html). We are already familiar with the first two datasets since we used them for training. The last dataset is also derived from CVC-MUSCIMA and it is used in the paper for HMR baseline (https://www.sciencedirect.com/science/article/abs/pii/S0167865518303386?via%3Dihub). We will compare our results to the results in the paper in section [x.y.z](#x.y.z).
 
-We decided to evaluate on a portion of the CVC-MUSCIMA dataset. Partly because it is the only dataset available for this purpouse, partly because other people use it for evaluation as well. To learn more about the CVC-MUSCIMA dataset, see the section [related-work x.y.z](#xyz).
+We decided to evaluate on a portion of the CVC-MUSCIMA dataset. Partly because it is the only dataset available for this purpose, partly because other people use it for evaluation as well. To learn more about the CVC-MUSCIMA dataset, see the section [related-work x.y.z](#xyz).
 
 The fact that we devised custom encoding means we have to annotate the evaluation data manually. This is not very difficult, because the evaluation set need not be large. It also means the resulting annotations are of high quality and follow the rules of the Mashcima encoding.
 
-We cannot use the entire CVC-MUSCIMA dataset for evaluation, because we already use it for training. Therefore we need to decide what portion is going to be used for evaluation. We definitely need to evaluate on data from different writers than those we train on. This is because seeing the specific writer's handwriting style might help the model score higher during evaluation. Avoiding specific music pages is not necessary, since the data augmentation process completely destroys any rythmic or melodic information. The Mashcima engraving system samples individual symbols, ignoring their placement relative to other symbols in the staff. So the primary concern is to separate writers used for evaluation.
+We cannot use the entire CVC-MUSCIMA dataset for evaluation, because we already use it for training. Therefore we need to decide what portion is going to be used for evaluation. We definitely need to evaluate on data from different writers than those we train on. This is because seeing the specific writer's handwriting style might help the model score higher during evaluation. Avoiding specific music pages is not necessary since the data augmentation process completely destroys any rhythmic or melodic information. The Mashcima engraving system samples individual symbols, ignoring their placement relative to other symbols in the staff. So the primary concern is to separate writers used for evaluation.
 
-There are additional criteria for selecting the evaluation writers. We want the writer selection to be diverse in terms of handwriting style. Some writers have very clean handwriting, some not so much. Noteheads can be little circles, ellipses or even little dashes. Some writers have note stems slanted, some have straight, vertical stems. Also the width and spacing of symbols differ.
+There are additional criteria for selecting the evaluation writers. We want the writer selection to be diverse in terms of handwriting style. Some writers have very clean handwriting, some not so much. Noteheads can be little circles, ellipses, or even little dashes. Some writers have note stems slanted, some have straight, vertical stems. Also, the width and spacing of symbols differ.
 
 We also want to evaluate on pages that are present in MUSCIMA++. This is because pages in MUSCIMA++ have a lot of additional information available and there exist detailed MusicXML transcriptions for them. Both of these facts may become useful in the future. Each writer has 20 music pages in CVC-MUSCIMA, but only 2 or 3 in MUSCIMA++. Additionally, not all pages can be represented in the Mashcima encoding (some are polyphonic or have multiple voices).
 
-First we sorted the 20 pages by how easily they can be encoded using Mashcima encoding. This sorting is not perfect, the main goal is to separate pages that we cannot encode at all. Some symbols can be encoded, but since the engraving system cannot render them, they are considered slightly problematic. See the section on extending mashcima encoding (*link*).
+First, we sorted the 20 pages by how easily they can be encoded using Mashcima encoding. This sorting is not perfect, the main goal is to separate pages that we cannot encode at all. Some symbols can be encoded, but since the engraving system cannot render them, they are considered slightly problematic. See the section on extending mashcima encoding (*link*).
 
 | Page | Acceptable | Notes                                                |
 | ---- | ---------- | ---------------------------------------------------- |
@@ -677,11 +677,11 @@ Then we took all the acceptable pages and found all writers for those pages that
 | 3     | 34     | regular, round noteheads, slanted               | Yes      |
 | 3     | 41     | beautiful, round noteheads                      | Yes      |
 
-> Table shows the final writers that were considered to be selected for evaulation.
+> Table shows the final writers that were considered to be selected for evaluation.
 
-All the remaining writers had only two or less pages from the selection. We took 5 writers out of those 7 writers manually, to keep the handwriting diversity high.
+All the remaining writers had only two or fewer pages from the selection. We took 5 writers out of those 7 writers manually, to keep the handwriting diversity high.
 
-Lastly we wanted to compare our results with the results of *From Optical Music Recognition to Handwritten Music Recognition: A baseline* (*link*), so we added the writer 17. The final writer and page selection can be seen in the table:
+Lastly, we wanted to compare our results with the results of *From Optical Music Recognition to Handwritten Music Recognition: A baseline* (*link*), so we added the writer 17. The final writer and page selection can be seen in the table:
 
 | Writer | Pages          |
 | ------ | -------------- |
@@ -692,9 +692,9 @@ Lastly we wanted to compare our results with the results of *From Optical Music 
 | 41     | 02, 03, 16     |
 | 49     | 03, 05, 09, 11 |
 
-We end up with 6 writers, 17 pages (7 distinct), 115 staves and over 5840 tokens. Annotations for these pages can be found in the file `app/muscima_annotations.py`. These annotations have been performed by me - the author of this thesis. Experience regarding the annotation process is described in the [following section](#123).
+We end up with 6 writers, 17 pages (7 distinct), 115 staves, and over 5840 tokens. Annotations for these pages can be found in the file `app/muscima_annotations.py`. These annotations have been performed by me - the author of this thesis. Experience regarding the annotation process is described in the [following section](#123).
 
-Lastly we want to show a frequency table of the most common tokens in the evaluation dataset. The table contains generic variants of the tokens. Table containing common pitches is the very next table.
+Lastly, we want to show a frequency table of the most common tokens in the evaluation dataset. The table contains generic variants of the tokens. A table containing common pitches is the very next table.
 
     table of generic tokens
 
@@ -703,68 +703,68 @@ Lastly we want to show a frequency table of the most common tokens in the evalua
 
 ### Manual annotation experience
 
-Although the Mashcima encoding attempts to not be ambiguous, there were some places where I had to make some decisions regarding undefined situations. This section goes over these situations.
+Although the Mashcima encoding attempts to not be ambiguous, there were some places where we had to make some decisions regarding undefined situations. This section goes over these situations.
 
-**Page 1:** The last three measures contain nested slurs. These cannot be represented, so I chose to represent slur beginnings and slur endings as they can be seen in the page. One note cannot have two slur beginings, so only one is annotated. The very last slur is maybe not a slur, but some pitch articulation symbol. I annotated it as a slur continuing onto the next staff.
-
-    image
-
-**Page 2:** The last two staves contain three occurences of grace notes. They look like regular notes, but are smaller. Grace notes cannot be represented yet, so I replaced them with a `?` token. I replaced the entire grace note group (two sixteenths with a slur) with a single `?` token.
+**Page 1:** The last three measures contain nested slurs. These cannot be represented, so we chose to represent slur beginnings and slur endings as they appear on the page. One note cannot have two slur beginnings, so only one is annotated. The very last slur is maybe not a slur, but some pitch articulation symbol. We annotated it as a slur continuing onto the next staff.
 
     image
 
-**Page 9:** There are two measures with notes playing at the same time. The first three half notes are slightly offset, so they are annotated from left to right. The last two quarter notes are right above each other, so I replaced them with the `?` token. I wanted to place at least one `?` token inside the measure and then tried to annotate the rest as best as I could. This way the measure is marked and can be repaired in the future.
+**Page 2:** The last two staves contain three occurrences of grace notes. They look like regular notes but are smaller. Grace notes cannot be represented yet, so we replaced them with a `?` token. We replaced the entire grace note group (two sixteenths with a slur) with a single `?` token.
+
+    image
+
+**Page 9:** There are two measures with notes playing at the same time. The first three half notes are slightly offset, so we annotated them from left to right. The last two quarter notes are right above each other, so we replaced them with the `?` token. We wanted to place at least one `?` token inside the measure and then we tried to annotate the rest as good as we could. This way the measure is marked and can be repaired in the future.
 
     image
 
 **Page 11:** One measure has the same problem as page 9.
 
-**Page 16:** Third staff contains a bracket symbol in the key signature. The bracket symbol is completely ignored, but the clef and key signature is annotated as usual. The fifth staff contains double-beamed notes with empty noteheads. These are not sixteenth notes, but since they look so simmilar, I annotated them as such. These symbols are not very common and the trained model treated them as sixteenth notes as well, so I kept it that way.
+**Page 16:** Third staff contains a bracket symbol in the key signature. The bracket symbol is completely ignored, but the clef and key signature are annotated as usual. The fifth staff contains double-beamed notes with empty noteheads. These are not sixteenth notes, but since they look so similar, we annotated them as such. These symbols are not very common and the trained model treated them as sixteenth notes as well, so we kept it that way.
 
     image
 
-Special thick barlines, double barlines or barlines with braces at the begining of a staff are all annotated as simple `|` token. The only exception are repeat signs that do have their corresponding tokens.
+Special thick barlines, double barlines, or barlines with braces at the beginning of a staff are all annotated as simple `|` token. The only exception is repeat signs that do have their corresponding tokens.
 
-There are many trills or accents throughout the pages. Those are not in the training data, but can be represented, so they are annotated just as defined in the chapter on Mashcima encoding.
+There are many trills or accents throughout the pages. Those are not in the training data but can be represented, so they are annotated just as defined in the chapter on Mashcima encoding.
 
 
 ## Evaluation metrics
 
-Now that we have a model producing some token sequences and we have our gold sequences, we need a way to measure the model performance. There are basically three goals for these measurements:
+Now that we have a model producing some token sequences and we have our gold sequences, we need a way to measure the model performance. There are three goals for these measurements:
 
 - Compare the model against itself to track improvements.
 - Get an overall idea of the model performance and compare it to other works.
 - Analyze model output to identify common mistakes it makes.
 
-Looking at the work by Calvo-Zaragoza and Rizo (*link*) or the HMR baseline article (*link*) we can see, that the metric they use is Symbol Error Rate (SER). This metric is also known as normliazed Levenhstein distance or edit distance. The name Symbol Error Rate is used in contrast to Word Error Rate (WER) in the text recognition community. Since we don't work with text, we are left with the Symbol Error Rate only.
+Looking at the work by Calvo-Zaragoza and Rizo (*link*) or the HMR baseline article (*link*) we can see, that the metric they use is Symbol Error Rate (SER). This metric is also known as normalized Levenshtein distance or edit distance. The name Symbol Error Rate is used in contrast to Word Error Rate (WER) in the text recognition community. Since we don't work with text, we are left with the Symbol Error Rate only.
 
-Regular Levenhstein distance (https://ui.adsabs.harvard.edu/abs/1966SPhD...10..707L/abstract) is defined as the minimum number of single-character edits that turn our prediction into the gold sequence. We don't work with strings, so we use tokens instead of characters. The basic edit operations are insertion, deletion and substitution. The lower this number, the better. Zero means perfect match.
+Regular Levenshtein distance (https://ui.adsabs.harvard.edu/abs/1966SPhD...10..707L/abstract) is defined as the minimum number of single-character edits that turn our prediction into the gold sequence. We don't work with strings, so we use tokens instead of characters. The basic edit operations are insertion, deletion, and substitution. The lower this number, the better. Zero means a perfect match.
 
-This metric has to be normalized by the length of gold sequence in order to allow for averaging over multiple values. Normalized Levehnstein distance produces a number that is typically between 0 and 1, where 0 means the sequences was predicted perfectly and 1 means the sequence is entirely wrong. The normalized distance can be greater than 1, when the predicted sequence is much longer than the gold one, but that happens only when the model is completely useless.
+This metric has to be normalized by the length of the gold sequence to allow for averaging over multiple values. Normalized Levehnstein distance produces a number that is typically between 0 and 1, where 0 means the sequences were predicted perfectly and 1 means the sequence is entirely wrong. The normalized distance can be greater than 1 when the predicted sequence is much longer than the gold one, but that happens only when the model is completely useless.
 
     SER = lev_normalized = \frac{#insertions + #deletions + #substitutions}{gold_length}
 
 Since this metric is also used by other works, we will use it for comparison against these works.
 
-When training, we will use the edit distance function implemented in the Tensorflow library (http://tensorflow.org/). Although it is claimed to be the normalized Levenhstein distance, the implementation is different to the one used during evaluation. Therefore these two values should not be compared directly. The training edit distance is only meant for tracking the learning process a determinig the stopping condition.
+When training, we will use the edit distance function implemented in the Tensorflow library (http://tensorflow.org/). Although it is claimed to be the normalized Levenshtein distance, the implementation is different from the one used during evaluation. Therefore these two values should not be compared directly. The training edit distance is only meant for tracking the learning process a determining the stopping condition.
 
 
 ### Understanding model mistakes
 
-We would like to get an idea on the kind of mistakes our trained model makes. The [chapter 2](#2) talks about the Mashcima encoding and how it is able to represent symbols that it cannot yet represent (by the `?` token). Having this `?` token in the gold data creates an ever present mistake, that increases our error rate. We would like to get an estimate of how much of the overall error is contributed by such symbols. Also note that `?` is not the only token the model cannot produce. There are symbols that cannot be engraved yet, like trills, accents or fermatas. Being able to measure the error these tokens contribute would give us an idea on how much the model could improve, if we implemented these symbols in the engraving system.
+We would like to get an idea of the kind of mistakes our trained model makes. The [chapter 2](#2) talks about the Mashcima encoding and how it can represent symbols that it cannot yet represent (by the `?` token). Having this `?` token in the gold data creates an ever-present mistake, that increases our error rate. We would like to get an estimate of how much of the overall error is contributed by such symbols. Also, note that `?` is not the only token the model cannot produce. Some symbols cannot be engraved yet, like trills, accents, or fermatas. Being able to measure the error these tokens contribute would give us an idea of how much the model could improve if we implemented these symbols in the engraving system.
 
-During evaluation, we will take the prediction and remove certain tokens from it. These same tokens will be removed from the gold sequence as well. We will compute the error of these simplified sequences. Comparing this error to the baseline error should tell us how much the removed tokens contribute to the baseline error.
+During the evaluation, we will take the prediction and remove certain tokens from it. These same tokens will be removed from the gold sequence as well. We will compute the error of these simplified sequences. Comparing this error to the baseline error should tell us how much the removed tokens contribute to the baseline error.
 
-The metric used for computing this error will be the Levenhstein distance, but normalized by the number of *imporatnt tokens* in the gold sequence. An *important token* is a token that will never be removed. It can be altered, but not removed. This will make sure the normalization term stays constant over all the possible transofrmations and thus all the error values should be comparable.
+The metric used for computing this error will be the Levenshtein distance but normalized by the number of *important tokens* in the gold sequence. An *important token* is a token that will never be removed. It can be altered, but not removed. This will make sure the normalization term stays constant over all the possible transformations and thus all the error values should be comparable.
 
-*Important tokens* are notes, rests, barlines, clefs, accidentals and other simmilar tokens. What remains as non-important are slurs, ornaments and the `?` token. The specific list of important tokens can be found in the file `app/vocabulary.py`. We will call this metric Important Token Error Rate (ITER). Remember that this metric should not be used for comparison against other models using different encodings. It is purely to get an idea of what mistakes contribute to the Symbol Error Rate.
+*Important tokens* are notes, rests, barlines, clefs, accidentals, and other similar tokens. What remains as non-important is slurs, ornaments, and the `?` token. The specific list of important tokens can be found in the file `app/vocabulary.py`. We will call this metric *Important Token Error Rate* (ITER). Remember that this metric should not be used for comparison against other models using different encodings. It is purely to get an idea of what mistakes contribute to the Symbol Error Rate.
 
 With this metric we propose a set of transformation functions that progressively simplify the sequences:
 
 - *ITER_RAW* - No transformation is applied, corresponds to SER, but normalized by the number of important tokens.
 - *ITER_TRAINED* - Tokens that the model hasn't seen during training are removed (`?` token, trills, fermatas, etc.).
 - *ITER_SLURLESS* - Like the above, but slurs are removed as well (`(`, `)`).
-- *ITER_ORNAMENTLESS* - Like the above, but most of the non-important attachments are removed (trill, accent, staccato, fermata, ...). What has to remain are accidentals and duration dots. Those are important for correct pitch and rythm.
+- *ITER_ORNAMENTLESS* - Like the above, but most of the non-important attachments are removed (trill, accent, staccato, fermata, ...). What has to remain are accidentals and duration dots. Those are important for correct pitch and rhythm.
 - *ITER_PITCHLESS* - Like the above, but all pitch information is removed by converting all tokens to their generic variant.
 
 Each metric builds on the previous one, further simplifying the sequences. This means the error rate should decrease as we go down. The amount by which it decreases can tell us how much the given transformation affected the error, therefore how much the removed tokens contributed to the error rate.
@@ -778,9 +778,9 @@ In [chapter 1](#1) we provided a short introduction to deep neural networks and 
 
     tabulka s vrstvama sítě a jejich parametrama
 
-The Mashcima engraving system works with images at the resolution of the CVC-MUSCIMA dataset. Image of an engraved staff is about 400px in height and the width varies from 500px to over 2000px. The neural network however requires the input image to be exactly 64px in height. The image will be scaled down because of this, while preserving its aspect ratio.
+The Mashcima engraving system works with images at the resolution of the CVC-MUSCIMA dataset. Image of an engraved staff is about 400px in height and the width varies from 500px to over 2000px. The neural network however requires the input image to be exactly 64px in height. The image will be scaled down because of this while preserving its aspect ratio.
 
-There will be two datasets used for training. One for the actual training - a *training dataset* and one for validation - a *validation dataset* (or "dev dataset"). The training dataset is fed into the model in batches and each batch is used to perform update of the learned parameters of the model. This process is called stochastic gradient descent (*link*). Using the entire training dataset once is called *one epoch*. The validation dataset will be used after each epoch to estimate the true performance of the model (to estimate the generalization error). Edit distance will be measured during training and validation and it will be used to track the learning progress.
+There will be two datasets used for training. One for the actual training - a *training dataset* and one for validation - a *validation dataset* (or "dev dataset"). The training dataset is fed into the model in batches and each batch is used to perform an update of the learned parameters of the model. This process is called stochastic gradient descent (*link*). Using the entire training dataset once is called *one epoch*. The validation dataset will be used after each epoch to estimate the true performance of the model (to estimate the generalization error). Edit distance will be measured during training and validation and it will be used to track the learning progress.
 
 Learned parameters will be updated by the adaptive learning rate optimizer (Adam) (*link*), that comes with Tensorflow (*link*), with the default parameters:
 
@@ -791,16 +791,16 @@ Learned parameters will be updated by the adaptive learning rate optimizer (Adam
 | $\beta_2$     | 0.999     |
 | $\varepsilon$ | $10^{-8}$ |
 
-We have not tried to fine tune these parameters or any other hyperparameters. Our goal was to try training on engraved handwritten images and see whether this approach is even feasible. Tuning hyperparameters is one of the places where our approach can be improved in the future.
+We have not tried to fine-tune these parameters or any other hyperparameters. Our goal was to try training on engraved handwritten images and see whether this approach is even feasible. Tuning hyperparameters is one of the places where our approach can be improved in the future.
 
-The training will run for a given number of epochs. In each epoch an average symbol error rate on validation dataset is recorded. The final trained model is the model, that had the lowest validation symbol error rate, during the whole training. If the number of epochs trained is sufficiently high, this method should return the model at the point, where the generalization error began to rise. Also note that the symbol error rate here is the edit distance function from Tensorflow. It is a diffenrent implementation of SER, than the one used for evaluation.
+The training will run for a given number of epochs. In each epoch, an average symbol error rate on the validation dataset is recorded. The final trained model is the model, that had the lowest validation symbol error rate, during the whole training. If the number of epochs trained is sufficiently high, this method should return the model at the point, where the generalization error began to rise. Also, note that the symbol error rate here is the edit distance function from Tensorflow. It is a different implementation of SER than the one used for evaluation.
 
-During evaluation, the beam search decoding algorithm is used with the beam width of 100 (https://arxiv.org/pdf/1601.06581.pdf). There are two additional steps performed after that. Firstly the produced token sequence is repaired. This means the rules regarding beamed notes are checked and corrected and attachment tokens are sorted properly. This repairing process is relatively simple and completely rule-based. For the details see the `repair_annotation` function inside `app/vocabulary.py`. After the repairing process, leading and trailing barlines are stripped from both gold data and the prediction. This is because barlines at the beginning and at the end of staff convey no additional meaning. It is analogous to trimming whitespace characters around a sentence. Barlines with repeat signs are not stripped away, since they are important.
+During the evaluation, the beam search decoding algorithm is used with a beamwidth of 100 (https://arxiv.org/pdf/1601.06581.pdf). There are two additional steps performed after that. Firstly the produced token sequence is repaired. This means the rules regarding beamed notes are checked and corrected and attachment tokens are sorted properly. This repairing process is relatively simple and completely rule-based. For the details see the `repair_annotation` function inside `app/vocabulary.py`. After the repairing process, leading and trailing barlines are stripped from both gold data and the prediction. This is because barlines at the beginning and at the end of staff convey no additional meaning. It is analogous to trimming whitespace characters around a sentence. Barlines with repeat signs are not stripped away since they are important.
 
 
 ## Experiments
 
-In the section on [training data](#td) we hypothesized some differences between training on PrIMuS incipits and synthetic data. The main idea is that training on PrIMuS incipits should allow the model to learn the language model. More generally training on real-wold music samples should help the model, since it will be evaluated on real-world music in the CVC-MUSCIMA dataset. Training on synthetic data should allow the model to learn complicated combinations of symbols, that are not as common in the real-world music.
+In the section on [training data](#td) we hypothesized some differences between training on PrIMuS incipits and synthetic data. The main idea is that training on PrIMuS incipits should allow the model to learn the language model. More generally training on real-wold music samples should help the model, since it will be evaluated on real-world music in the CVC-MUSCIMA dataset. Training on synthetic data should allow the model to learn complicated combinations of symbols, that are not as common in real-world music.
 
 To test this hypothesis we propose a set of four experiments:
 
@@ -811,7 +811,7 @@ To test this hypothesis we propose a set of four experiments:
 | 3          | 31 500 PrIMuS incipits, 31 500 synthetic incipits | 1 000 PrIMuS incipits    |
 | 4          | 63 000 PrIMuS incipits, 63 000 synthetic incipits | 1 000 PrIMuS incipits    |
 
-First experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits, since the evaluation will also be performed on real-world music. The second experiment validaates on synthetic incipits, because we wanted to simulate a scenario where we don't have access to real-world incipits. The fourth experiment is the same as the third one, only utilizing the whole PrIMuS dataset as is available to us.
+The first experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits since the evaluation will also be performed on real-world music. The second experiment validates on synthetic incipits because we wanted to simulate a scenario where we don't have access to real-world incipits. The fourth experiment is the same as the third one, only utilizing the whole PrIMuS dataset as is available to us.
 
 We trained each experiment for 20 epochs (except for the fourth that has been trained for only 10 epochs) and took the model with the lowest edit distance, averaged over the validation dataset.
 
@@ -829,7 +829,7 @@ Here are the resulting symbol error rates, averaged over the entire validation d
 | 3          | 0.26              |
 | 4          | 0.25              |
 
-It seems that training on synthetic data is better than training on real-world data. But looking at the experiment 3, we see that the best approach is to combine both approaches. Synthetic data is probably better than real-world data simply because all the tokens are represented equally. The discussion on language model is more complicated and is explored [in a separate section](#123). The experiment 4 is slightly better then the experiment 3, because it has twice as much data to train on.
+It seems that training on synthetic data is better than training on real-world data. But looking at experiment 3, we see that the best approach is to combine both approaches. Synthetic data is probably better than real-world data simply because all the tokens are represented equally. The discussion on the language model is more complicated and is explored [in a separate section](#123). The experiment 4 is slightly better than the experiment 3 because it has twice as much data to train on.
 
 In [section xyz](#xyz) we proposed a set of metrics, intended to give us insight into the mistakes the model makes:
 
@@ -840,7 +840,7 @@ In [section xyz](#xyz) we proposed a set of metrics, intended to give us insight
 | 3          | 0.34     | 0.32         | 0.24          | 0.21              | 0.16           |
 | 3          | 0.33     | 0.31         | 0.23          | 0.21              | 0.16           |
 
-When we compare the *ITER_RAW*, *ITER_TRAINED* and *ITER_SLURLESS*, we can see that reducing our focus to only trained tokens helps slightly, although it's not as big of an impact as we expected. Considerably larger difference happens when we remove slur tokens. This confirms, what can be seen by looking manually at the predictions the model makes. There are a lot of mistakes related to slur classification. This might be caused by the fact that the engraving system does not capture all the variability that exists in the real world with regards to slur engraving.
+When we compare the *ITER_RAW*, *ITER_TRAINED*, and *ITER_SLURLESS*, we can see that reducing our focus to only trained tokens helps slightly, although it's not as big of an impact as we expected. A considerably larger difference happens when we remove slur tokens. This confirms, what can be seen by looking manually at the predictions the model makes. There are a lot of mistakes related to slur classification. This might be caused by the fact that the engraving system does not capture all the variability that exists in the real world with regards to slur engraving.
 
 In a previous [section on evaluation](#xyz) we mentioned, that the prediction, before being evaluated, is repaired by a few rules (attachment sorting, barline trimming). The following table shows how much impact does the repair have on the error rate:
 
@@ -851,7 +851,7 @@ In a previous [section on evaluation](#xyz) we mentioned, that the prediction, b
 | 3          | 0.26    | 0.26                    |
 | 4          | 0.25    | 0.25                    |
 
-You can see, that there's almost no difference. The repairs were indeed disabled, its just that the performance difference was so minor, that the resulting average is the same.
+You can see, that there's almost no difference. The repairs were indeed disabled, it's just that the performance difference was so minor, that the resulting average is the same.
 
 Now that we know the experiment 4 performed the best, we will take a closer look at it. Here is a table of metrics for each evaluation page (averaged over all staves in that page):
 
@@ -886,7 +886,7 @@ We can do an average for each writer and compare the results to the style of the
 | 17     | 0.28 | regular, round noteheads                        |
 | 49     | 0.36 | worse, dash noteheads                           |
 
-The first four writers are very much comparable, but the writer 49 has the worst handwriting of all the writers an he ended up last, as expected.
+The first four writers are very much comparable, but the writer 49 has the worst handwriting of all the writers and he ended up last, as expected.
 
 Similarly, we can average over each page:
 
@@ -900,24 +900,24 @@ Similarly, we can average over each page:
 | 9    | 0.42 | `?` token, fermata                                   |
 | 11   | 0.50 | `?` token                                            |
 
-Pages 9 and 11 ended up last, because they are only present for writer 49, who ended up as the worst writer. Page 3 is very interesting. It is the only page, that can be fully encoded using Mashcima encoding and all the smybols it contains can be engraved using the Mashcima engraving system. It is, however, also the simplest page in that it does not contain any complicated expressions and contains only a few slurs. This is supported by the fact that page 5 ended up with also very low error and the page 5 is very much comparable in its layout and complexity to the page 3.
+Pages 9 and 11 ended up last because they are only present for writer 49, who ended up as the worst writer. Page 3 is very interesting. It is the only page, that can be fully encoded using Mashcima encoding and all the symbols it contains can be engraved using the Mashcima engraving system. It is, however, also the simplest page in that it does not contain any complicated expressions and contains only a few slurs. This is supported by the fact that page 5 ended up with an also very low error and page 5 is very much comparable in its layout and complexity to page 3.
 
 
 ### Language model
 
-When comparing results of training on real-world data vs. synthetic data, it is strange that pure synthetic data outperforms purely real-world data. But it probably has to do with the fact, that the synthetic dataset is balanced with respect to the individual output class abundance. The learned language model of real-world data helps the first experiment, but it's not nearly enough to beat the benefits of a balanced dataset for the second experiment.
+Symbol error rates on the evaluation dataset for each experiment. When comparing the results of training on real-world data vs. synthetic data, it is strange that pure synthetic data outperform purely real-world data. But it probably has to do with the fact, that the synthetic dataset is balanced with respect to the individual output class abundance. The learned language model of real-world data helps the first experiment, but it's not nearly enough to beat the benefits of a balanced dataset for the second experiment.
 
 This idea is supported by the fact that the third experiment beats both of the first two. It can benefit from both a balanced dataset and from learning a language model.
 
-The experiment 3 does indeed learn a basic language model. When I was annotating the evaluation dataset I used a trained model from experiment 3 and I noticed, that if often made mistakes in beamed note groups. Especially for the writer 49. It classified the first note of a beamed group as a quarter note. But then it (incorrectly) classified the second note as a beam start note, even though it can be easily seen the beam runs to both sides of the note. It prefered a well-formed beam, rather then the correct token. This property can be learned even from synthetic data, since they contain well-formed beams only.
+Experiment 3 does indeed learn a basic language model. When I was annotating the evaluation dataset I used a trained model from experiment 3 and I noticed, that if often made mistakes in beamed note groups. Especially for the writer 49. It classified the first note of a beamed group as a quarter note. But then it (incorrectly) classified the second note as a beam start note, even though it can be easily seen the beam runs to both sides of the note. It preferred a well-formed beam, rather than the correct token. This property can be learned even from synthetic data since they contain well-formed beams only.
 
     image of a misclassified first eight as quarter note
     predicted: ...
     gold: ...
     expected without language model: ...
 
-Then there are couple of places where it correctly predicts key signature, even though an accidental is misplaced by the writer. In a key signature, the number and type of accidentals
-uniquely identifies, what pitches those accidentals have. For example, when there's only a single sharp, it always corresponds to an `F#` note. Combining this with a specific clef gives us a correct position for the sharp.
+Then there are a couple of places where it correctly predicts key signature, even though an accidental is misplaced by the writer. In a key signature, the number and type of accidentals
+uniquely identify, what pitches those accidentals have. For example, when there's only a single sharp, it always corresponds to an `F#` note. Combining this with a specific clef gives us a correct position for the sharp.
 
     find image of that place with comparison of individual experiment predictions
     (01 correct (hopefully), 02 wrong (hopefully), 03 correct)
@@ -925,44 +925,44 @@ uniquely identifies, what pitches those accidentals have. For example, when ther
 
 ## Comparison to other works
 
-We wanted to make a comparison against the HMR baseline article (*link*), because our evaluation datasets overlap. Specifically, we share the page 3 for writer 13 and the page 1 for writer 17. We both use the symbol error rate metric, although there are many differences that need to be addressed. Their model classifies rythm and pitch separately, so both error rates are provided. There is also a combined error rate that treats the output symbols similar to our Mashcima encoding - having pitch and rythm in one token (this number should be analogous to ours). The last column shows our error rate, given by the experiment 4.
+We wanted to make a comparison against the HMR baseline article (*link*) because our evaluation datasets overlap. Specifically, we share page 3 for writer 13 and page 1 for writer 17. We both use the symbol error rate metric, although many differences need to be addressed. Their model classifies rhythm and pitch separately, so both error rates are provided. There is also a combined error rate that treats the output symbols similar to our Mashcima encoding - having pitch and rhythm in one token (this number should be analogous to ours). The last column shows our error rate, given by the experiment 4.
 
 | Page  | Writer | Rythm SER | Pitch SER | Rythm + Pitch SER | Our SER |
 | ----- | ------ | --------- | --------- | ----------------- | ------- |
 | 1     | 17     | 0.528     | 0.349     | 0.592             | 0.28    |
 | 3     | 13     | 0.226     | 0.175     | 0.270             | 0.12    |
 
-You can see, that our model has much smaller error rate, but we have to consider this result carefully. Their model does not use the CTC loss and the output encoding is very different. While our model might output a sequence of length 50, their model produces sequence of the same length as the width of the input image, that is in the order of hundreds to a thousand sequence items. Also their encoding requires perfect alignment. If the model transitions between output classes at slightly different time-steps then the gold data, it produces a lot of error, even though when collapsed, the resulting sequence is the same. And given the temporal resolution, this might contribute a lot.
+You can see, that our model has a much smaller error rate, but we have to consider this result carefully. Their model does not use the CTC loss and the output encoding is very different. While our model might output a sequence of length 50, their model produces a sequence of the same length as the width of the input image, which is in the order of hundreds to a thousand sequence items. Also, their encoding requires perfect alignment. If the model transitions between output classes at slightly different time-steps then the gold data, it produces a lot of error, even though when collapsed, the resulting sequence is the same. And given the temporal resolution, this might contribute a lot.
 
-More fair comparison would be a qualitative one. Luckily the paper provides qualitative comparison of one staff from the page 3 of their model against a commercial software called PhotoScore (https://www.neuratron.com/photoscore.htm). We can add a prediction by our model and compare all three. Note that the image has been produced by manually engraving the predicted Mashcima annotation.
+A more fair comparison would be a qualitative one. Luckily the paper provides a qualitative comparison of one staff from page 3 of their model against a commercial software called PhotoScore (https://www.neuratron.com/photoscore.htm). We can add a prediction by our model and compare all three. Note that the image has been produced by manually engraving the predicted Mashcima annotation.
 
     image containing the qualitative comparison p03 w13
     do caption dát, že je to převzaté!
 
-You can see, that the difference is not as pronounced, although this staff is one of the simpler ones. There is, however, also a qualitative comparison on a staff from the page 1:
+You can see, that the difference is not as pronounced, although this staff is one of the simpler ones. There is, however, also a qualitative comparison on a staff from page 1:
 
     image containing the qualitative comparison p01 w17
     do caption dát, že je to převzaté!, odebrané modré rámečky
 
-TODO: comment the second qualitative comparison
+TODO: comment on the second qualitative comparison
 
-It should also be noted, that each model uses different input resolution. The model from HMR article normalizes to height of 100 pixels, whereas ours normalizes to only 64 pixels. This might be a disadvantage to us. Also our model cannot read chords by design, but theirs can. This might very well be required for some task and it would make our model unusable. Their model can also detect presence of dynamics and text.
+It should also be noted, that each model uses a different resolution for input images. The model from HMR article normalizes to a height of 100 pixels, whereas ours normalizes to only 64 pixels. This might be a disadvantage for us. Also, our model cannot read chords by design, but theirs can. This might very well be required for some task and it would make our model unusable. Their model can also detect the presence of dynamics and text.
 
 
 ## Evaluating on Printed PrIMuS incipits
 
-We also wanted to try, how would our model perform on printed music. Models by other people are often pre-trained on printed music and then fine-tuned on handwritten images via transfer learning. Ours is different in that it has never seen an image of printed music. We already have code for parsing PrIMuS dataset and since the dataset contains images as well, we will use those. We just slightly preprocessed the images - inverted them, normalized and slightly scaled down to have dimensions comparable to what our model trained on. We used the model from experiment 4 since it performed the best. The evaluation was performed on 100 incipits that the model hasn't seen during training and these are the results:
+We also wanted to try, how would our model perform on printed music. Models by other people are often pre-trained on printed music and then fine-tuned on handwritten images via transfer learning. Ours is different in that it has never seen an image of printed music. We already have code for parsing PrIMuS dataset and since the dataset contains images as well, we will use those. We just slightly preprocessed the images - inverted them, normalized, and slightly scaled down to have dimensions comparable to what our model trained on. We used the model from experiment 4 since it performed the best. The evaluation was performed on 100 incipits that the model hasn't seen during training and these are the results:
 
 | SER  | ITER_RAW | ITER_TRAINED | ITER_SLURLESS | ITER_ORNAMENTLESS | ITER_PITCHLESS |
 | ---- | -------- | ------------ | ------------- | ----------------- | -------------- |
 | 0.61 | 0.64     | 0.64         | 0.60          | 0.59              | 0.56           |
 
-You can see, that the performance is not very impressive. We did expect the error rate to be high, but not that high. Although, it is understandable, because the printed music is very different to the handwritten. It would be interesting to also train on printed images in the future. This error rate would go down, but maybe the CVC-MUSCIMA error rate would go down as well.
+You can see, that the performance is not very impressive. We did expect the error rate to be high, but not that high. Although, it is understandable because the printed music is very different from the handwritten. It would be interesting to also train on printed images in the future. This error rate would go down, but maybe the CVC-MUSCIMA error rate would go down as well.
 
     image of a printed staff and the prediction and the gold
     + maybe the same staff, engraved using Mashcima
 
-Also note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expected, because we filter out incipits that cannot be engraved by Mashcima.
+Also, note that *ITER_RAW* and *ITER_TRAINED* have the same value. This is expected because we filter out incipits that cannot be engraved by Mashcima.
 
 
 # Conclusion and Future Works
