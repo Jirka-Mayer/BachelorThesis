@@ -1,12 +1,20 @@
 \chapter{Conclusion and Future Work}
 \label{chap:ConclusionAndFutureWork}
 
-\begin{code}
-- anotace a generátor:
-  - rozšíření barlines (:|: |: :|, ||) a spoustu dalších symbolů (trill, fermata)
-  - rozšíření na dynamiku (mf, ff, pp, hairpins, ...)
-  - rozšíření na akordy
-  - rozšíření na text kolem not (kvůli regularizaci), e.g. "andante", "T=180", ...
-- použít úplně jinačí model - zkombinovat baseline paper a můj generátor
-- nebo vypiplat generátor a postavit na jeho základě novej dataset
-\end{code}
+Handwritten text recognition is an interesting and unique field of research. We can see it's mainly held back by the lack of training data. It shows the fact, that we were able to achieve state-of-the-art results by writing a simple engraving system. The MUSCIMA++ dataset is a step in the right direction. It provides excessive amounts of information about the music from which we can extract any specific encoding (be it with a little bit of work). But it has to be done this way because commonly used encodings (MusicXML, MEI, MIDI) are too abstract to be useful, whereas any lower-level encodings depend too much on the chosen model architecture. The MUSCIMA++ encodes music on a low level, from which high-level information can be extracted.
+
+End-to-end solutions are powerful since they can learn intermediate features by themselves. The problem is that training an end-to-end model is much more challenging because it requires a lot more data. The MUSCIMA++ dataset has barely enough data to learn symbol classification and segmentation. When we want the model to extract pitch information about notes, the dataset becomes far too small. It is understandable because annotating data at such a high level of precision is very expensive.
+
+Our Mashcima engraving system cannot yet engrave many symbols (chords, trills, repeats, dynamics, text) and this functionality could easily be added. We think that scaling the engraving system now would be a far too early optimization. The system relies heavily on the Mashcima encoding. This is ok for the task we tackled in this thesis --- it was ideal for our model architecture. But should this engraving system be extended in the future, there are many more fundamental places it can change:
+
+\begin{itemize}
+    \item What should the input look like? This will depend a lot on the final architecture because the input has to be capable of expressing everything the system can engrave. This would be an API at the source code level for which adapters from other formats (MusicXML) could be added.
+
+    \item What format and resolution the output image has? Currently, we produced only binary images that are already very refined. We could generate RGB images that look like photos or scans. We could even leave raster graphics and produce a vector output.
+
+    \item We could provide more information in addition to the output image. We could produce the annotation XML file that MUSCIMA++ uses. Suddenly our system would be useful for symbol segmentation as well as end-to-end learning.
+
+    \item The way engraving is implemented could be different. Currently, the system moves around sprites. But when it tries to render slurs and beams, sprites become inconvenient. Maybe we could draw everything as curved lines, simulating the pen on the paper (we need it for slurs and beams anyway).
+\end{itemize}
+
+There is also a lot of discussions to be had about the model architecture. It seems that each architecture has pros and cons and there's not yet a fit-all solution. Most of these differences have been mentioned many times throughout the thesis. We think that an engraving system capable of producing high-quality training data would make for a valuable common ground on which different HMR approaches could be directly compared.
