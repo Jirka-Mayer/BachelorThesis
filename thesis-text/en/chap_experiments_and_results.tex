@@ -333,9 +333,12 @@ The first experiment trains a model on real-world incipits, second uses syntheti
 
 We trained each experiment for 20~epochs (except for the fourth that has been trained for only 10~epochs) and took the model with the lowest edit distance, averaged over the validation dataset.
 
-\begin{code}
-graphs of the validation & training edit distances from the tensorboard
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/training-charts}
+    \caption{Training charts from Tensorboard.}
+    \label{fig6:TrainingCharts}
+\end{figure}
 
 
 \section{Results}
