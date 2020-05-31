@@ -510,7 +510,7 @@ find image of that place with comparison of individual experiment predictions
 \section{Comparison to Other Works}
 \label{sec:ComparisonToOtherWorks}
 
-We wanted to make a comparison against the HMR baseline article (\cite{HmrBaseline}) because our evaluation datasets overlap. Specifically, we share page~3 for writer~13 and page~1 for writer~17. We both use the symbol error rate metric, although many differences need to be addressed. Their model classifies rhythm and pitch separately, so both error rates are provided. There is also a combined error rate that treats the output symbols similar to our Mashcima encoding - having pitch and rhythm in one token (this number should be analogous to ours). The last column shows our error rate, given by the experiment~4.
+We wanted to make a comparison against the HMR baseline article (\cite{HmrBaseline}) because our evaluation datasets overlap. Specifically, we share page~3 for writer~13 and page~1 for writer~17. We both use the symbol error rate metric, although many differences need to be addressed. Their model classifies rhythm and pitch separately, so both error rates are provided. There is also a combined error rate that treats the output symbols similar to our Mashcima encoding --- having pitch and rhythm in one token (this number should be analogous to ours). The last column shows our error rate, given by the experiment~4.
 
 \begin{table}[h] \centering
 \begin{tabular}{llcccr}
@@ -530,24 +530,77 @@ We wanted to make a comparison against the HMR baseline article (\cite{HmrBaseli
 
 You can see, that our model has a much smaller error rate, but we have to consider this result carefully. Their model does not use the CTC loss and the output encoding is very different. While our model might output a sequence of length 50, their model produces a sequence of the same length as the width of the input image, which is in the order of hundreds to a thousand sequence items. Also, their encoding requires perfect alignment. If the model transitions between output classes at slightly different time-steps then the gold data, it produces a lot of error, even though when collapsed, the resulting sequence is the same. And given the temporal resolution, this might contribute a lot.
 
-A more fair comparison would be a qualitative one. Luckily the paper provides a qualitative comparison of one staff from page~3 of their model against a commercial software called PhotoScore\footnote{\href{https://www.neuratron.com/photoscore.htm}{https://www.neuratron.com/photoscore.htm}}. We can add a prediction by our model and compare all three. Note that the image has been produced by manually engraving the predicted Mashcima annotation.
+A more fair comparison would be a qualitative one. Luckily the paper provides a qualitative comparison of one staff from page~3 of their model against a commercial software called PhotoScore\footnote{\href{https://www.neuratron.com/photoscore.htm}{https://www.neuratron.com/photoscore.htm}}. We can add a prediction by our model and compare all three (see figure~\ref{fig6:HmrBaselineComparison03}). Note that the image has been produced by manually engraving the predicted Mashcima annotation.
 
-\begin{code}
-image containing the qualitative comparison p03 w13
-do caption dát, že je to převzaté!
-\end{code}
+\begin{figure}[p]
+    \centering
 
-You can see, that the difference is not as pronounced, although this staff is one of the simpler ones. There is, however, also a qualitative comparison on a staff from page 1:
+    \setlength{\unitlength}{1.0cm}
+    \begin{picture}(14,7.5)
+        %\thicklines
+        %\put(0,0){\line(1,0){14}}
+        %\put(0,0){\line(0, 1){7.5}}
 
-\begin{code}
-image containing the qualitative comparison p01 w17
-do caption dát, že je to převzaté!, odebrané modré rámečky
-\end{code}
+        \put(0,2){
+            \includegraphics[width=138mm]{../img/hmr-baseline-comparison-their-03}
+        }
+        \put(0,0){
+            \includegraphics[width=138mm]{../img/hmr-baseline-comparison-our-03}
+        }
 
-TODO: comment on the second qualitative comparison
+        \put(0,1.3){\footnotesize \texttt{Our result:}}
+        \put(0,3.0){\footnotesize \texttt{HMR baseline:}}
+        \put(0,5.0){\footnotesize \texttt{PhotoScore:}}
+        \put(0,7.0){\footnotesize \texttt{Input:}}
+    \end{picture}
+    \verb`clef.C-4 time.3 time.4 qr q3 q4 | q5 ( ) q4 q3 |`
+    \verb`q4 e=5 =e=4 =e=3 =e2 | q3 e=4 ) =e3 e=2 ( ) =e3 |`
+    \verb`q2 q5 * e4 | q4 e=3 ( ) =e2 q5 | q3 qr qr | qr q2 q3`
+    \caption{Comparison of our results to the HMR baseline article on page 03, writer 13.}
+    \label{fig6:HmrBaselineComparison03}
+    \medskip
+    \small
+    The upper part (first three staves) are taken from the HMR baseline article (\cite{HmrBaseline}). The first staff is the input image from CVC-MUSCIMA, page 03, writer 13. The second staff is what produced the commercial software PhotoScore. The third staff is what the HMR baseline article achieved and the last staff is what our model returned, together with the Mashcima annotation. The image was created from the annotation by hand using MuseScore (\href{https://musescore.org/}{https://musescore.org/}).
+\end{figure}
+
+You can see, that the difference is not as pronounced, although this staff is one of the simpler ones. There is, however, also a qualitative comparison on a staff from page 1 (see figure~\ref{fig6:HmrBaselineComparison01}).
+
+\begin{figure}[p]
+    \centering
+
+    \setlength{\unitlength}{1.0cm}
+    \begin{picture}(14,6.5)
+        %\thicklines
+        %\put(0,0){\line(1,0){14}}
+        %\put(0,0){\line(0, 1){6.5}}
+
+        \put(0,1.6){
+            \includegraphics[width=138mm]{../img/hmr-baseline-comparison-their-01}
+        }
+        \put(0,0){
+            \includegraphics[width=138mm]{../img/hmr-baseline-comparison-our-01}
+        }
+
+        \put(0,1.3){\footnotesize \texttt{Our result:}}
+        \put(0,2.8){\footnotesize \texttt{HMR baseline:}}
+        \put(0,4.3){\footnotesize \texttt{PhotoScore:}}
+        \put(0,6.0){\footnotesize \texttt{Input:}}
+    \end{picture}
+    \verb`clef.F2 #2 time.3 time.4 e=-2 N-5 =s-5 e=-2 . =e1 s=0 . =e=1`
+    \verb`=s=1 =e-3 | h-4 | e=5 . =t=2 =s2 . e=4 . =e8 . s=7 . =s=8 .`
+    \verb`=e4 . | e6 er s5 ( ) q5 | e=5 =s=2 ) =e2 e=4 =e=2 =e4 e1 |`
+    \verb` time.6 time.7 w8 * s=-6 ( =e=-7 =e-6 |`
+    \caption{Comparison of our results to the HMR baseline article on page 01, writer 17.}
+    \label{fig6:HmrBaselineComparison01}
+    \medskip
+    \small
+    The upper part (first three staves) are taken from the HMR baseline article (\cite{HmrBaseline}). The first staff is the input image from CVC-MUSCIMA, page 01, writer 17. The second staff is what produced the commercial software PhotoScore. The third staff is what the HMR baseline article achieved and the last staff is what our model returned, together with the Mashcima annotation. The image was created from the annotation by hand using MuseScore (\href{https://musescore.org/}{https://musescore.org/}).
+    The blue boxes are part of the original image and they show difficulties with recognizing symbols placed above each other. The red symbols in the last staff show errors introduced during manual engraving. MuseScore requires rhythm to be correct. For the actual output of our model refer to the Mashcima annotation below the staff.
+\end{figure}
+
+Both models make a lot of mistakes on this more difficult input so it isn't easy to tell which one is better. What we can conclude is that their performance is actually very comparable.
 
 It should also be noted, that each model uses a different resolution for input images. The model from HMR article normalizes to a height of 100 pixels, whereas ours normalizes to only 64 pixels. This might be a disadvantage for us. Also, our model cannot read chords by design, but theirs can. This might very well be required for some task and it would make our model unusable. Their model can also detect the presence of dynamics and text.
-
 
 \section{Evaluating on Printed PrIMuS Incipits}
 
