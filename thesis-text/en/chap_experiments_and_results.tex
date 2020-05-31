@@ -489,22 +489,25 @@ Symbol error rates on the evaluation dataset for each experiment. When comparing
 
 This idea is supported by the fact that the third experiment beats both of the first two. It can benefit from both a balanced dataset and from learning a language model.
 
-Experiment 3 does indeed learn a basic language model. When I was annotating the evaluation dataset I used a trained model from experiment 3 and I noticed, that if often made mistakes in beamed note groups. Especially for the writer 49. It classified the first note of a beamed group as a quarter note. But then it (incorrectly) classified the second note as a beam start note, even though it can be easily seen the beam runs to both sides of the note. It preferred a well-formed beam, rather than the correct token. This property can be learned even from synthetic data since they contain well-formed beams only.
+Training on real-world data does indeed make the system learn a language model, although it learns only very obvious rules. For example, a time signature is represented by two numbers above one another. The most common time signatures (\texttt{4/4} and \texttt{2/2}) are represented by the symbol $C$ and a crossed $C$. Signatures that remain as numeric are only \texttt{3/4} and \texttt{6/8}. Any other signatures, although possible, are almost never used. This means that learning on real-world data should make the model gravitate towards those two common cases. It is explored in table~\ref{tab6:DurationMistakes} and indeed, the more synthetic the data is, the more mistakes the model makes on time signatures.
 
-\begin{code}
-image of a misclassified first eight as quarter note
-predicted: ...
-gold: ...
-expected without language model: ...
-\end{code}
-
-Then there are a couple of places where it correctly predicts key signature, even though an accidental is misplaced by the writer. In a key signature, the number and type of accidentals
-uniquely identify, what pitches those accidentals have. For example, when there's only a single sharp, it always corresponds to an \verb`F#` note. Combining this with a specific clef gives us a correct position for the sharp.
-
-\begin{code}
-find image of that place with comparison of individual experiment predictions
-(01 correct (hopefully), 02 wrong (hopefully), 03 correct)
-\end{code}
+\begin{table}[h] \centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Experiment} & \textbf{Training data} & \textbf{Time signature mistakes} \\
+\midrule
+1 & real-world         & 0/7 (0\%)  \\
+2 & synthetic          & 5/7 (71\%) \\
+3 & mixed              & 1/7 (14\%) \\
+4 & mixed              & 2/7 (29\%) \\
+\bottomrule
+\end{tabular}
+\caption{Erroneous time signatures for page 3, writer 49.}
+\label{tab6:DurationMistakes}
+\medskip
+\small
+Page 3 has been chosen because all staves have a time signature of \texttt{3/4}. The writer 49 was chosen because his handwriting is the worst and so the models would make many mistakes. Some of the mistakes experiment 2 made are \texttt{3/7}, \texttt{3/1}, and \texttt{3/9}.
+\end{table}
 
 
 \section{Comparison to Other Works}
