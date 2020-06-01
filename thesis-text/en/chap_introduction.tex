@@ -22,8 +22,22 @@ Mashcima engraving system is the~main feature that sets this thesis apart from o
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=130mm]{../img/comparison-real}
-    \includegraphics[width=140mm]{../img/comparison-engraved}
+    \setlength{\unitlength}{1.0cm}
+    \begin{picture}(14,6.5)
+        %\thicklines
+        %\put(0,0){\line(1,0){14}}
+        %\put(0,0){\line(0, 1){6.5}}
+
+        \put(0.5,3.5){
+            \includegraphics[width=130mm]{../img/comparison-real}
+        }
+        \put(0,0){
+            \includegraphics[width=140mm]{../img/comparison-engraved}
+        }
+
+        \put(0,5.8){\texttt{Real-world:}}
+        \put(0,2.8){\texttt{Synthetic:}}
+    \end{picture}
     \caption{
     Comparison of a real-world image to an engraved image. The top image is taken from the CVC-MUSCIMA dataset. The bottom image is the same music engraved using our engraving system and using symbols of the same writer.
     }
@@ -38,9 +52,9 @@ Also, there's a~Github repository containing all the~source code and text of thi
 
 \section{Thesis Outline}
 
-\paragraph{Chapter \ref{chap:Introduction}:} TODO
+\paragraph{Chapter \ref{chap:Introduction}:} This chapter provides an introduction to the problem this thesis attempts to solve. It describes the approach we tried and how successful it was.
 
-\paragraph{Chapter \ref{chap:RelatedWork}:} TODO
+\paragraph{Chapter \ref{chap:RelatedWork}:} This chapter lists work done by other people this we build upon and that will be referenced throughout the thesis. It provides a short overview of each work and of what significance it is to us.
 
 \paragraph{Chapter \ref{chap:DeepNeuralNetwork}:} This chapter describes the specific model we decide to use for our OMR task. It discusses traditional methods and how deep neural networks help us simplify the process. It describes models other people used for similar tasks and how we've been influenced by them.
 
@@ -49,5 +63,3 @@ Also, there's a~Github repository containing all the~source code and text of thi
 \paragraph{Chapter \ref{chap:EngravingSystem}:} This chapter talks about the Mashcima engraving system. Why we developed this system and what problem it solves. How it works, what are its limitations, and how it can be extended.
 
 \paragraph{Chapter \ref{chap:ExperimentsAndResults}:} This chapter describes the experiments we performed. These experiments aim to measure the performance of our approach and test hypotheses postulated in previous chapters. We will also attempt to compare our results to other similar works.
-
-\paragraph{Chapter \ref{chap:ConclusionAndFutureWork}:} TODO
