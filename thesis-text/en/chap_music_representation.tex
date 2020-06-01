@@ -380,6 +380,108 @@ The pitch is also encoded differently. In PrIMuS agnostic encoding, every token 
 Also, the specific pitch values are different. PrIMuS indexes lines and spaces separately and line zero is the first ledger line below the staff. We tried to improve on this by putting the line zero at the center of the staff. This makes the pitch values vertically symmetric. We also removed the separation of lines and spaces and we use just an~integer value. That simplifies the code that deals with pitch information. This integer value is then odd in spaces and even on lines.
 
 
+\section{From PrIMuS Agnostic to Mashcima}
+
+Conversion from PrIMuS agnostic encoding to Mashcima encoding could almost be done by a lookup table. There are, however, some differences that make it more complicated. The conversion happens on a token by token basis. First, we convert the pitch of the token according to the table~\ref{tab4:PitchConversionLookup}. All PrIMuS tokens have a pitch but if the corresponding Mashcima token does not, we will not use it. The remaining pitch-less variant of the token can be converted using the table~\ref{tab4:TokenConversionLookup}.
+
+Primus contains symbols that Mashcima encoding cannot represent. Gracenotes are automatically removed since they cannot be engraved. Fermatas are also removed. Incipits containing multi-measure rests are ignored because the logic enabling their parsing has not been implemented. This allows us to treat \verb`digit.4` as a time signature because that is the only remaining place where digits can appear. Dots have to be disambiguated by a simple heuristic to determine whether they are staccato dots or duration dots. Duration double dots have to be merged after the conversion finishes. Incipits containing too long (longa, breve) or too short notes (thirty-second, 5 beams, ...) are also ignored. This is the reason why we train only on 64~000 incipits and not the full 87~678 incipits.
+
+\begin{table}[p] \centering
+\begin{tabular}{ll}
+\toprule
+\textbf{PrIMuS} & \textbf{Mashcima} \\
+\midrule
+\verb`S8` & \verb`11` \\
+\verb`L8` & \verb`10` \\
+\verb`S7` & \verb`9` \\
+\verb`L7` & \verb`8` \\
+\verb`S6` & \verb`7` \\
+\verb`L6` & \verb`6` \\
+\verb`S5` & \verb`5` \\
+\verb`L5` & \verb`4` \\
+\verb`S4` & \verb`3` \\
+\verb`L4` & \verb`2` \\
+\verb`S3` & \verb`1` \\
+\verb`L3` & \verb`0` \\
+\verb`S2` & \verb`-1` \\
+\verb`L2` & \verb`-2` \\
+\verb`S1` & \verb`-3` \\
+\verb`L1` & \verb`-4` \\
+\verb`S0` & \verb`-5` \\
+\verb`L0` & \verb`-6` \\
+\verb`S-1` & \verb`-7` \\
+\verb`L-1` & \verb`-8` \\
+\verb`S-2` & \verb`-9` \\
+\verb`L-2` & \verb`-10` \\
+\verb`S-3` & \verb`-11` \\
+\verb`L-3` & \verb`-12` \\
+\bottomrule
+\end{tabular}
+\caption{Lookup table for converting PrIMuS pitch to Mashcima pitch.}
+\label{tab4:PitchConversionLookup}
+\end{table}
+
+\begin{table}[p] \centering
+\begin{tabular}{ll}
+\toprule
+\textbf{PrIMuS} & \textbf{Mashcima} \\
+\midrule
+\verb`barline` & \verb`|` \\
+\verb`fermata.above` & \verb`fermata` \\
+\midrule
+\verb`clef.C` & \verb`clef.C` \\
+\verb`clef.F` & \verb`clef.F` \\
+\verb`clef.G` & \verb`clef.G` \\
+\midrule
+\verb`metersign.C` & \verb`time.C` \\
+\verb`metersign.C/` & \verb`time.C/` \\
+\verb`digit.0` & \verb`time.0` \\
+\verb`digit.1` & \verb`time.1` \\
+\ldots & \ldots \\
+\verb`digit.9` & \verb`time.9` \\
+\midrule
+\verb`accidental.sharp` & \verb`#` \\
+\verb`accidental.flat` & \verb`b` \\
+\verb`accidental.natural` & \verb`N` \\
+\midrule
+\verb`slur.start` & \verb`(` \\
+\verb`slur.end` & \verb`)` \\
+\verb`dot` & \verb`.` or \verb`*` \\
+\midrule
+\verb`rest.quadruple_whole` & \verb`lr` \\
+\verb`rest.double_whole` & \verb`br` \\
+\verb`rest.whole` & \verb`wr` \\
+\verb`rest.half` & \verb`hr` \\
+\verb`rest.quarter` & \verb`qr` \\
+\verb`rest.eighth` & \verb`er` \\
+\verb`rest.sixteenth` & \verb`sr` \\
+\verb`rest.thirty_second` & \verb`tr` \\
+\midrule
+\verb`note.whole` & \verb`w` \\
+\verb`note.half` & \verb`h` \\
+\verb`note.quarter` & \verb`q` \\
+\verb`note.eighth` & \verb`e` \\
+\verb`note.sixteenth` & \verb`s` \\
+\verb`note.thirty_second` & \verb`t` \\
+\midrule
+\verb`note.beamedRight1` & \verb`e=` \\
+\verb`note.beamedBoth1` & \verb`=e=` \\
+\verb`note.beamedLeft1` & \verb`=e` \\
+\midrule
+\verb`note.beamedRight2` & \verb`s=` \\
+\verb`note.beamedBoth2` & \verb`=s=` \\
+\verb`note.beamedLeft2` & \verb`=s` \\
+\midrule
+\verb`note.beamedRight3` & \verb`t=` \\
+\verb`note.beamedBoth3` & \verb`=t=` \\
+\verb`note.beamedLeft3` & \verb`=t` \\
+\bottomrule
+\end{tabular}
+\caption{Lookup table for converting PrIMuS generic tokens to Mashcima encoding.}
+\label{tab4:TokenConversionLookup}
+\end{table}
+
+
 \section{Extensibility}
 \label{sec:RepresentationExtensibility}
 
