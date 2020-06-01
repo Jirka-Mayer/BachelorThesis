@@ -276,9 +276,45 @@ Also please understand, that all these errors are computed on a single trained m
 
 In chapter \ref{chap:DeepNeuralNetwork} we provided a short introduction to deep neural networks and described the RCNN architecture. We will use this architecture in the following experiments. Here is the list of layers, used in the neural network:
 
-\begin{code}
-tabulka s vrstvama sítě a jejich parametrama
-\end{code}
+\begin{table}[h] \centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Layer} & \textbf{Shape} & \textbf{Note} \\
+\midrule
+Input & \texttt{w} $\times$ \texttt{64} $\times$ \texttt{1} & \\
+\midrule
+Convolution & \texttt{w} $\times$ \texttt{64} $\times$ \texttt{16} & Kernel \texttt{5x5} \\
+Max pooling & \texttt{w/2} $\times$ \texttt{32} $\times$ \texttt{16} & Stride \texttt{2,2} \\
+
+Convolution & \texttt{w/2} $\times$ \texttt{32} $\times$ \texttt{32} & Kernel \texttt{5x5} \\
+Max pooling & \texttt{w/4} $\times$ \texttt{16} $\times$ \texttt{32} & Stride \texttt{2,2} \\
+
+Convolution & \texttt{w/4} $\times$ \texttt{16} $\times$ \texttt{64} & Kernel \texttt{5x5} \\
+Max pooling & \texttt{w/4} $\times$ \texttt{8} $\times$ \texttt{64} & Stride \texttt{1,2} \\
+
+Convolution & \texttt{w/4} $\times$ \texttt{8} $\times$ \texttt{128} & Kernel \texttt{3x3} \\
+Max pooling & \texttt{w/4} $\times$ \texttt{4} $\times$ \texttt{128} & Stride \texttt{1,2} \\
+
+Convolution & \texttt{w/4} $\times$ \texttt{4} $\times$ \texttt{128} & Kernel \texttt{3x3} \\
+Max pooling & \texttt{w/4} $\times$ \texttt{2} $\times$ \texttt{128} & Stride \texttt{1,2} \\
+
+Convolution & \texttt{w/4} $\times$ \texttt{2} $\times$ \texttt{256} & Kernel \texttt{3x3} \\
+Max pooling & \texttt{w/4} $\times$ \texttt{1} $\times$ \texttt{256} & Stride \texttt{1,2} \\
+\midrule
+Reshape & \texttt{w/4} $\times$ \texttt{256} & \\
+BLSTM & \texttt{w/4} $\times$ \texttt{256} $+$ \texttt{w/4} $\times$ \texttt{256} & Droupout \\
+Concatenate & \texttt{w/4} $\times$ \texttt{512} & \\
+\midrule
+Fully connected & \texttt{w/4} $\times$ \verb`num_classes + 1` & No activation function \\
+CTC & $\leq$ \texttt{w/4} & \\
+\bottomrule
+\end{tabular}
+\caption{Layers of the neural network.}
+\label{tab6:NetworkLayers}
+\medskip
+\small
+Letter \texttt{w} stands for input image width. BLSTM means bidirectional recurrent network with LSTM cells. The dropout on the BLSTM layer is important because the model does not converge without it. At the end, \verb`num_classes + 1` means the number of output classes (vocabulary size) plus the blank symbol required for connectionist temporal classification (CTC). All activation functions are ReLU. Convolutional layers don't have an activation function, only pooling layers do. All the details can be  seen in the source code.
+\end{table}
 
 The Mashcima engraving system works with images at the resolution of the CVC-MUSCIMA dataset. Image of an engraved staff is about 400 pixels in height and the width varies from 500 to over 2000 pixels. The neural network however requires the input image to be exactly 64 pixels in height. The image will be scaled down because of this while preserving its aspect ratio.
 

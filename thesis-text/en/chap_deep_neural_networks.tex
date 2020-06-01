@@ -38,10 +38,12 @@ As stated in the~title of this thesis, we decided to explore the~end-to-end appr
 
 All of these models share the~same high-level structure. They combine a~convolutional neural network (CNN) with a~recurrent neural network (RNN). This combination is sometimes called RCNN architecture. Convolutional neural networks are used in image processing. Their architecture is inspired by the~way filters work in computer graphics (convolving a~kernel over the~source image). They learn to extract edges, corners, and then even more abstract features like noteheads and stems. Recurrent neural networks are used for sequence processing (text and speech). They have been designed to carry state information throughout the~input sequence. In our case, they learn to propagate information horizontally - like inferring pitch of an~accidental from the~pitch of a~neighboring note. The CNN block learns to extract features that the RNN block then learns to combine into more abstract features.
 
-\begin{code}
-image of the blocks
-(image -> cnn -> rnn -> ctc -> resulting vectors)
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/network-architecture}
+    \caption{Diagram of our model --- a RCNN network with CTC loss function.}
+    \label{fig3:NetworkArchitecture}
+\end{figure}
 
 The~CNN block can be followed by fully connected layers that further refine the~result, although these layers are not necessary and our architecture doesn't contain them. This may be due to the fact that our encoding is very close to the~symbolic visual representation and~so most of the~heavy lifting is probably performed in the~CNN block.
 
@@ -64,14 +66,16 @@ Vector $x$ contains all the~input values. It is multiplied by a~vector of weight
 
 One of the~first activation functions to be used was the~sigmoid function, but~it suffered from the~problem of vanishing and exploding gradients (\cite{VanishingGradient}). The hyperbolic tangent function was then used to remedy this problem. Nowadays, rectifier function is often used ($\max(0, x)$), because it is easy to compute. Perceptrons with this function are called rectified linear units (ReLU). It~also has some problems, so~leaky ReLU can be used to address them (\cite{Maas2013RectifierNI}).
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/neural-network}
+    \caption{Fully-connected neural network with 3 layers.}
+    \label{fig3:NeuralNetwork}
+\end{figure}
+
 Perceptrons can be interconnected to form neural networks. A~typical architecture is a~feedforward neural network (FNN). It~organizes perceptrons into layers, through which information flows in one direction. The resulting graph is directed and acyclic, which allows us to understand the~whole network as a~complex mathematical function and lets us train it using the~backpropagation and gradient descent algorithms (\cite{Goodfellow-et-al-2016}).
 
 The~simplest feedforward network is a~network with dense (fully connected) layers. Each perceptron in a~given layer receives input as the~output of all perceptrons in the~previous layer.
-
-\begin{code}
-image of a dense network with some layers
-(individual perceptrons should be visible)
-\end{code}
 
 
 \section{Convolutional Neural Network}
@@ -80,24 +84,30 @@ A~convolutional neural network (CNN) is a~kind of feedforward network. It~is ide
 
 \paragraph{Convolutional layer} A~convolutional layer is similar to a~fully connected layer, but the~connections are only local. The~input and output is a~two-dimensional array of numbers (like one channel of an~image). Each perceptron takes input from only a~small window of neighboring perceptrons in the~input layer (\texttt{3x3}, \texttt{5x5}, \texttt{7x7}). Weights are represented by a~kernel of the~same size as this neighborhood window. This kernel is shared by all the~perceptrons, reducing the~number of learned arguments substantially and allowing the~layer to process images of variable sizes. There may be multiple input and output arrays (channels). In such a~case, the~convolutional layer has one kernel for each pair of channels. This architecture is inspired by the~convolution filters from computer graphics --- hence the name.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/convolution}
+    \caption{Computation of one output pixel in a convolutional layer.}
+    \label{fig3:Convolution}
+\end{figure}
+
 \paragraph{Pooling layer} A~pooling layer typically follows a~convolutional layer. Its~job is to downsample the~image, reducing its spatial resolution, while preserving the number of channels. The~downsampling is performed by splitting the~input into a~set of rectangular regions (that may overlap) and then reducing each region using max, sum, or average operator. Widely used is the~maximum operator and the~resulting layer is called a~\emph{max pooling layer}. The pool size is typically \texttt{2x2}.
 
 \paragraph{Fully-connected layer} One or more fully connected layers can be added at the~end of a~CNN, to further refine features extracted by the~previous layers. This layer is often present in models performing classification because we want to reduce the~number of outputs to the~number of classes we are predicting.
 
 A~CNN has typically many convolutional layers, combined with pooling layers. Each time the~spatial dimensions shrink in a~pooling layer, more channels are added to be able to represent more features. This forces the network to create abstractions and convert the~visual data into some abstract representation vector.
 
-\begin{code}
-some image of a convolution
-\end{code}
-
 
 \section{Recurrent Neural Network}
 
 A~recurrent neural network (RNN) is a~network intended for sequence processing. Input for the~network is a~sequence of vectors and the~output is a~sequence of the~same length. The~recurrent network can be understood as composed of recurrent units, each with two inputs and two outputs. A~unit accepts one vector from the~input sequence and an~old state vector. It~outputs the~corresponding vector of the~output sequence and the~new state vector. These recurrent units can be unrolled along the~input sequence and each one passes the~state vector to the next one, using it to send information along the~length of the~sequence. All instances of the~recurrent unit share the~same learned parameters and so can be unrolled to any length necessary. The~sequence dimension, where unrolling happens, is called the time dimension.
 
-\begin{code}
-image of an unrolled recurrent network (e.g. for NLP)
-\end{code}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=140mm]{../img/recurrent-network}
+    \caption{Unrolled recurrent units processing a sequence of vectors.}
+    \label{fig3:RecurrentNetwork}
+\end{figure}
 
 The~internal architecture of a~recurrent unit may vary, but it's often a~feedforward network, where the~input and output vectors are both split into a~sequence part and a~state part. The most common recurrent unit architectures are the~long short-term memory (LSTM) (\cite{LSTM}) and the~gated recurrent unit (GRU) (\cite{GRU}). You can join two recurrent layers, passing information in opposite directions, to create a~bidirectional recurrent layer.
 
