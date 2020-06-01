@@ -125,6 +125,26 @@ Finally, before the image is fed into the model, it's normalized to a~specified 
 \end{figure}
 
 
+\section{Parameters}
+
+There are many places where the engraving system makes an arbitrary decision. This section attempts to list most of them. The list is not exhaustive. The goal is to give you an idea of how the system works.
+
+\begin{itemize}
+    \item Sprites are selected randomly from a repository of all sprites. This selection has the most impact on the variability of the resulting image. The repository contains sprites from all writer so this selection process mixes up symbols from different writers.
+    \item Noteheads and stems are not mixed --- a given note sprite will always have its corresponding stem sprite when engraved.
+    \item A canvas item has a pivot that is placed according to the item's pitch. This placement is not randomized (vertically) because sprite selection does a good job of it already.
+    \item A note will have many sprites attached (accidentals, duration dots, staccato) and they are also chosen randomly from the sprite repository. Their position is slightly randomized. Sometimes additional rules are applied (e.g. to prevent duration dots from landing on staff lines and not being visible).
+    \item Canvas items are placed from left to right with random padding inserted in between.
+    \item Barlines can be short or tall. This depends on whether there are staves rendered above and below our staff.
+    \item Note stem orientation depends on the note position. Lower-pitched notes point stems up and vice versa. Notes around the centerline have stem orientation randomized.
+    \item A given note has three slur attachment points --- before, below, and after the notehead. When notes on both ends of a slur have stems pointing in the same direction, the below points are used. Otherwise, the before and after points are used. When below attachment points are used, slur curves with the notes. Otherwise, the curvature is randomized.
+    \item Slurs are rendered as parabolas intersecting three points --- the attachment points and one midpoint. The midpoint vertical offset defines the curvature and it is proportional to the slur length.
+    \item Beamed group stem orientation is determined in the same way as for a single note, only the average pitch of the group is used.
+    \item The beam is selected as a line that minimizes the distance to all notes while staying on one side of all the notes. Minimal stem length is preserved.
+    \item Stems in a beamed group have their height adjusted (by stretching the sprite) to end up right on the beamline.
+\end{itemize}
+
+
 \section{Extensibility}
 
 Many symbols currently can be encoded, but cannot be engraved (trills, accents, fermatas). These attachment symbols could be added relatively easily, in a~similar fashion to the way staccato dots and accidentals are rendered.
