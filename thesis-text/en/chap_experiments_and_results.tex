@@ -367,14 +367,31 @@ To test this hypothesis we propose a set of four experiments (table~\ref{tab6:Ex
 
 The first experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits since the evaluation will also be performed on real-world music. The second experiment validates on synthetic incipits because we wanted to simulate a scenario where we don't have access to real-world incipits. The fourth experiment is the same as the third one, only utilizing the whole PrIMuS dataset as is available to us.
 
-We trained each experiment for 20~epochs (except for the fourth that has been trained for only 10~epochs) and took the model with the lowest edit distance, averaged over the validation dataset.
+When training, a random permutation of the size of the entire dataset is generated and then used to access training items at random. This ensures random order of training items and also proper mixing of real-world and synthetic incipits. New permutation is generated for each epoch.
 
-\begin{figure}[h]
+We trained each experiment for 20~epochs (except for the fourth that has been trained for only 10~epochs) and took the model with the lowest edit distance, averaged over the validation dataset. Figure~\ref{fig6:TrainingCharts} shows the training charts --- how the training and validation SER (edit distance) evolves. The training took about 24 hours for each experiment on a gaming PC but it didn't utilize the full capacity of the machine (probably because recurrent network training cannot be parallelized). The training was done in batches of 10 incipits. One epoch corresponds to 6300 batches. Experiment 4 has twice as large dataset and half as many epochs but the total number of batches is the same. Table~\ref{tab6:OptimalEpochs} shows the optimal epochs --- the point during training when the model was saved for the last time.
+
+\begin{figure}[p]
     \centering
-    \includegraphics[width=140mm]{../img/training-charts}
-    \caption{Training charts from Tensorboard.}
+    \includegraphics[width=100mm]{../img/training-charts}
+    \caption{Training charts from Tensorboard. The horizontal axis shows the number of trained batches.}
     \label{fig6:TrainingCharts}
 \end{figure}
+
+\begin{table}[h] \centering
+    \begin{tabular}{llll}
+    \toprule
+    \textbf{Experiment} & \textbf{Optimal epoch} & \textbf{Batches trained} & \textbf{Validation SER} \\
+    \midrule
+    1 & 9  & 56 700 & 0.0238 \\
+    2 & 7  & 44 100 & 0.1409 \\
+    3 & 6  & 37 800 & 0.0292 \\
+    4 & 10 & 63 000 & 0.0278 \\
+    \bottomrule
+    \end{tabular}
+    \caption{What epochs had the smallest validation error and were chosen as the final model.}
+    \label{tab6:OptimalEpochs}
+\end{table}
 
 
 \section{Results}
