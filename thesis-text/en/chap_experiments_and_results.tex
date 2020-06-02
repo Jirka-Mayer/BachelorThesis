@@ -153,17 +153,90 @@ Lastly, we wanted to compare our results with the results of \emph{From Optical 
 
 We end up with 6~writers, 17~pages (7~distinct), 115~staves, and over 5840~tokens. Annotations for these pages can be found in the file \verb`app/`\allowbreak\verb`mus`\allowbreak\verb`ci`\allowbreak\verb`ma_`\allowbreak\verb`annota`\allowbreak\verb`tions.py`. These annotations have been created by me --- the author of this thesis. Experience regarding the annotation process is described in the following section (section~\ref{sec:ManualAnnotationExperience}).
 
-Lastly, we want to show a frequency table of the most common tokens in the evaluation dataset. The table contains generic variants of the tokens. A table containing common pitches is the very next table.
+Lastly, we want to show a frequency table of the most common tokens and pitches in the evaluation dataset (table~\ref{tab6:TokenFrequencies}). The table contains generic variants of the tokens.
 
-\begin{code}
-table of generic tokens
-\end{code}
-
-\begin{code}
-table of pitches
-\end{code}
-
-\newpage
+\begin{table}[p] \centering
+    \begin{tabular}{lr}
+        \toprule
+        \textbf{Pitch} & \textbf{Count} \\
+        \midrule
+        \verb`None` & 2703 \\
+        \verb`4` & 531 \\
+        \verb`3` & 411 \\
+        \verb`2` & 373 \\
+        \verb`5` & 344 \\
+        \verb`1` & 243 \\
+        \verb`0` & 203 \\
+        \verb`6` & 191 \\
+        \verb`-2` & 147 \\
+        \verb`7` & 132 \\
+        \verb`-4` & 103 \\
+        \verb`-3` & 89 \\
+        \verb`-6` & 88 \\
+        \verb`-1` & 86 \\
+        \verb`8` & 72 \\
+        \verb`-5` & 48 \\
+        \verb`9` & 33 \\
+        \verb`-7` & 21 \\
+        \verb`-8` & 20 \\
+        \verb`10` & 13 \\
+        \verb`-9` & 1 \\
+        \bottomrule
+    \end{tabular}
+    \qquad\qquad\qquad\qquad
+    \begin{tabular}{lr}
+        \toprule
+        \textbf{Token} & \textbf{Count} \\
+        \midrule
+        \verb`q` & 981 \\
+        \verb`|` & 843 \\
+        \verb`)` & 418 \\
+        \verb`(` & 416 \\
+        \verb`=e=` & 372 \\
+        \verb`e=` & 357 \\
+        \verb`=e` & 334 \\
+        \verb`#` & 287 \\
+        \verb`qr` & 244 \\
+        \verb`.` & 236 \\
+        \verb`*` & 159 \\
+        \verb`e` & 150 \\
+        \verb`=s` & 103 \\
+        \verb`=s=` & 88 \\
+        \verb`s=` & 80 \\
+        \verb`w` & 72 \\
+        \verb`h` & 70 \\
+        \verb`er` & 67 \\
+        \verb`N` & 64 \\
+        \verb`wr` & 62 \\
+        \verb`clef.G` & 55 \\
+        \verb`b` & 47 \\
+        \verb`time.4` & 40 \\
+        \verb`>` & 40 \\
+        \verb`time.3` & 39 \\
+        \verb`hr` & 36 \\
+        \verb`clef.C` & 34 \\
+        \verb`clef.F` & 28 \\
+        \verb`s` & 27 \\
+        \verb`trill` & 21 \\
+        \verb`lr` & 16 \\
+        \verb`?` & 15 \\
+        \verb`tuplet.3` & 13 \\
+        \verb`**` & 12 \\
+        \verb`br` & 8 \\
+        \verb`fermata` & 4 \\
+        \verb`time.8` & 3 \\
+        \verb`sr` & 2 \\
+        \verb`time.6` & 2 \\
+        \verb`:|:` & 2 \\
+        \verb`:|` & 2 \\
+        \verb`time.5` & 1 \\
+        \verb`time.7` & 1 \\
+        \verb`time.C` & 1 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Frequency tables of pitches and tokens in the evaluation dataset.}
+    \label{tab6:TokenFrequencies}
+\end{table}
 
 
 \subsection{Manual Annotation Experience}

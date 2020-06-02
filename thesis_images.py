@@ -159,6 +159,45 @@ def synthetic_annotation():
     )
 
 
+def frequency_tables():
+    from app.muscima_annotations import MUSCIMA_RAW_ANNOTATIONS
+    from app.vocabulary import to_generic, get_pitch
+
+    pitch_frequencies = {}
+    token_frequencies = {}
+
+    for writer, pages in MUSCIMA_RAW_ANNOTATIONS.items():
+        for page, staves in pages.items():
+            for gold_annotation in staves:
+                for token in gold_annotation.split():
+
+                    p = get_pitch(token)
+                    if p not in pitch_frequencies:
+                        pitch_frequencies[p] = 0
+                    pitch_frequencies[p] += 1
+
+                    g = to_generic(token)
+                    if g not in token_frequencies:
+                        token_frequencies[g] = 0
+                    token_frequencies[g] += 1
+
+    pitches_by_frequency = list(sorted(
+        pitch_frequencies.keys(),
+        key=lambda k: -pitch_frequencies[k],
+    ))
+    for pitch in pitches_by_frequency:
+        print(pitch, "&", pitch_frequencies[pitch], "\\\\")
+
+    print("--------")
+
+    tokens_by_frequency = list(sorted(
+        token_frequencies.keys(),
+        key=lambda k: -token_frequencies[k],
+    ))
+    for token in tokens_by_frequency:
+        print(token, "&", token_frequencies[token], "\\\\")
+
+
 ########
 # MAIN #
 ########
@@ -177,4 +216,5 @@ def synthetic_annotation():
 # multi_staff()
 # normalized_image()
 # comparison_2_engraved_image()
-synthetic_annotation()
+# synthetic_annotation()
+frequency_tables()
