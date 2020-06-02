@@ -16,13 +16,13 @@ We have a system, that can create images for given annotations. All we need to p
 
 \subsection{PrIMuS Incipits}
 
-The 20 pages of CVC-MUSCIMA contain this information. The problem is that there are only 20 of them. We ideally need thousands of annotations to account for all the variability in note types and pitches our encoding can capture. Luckily, the PrIMuS dataset (\cite{Primus}) contains exactly what we need. PrIMuS contains over 87~000~incipits of monophonic music. An incipit is the recognizable part of a melody or a song. The incipits have the ideal length of a few measures. It's not an entire staff, but not a few symbols either. Also, all the incipits are encoded in many formats, but most importantly they are encoded in the agnostic format, which is very similar to the Mashcima encoding.
+The 20 pages of CVC-MUSCIMA contain this information. The problem is that there are only 20 of them. We ideally need thousands of annotations to account for all the variability in note types and pitches our encoding can capture. Luckily, the PrIMuS dataset (\cite{Primus}) contains exactly what we need. PrIMuS contains over 87~000~incipits of monophonic music. An incipit is the recognizable part of a melody or a song. The incipits have the ideal length of a few measures. It is not an entire staff, but not a few symbols either. Also, all the incipits are encoded in many formats, but most importantly they are encoded in the agnostic format, which is very similar to the Mashcima encoding.
 
 We can take the PrIMuS dataset, engrave all the incipits using Mashcima, and train on the result. The only obstacle is converting PrIMuS agnostic encoding to Mashcima encoding.
 
 Converting PrIMuS agnostic encoding to Mashcima encoding is mostly a one-to-one mapping of tokens. Pitches have to be encoded differently, tokens have different names. In PrIMuS, all tokens have pitch information, so for some tokens, it gets stripped away.
 
-Some incipits, however, need to be filtered out. PrIMuS contains symbols, that aren't present in CVC-MUSCIMA, therefore they cannot be engraved. These symbols are very long or very short notes (longa, breve, thirty-second). PrIMuS also contains many grace notes and similar symbols that the Mashcima engraving system cannot render, so they get removed. There are a couple of other rules and checks that make the conversion slightly more complicated. The exact code for the conversion can be found in the file \verb`mashcima/`\allowbreak\verb`primus_`\allowbreak\verb`adapter.py`.
+Some incipits, however, need to be filtered out. PrIMuS contains symbols, that are not present in CVC-MUSCIMA, therefore they cannot be engraved. These symbols are very long or very short notes (longa, breve, thirty-second). PrIMuS also contains many grace notes and similar symbols that the Mashcima engraving system cannot render, so they get removed. There are a couple of other rules and checks that make the conversion slightly more complicated. The exact code for the conversion can be found in the file \verb`mashcima/`\allowbreak\verb`primus_`\allowbreak\verb`adapter.py`.
 
 When the conversion finishes, we are left with 64~000~incipits we can use to train on.
 
@@ -46,7 +46,7 @@ The other option we have is to just simply randomize the training annotations, t
 
 Randomization seems simple at first, but it can be done in many ways. At one extreme, we can simply randomly choose tokens from the vocabulary. This, however, produces sequences that cannot be rendered and are nonsensical. Beamed notes have to have a beginning and an end. We cannot have an unfinished or non-started beam. At another extreme, we can try to mimic the language model by using a lot of rules.
 
-We opted for something in the middle. We make sure, that the synthetic annotation can be engraved, but we don't ensure anything more. Duration per measure is not correct, pitch is almost random, time signatures can be in the middle of a measure. The resulting image looks nothing like what we are used to seeing in sheet music. The code for generating synthetic annotations can be found in file \verb`app/`\allowbreak\verb`generate_`\allowbreak\verb`random_`\allowbreak\verb`annotation.py`.
+We opted for something in the middle. We make sure, that the synthetic annotation can be engraved, but we do not ensure anything more. Duration per measure is not correct, pitch is almost random, time signatures can be in the middle of a measure. The resulting image looks nothing like what we are used to seeing in sheet music. The code for generating synthetic annotations can be found in file \verb`app/`\allowbreak\verb`generate_`\allowbreak\verb`random_`\allowbreak\verb`annotation.py`.
 
 \begin{figure}[h]
     \centering
@@ -303,9 +303,9 @@ Now that we have a model producing some token sequences and we have our gold seq
 \item Analyze model output to identify common mistakes it makes.
 \end{itemize}
 
-Looking at the work by Calvo-Zaragoza and Rizo (\cite{Primus}) or the HMR baseline article (\cite{HmrBaseline}) we can see, that the metric they use is \emph{Symbol Error Rate} (SER). This metric is also known as normalized Levenshtein distance or edit distance. The name Symbol Error Rate is used in contrast to Word Error Rate (WER) in the text recognition community. Since we don't work with text, we are left with the Symbol Error Rate only.
+Looking at the work by Calvo-Zaragoza and Rizo (\cite{Primus}) or the HMR baseline article (\cite{HmrBaseline}) we can see, that the metric they use is \emph{Symbol Error Rate} (SER). This metric is also known as normalized Levenshtein distance or edit distance. The name Symbol Error Rate is used in contrast to Word Error Rate (WER) in the text recognition community. Since we do not work with text, we are left with the Symbol Error Rate only.
 
-Regular Levenshtein distance (\cite{Levenshtein}) is defined as the minimum number of single-character edits that turn our prediction into the gold sequence. We don't work with strings, so we use tokens instead of characters. The basic edit operations are insertion, deletion, and substitution. The lower this number, the better. Zero means a perfect match.
+Regular Levenshtein distance (\cite{Levenshtein}) is defined as the minimum number of single-character edits that turn our prediction into the gold sequence. We do not work with strings, so we use tokens instead of characters. The basic edit operations are insertion, deletion, and substitution. The lower this number, the better. Zero means a perfect match.
 
 This metric has to be normalized by the length of the gold sequence to allow for averaging over multiple values. Normalized Levehnstein distance produces a number that is typically between 0 and 1, where 0 means the sequences were predicted perfectly and 1 means the sequence is entirely wrong. The normalized distance can be greater than 1 when the predicted sequence is much longer than the gold one, but that happens only when the model is completely useless.
 
@@ -333,7 +333,7 @@ With this metric we propose a set of transformation functions that progressively
 
 \begin{itemize}
 \item \verb`ITER_RAW` \\ No transformation is applied, corresponds to SER, but normalized by the number of important tokens.
-\item \verb`ITER_TRAINED` \\ Tokens that the model hasn't seen during training are removed (\verb`?` token, trills, fermatas, etc.).
+\item \verb`ITER_TRAINED` \\ Tokens that the model has not seen during training are removed (\verb`?` token, trills, fermatas, etc.).
 \item \verb`ITER_SLURLESS` \\ Like the above, but slurs are removed as well (\verb`(`, \verb`)`).
 \item \verb`ITER_ORNAMENTLESS` \\ Like the above, but most of the non-important attachments are removed (trill, accent, staccato, fermata, ...). What has to remain are accidentals and duration dots. Those are important for correct pitch and rhythm.
 \item \verb`ITER_PITCHLESS` \\ Like the above, but all pitch information is removed by converting all tokens to their generic variant.
@@ -382,11 +382,12 @@ Fully connected & \texttt{w/4} $\times$ \verb`num_classes + 1` & No activation f
 CTC & $\leq$ \texttt{w/4} & \\
 \bottomrule
 \end{tabular}
-\caption{Layers of the neural network.}
-\label{tab6:NetworkLayers}
+\\
 \medskip
 \small
-Letter \texttt{w} stands for input image width. BLSTM means bidirectional recurrent network with LSTM cells. The dropout on the BLSTM layer is important because the model does not converge without it. At the end, \verb`num_classes + 1` means the number of output classes (vocabulary size) plus the blank symbol required for connectionist temporal classification (CTC). All activation functions are ReLU. Convolutional layers don't have an activation function, only pooling layers do. All the details can be  seen in the source code.
+Letter \texttt{w} stands for input image width. BLSTM means bidirectional recurrent network with LSTM cells. The dropout on the BLSTM layer is important because the model does not converge without it. At the end, \verb`num_classes + 1` means the number of output classes (vocabulary size) plus the blank symbol required for connectionist temporal classification (CTC). All activation functions are ReLU. Convolutional layers do not have an activation function, only pooling layers do. All the details can be  seen in the source code.
+\caption{Layers of the neural network. }
+\label{tab6:NetworkLayers}
 \end{table}
 
 The Mashcima engraving system works with images at the resolution of the CVC-MUSCIMA dataset. Image of an engraved staff is about 400 pixels in height and the width varies from 500 to over 2000 pixels. The neural network however requires the input image to be exactly 64 pixels in height. The image will be scaled down because of this while preserving its aspect ratio.
@@ -438,11 +439,11 @@ To test this hypothesis we propose a set of four experiments (table~\ref{tab6:Ex
 \label{tab6:ExperimentData}
 \end{table}
 
-The first experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits since the evaluation will also be performed on real-world music. The second experiment validates on synthetic incipits because we wanted to simulate a scenario where we don't have access to real-world incipits. The fourth experiment is the same as the third one, only utilizing the whole PrIMuS dataset as is available to us.
+The first experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits since the evaluation will also be performed on real-world music. The second experiment validates on synthetic incipits because we wanted to simulate a scenario where we do not have access to real-world incipits. The fourth experiment is the same as the third one, only utilizing the whole PrIMuS dataset as is available to us.
 
 When training, a random permutation of the size of the entire dataset is generated and then used to access training items at random. This ensures random order of training items and also proper mixing of real-world and synthetic incipits. New permutation is generated for each epoch.
 
-We trained each experiment for 20~epochs (except for the fourth that has been trained for only 10~epochs) and took the model with the lowest edit distance, averaged over the validation dataset. Figure~\ref{fig6:TrainingCharts} shows the training charts --- how the training and validation SER (edit distance) evolves. The training took about 24 hours for each experiment on a gaming PC but it didn't utilize the full capacity of the machine (probably because recurrent network training cannot be parallelized). The training was done in batches of 10 incipits. One epoch corresponds to 6300 batches. Experiment 4 has twice as large dataset and half as many epochs but the total number of batches is the same. Table~\ref{tab6:OptimalEpochs} shows the optimal epochs --- the point during training when the model was saved for the last time.
+We trained each experiment for 20~epochs (except for the fourth that has been trained for only 10~epochs) and took the model with the lowest edit distance, averaged over the validation dataset. Figure~\ref{fig6:TrainingCharts} shows the training charts --- how the training and validation SER (edit distance) evolves. The training took about 24 hours for each experiment on a gaming PC but it did not utilize the full capacity of the machine (probably because recurrent network training cannot be parallelized). The training was done in batches of 10 incipits. One epoch corresponds to 6300 batches. Experiment 4 has twice as large dataset and half as many epochs but the total number of batches is the same. Table~\ref{tab6:OptimalEpochs} shows the optimal epochs --- the point during training when the model was saved for the last time.
 
 \begin{figure}[p]
     \centering
@@ -510,7 +511,7 @@ In section~\ref{sec:UnderstandingModelMistakes} we proposed a set of metrics, in
 \label{tab6:ExperimentITER}
 \end{table}
 
-When we compare the \verb`ITER_RAW`, \verb`ITER_TRAINED`, and \verb`ITER_SLURLES`, we can see that reducing our focus to only trained tokens helps slightly, although it's not as big of an impact as we expected. A considerably larger difference happens when we remove slur tokens. This confirms, what can be seen by looking manually at the predictions the model makes. There are a lot of mistakes related to slur classification. This might be caused by the fact that the engraving system does not capture all the variability that exists in the real world with regards to slur engraving.
+When we compare the \verb`ITER_RAW`, \verb`ITER_TRAINED`, and \verb`ITER_SLURLES`, we can see that reducing our focus to only trained tokens helps slightly, although it is not as big of an impact as we expected. A considerably larger difference happens when we remove slur tokens. This confirms, what can be seen by looking manually at the predictions the model makes. There are a lot of mistakes related to slur classification. This might be caused by the fact that the engraving system does not capture all the variability that exists in the real world with regards to slur engraving.
 
 In a previous section on evaluation (section~\ref{sec:ArchitectureTrainingEvaluation}) we mentioned, that the prediction, before being evaluated, is repaired by a few rules (attachment sorting, barline trimming). The table~\ref{tab6:RepairComparison} shows how much impact the repair has on the error rate.
 
@@ -529,7 +530,7 @@ In a previous section on evaluation (section~\ref{sec:ArchitectureTrainingEvalua
 \label{tab6:RepairComparison}
 \end{table}
 
-You can see, that there's almost no difference. The repairs were indeed disabled, it's just that the performance difference was so minor, that the resulting average is the same.
+You can see, that there is almost no difference. The repairs were indeed disabled, it is just that the performance difference was so minor, that the resulting average is the same.
 
 Now that we know the experiment~4 performed the best, we will take a closer look at it. The table~\ref{tab6:MetricsForEachPage} shows metrics for each evaluation page (averaged over all staves in that page).
 
@@ -614,7 +615,7 @@ Pages 9 and 11 ended up last because they are only present for writer~49, who en
 \subsection{Language Model}
 \label{sec:LanguageModel}
 
-Symbol error rates on the evaluation dataset for each experiment. When comparing the results of training on real-world data vs. synthetic data, it is strange that pure synthetic data outperform purely real-world data. But it probably has to do with the fact, that the synthetic dataset is balanced with respect to the individual output class abundance. The learned language model of real-world data helps the first experiment, but it's not nearly enough to beat the benefits of a balanced dataset for the second experiment.
+Symbol error rates on the evaluation dataset for each experiment. When comparing the results of training on real-world data vs. synthetic data, it is strange that pure synthetic data outperform purely real-world data. But it probably has to do with the fact, that the synthetic dataset is balanced with respect to the individual output class abundance. The learned language model of real-world data helps the first experiment, but it is not nearly enough to beat the benefits of a balanced dataset for the second experiment.
 
 This idea is supported by the fact that the third experiment beats both of the first two. It can benefit from both a balanced dataset and from learning a language model.
 
@@ -631,11 +632,8 @@ Training on real-world data does indeed make the system learn a language model, 
 4 & mixed              & 2/7 (29\%) \\
 \bottomrule
 \end{tabular}
-\caption{Erroneous time signatures for page 3, writer 49.}
+\caption{Erroneous time signatures for page 3, writer 49. Page 3 has been chosen because all staves have a time signature of \texttt{3/4}. The writer 49 was chosen because his handwriting is the worst and so the models would make many mistakes. Some of the mistakes experiment 2 made are \texttt{3/7}, \texttt{3/1}, and \texttt{3/9}.}
 \label{tab6:DurationMistakes}
-\medskip
-\small
-Page 3 has been chosen because all staves have a time signature of \texttt{3/4}. The writer 49 was chosen because his handwriting is the worst and so the models would make many mistakes. Some of the mistakes experiment 2 made are \texttt{3/7}, \texttt{3/1}, and \texttt{3/9}.
 \end{table}
 
 
@@ -688,11 +686,8 @@ A more fair comparison would be a qualitative one. Luckily the paper provides a 
     \verb`clef.C-4 time.3 time.4 qr q3 q4 | q5 ( ) q4 q3 |`
     \verb`q4 e=5 =e=4 =e=3 =e2 | q3 e=4 ) =e3 e=2 ( ) =e3 |`
     \verb`q2 q5 * e4 | q4 e=3 ( ) =e2 q5 | q3 qr qr | qr q2 q3`
-    \caption{Comparison of our results to the HMR baseline article on page 03, writer 13.}
+    \caption{Comparison of our results to the HMR baseline article on page 03, writer 13. The upper part (first three staves) are taken from the HMR baseline article (\cite{HmrBaseline}). The first staff is the input image from CVC-MUSCIMA, page 03, writer 13. The second staff is what produced the commercial software PhotoScore. The third staff is what the HMR baseline article achieved and the last staff is what our model returned, together with the Mashcima annotation. The image was created from the annotation by hand using MuseScore (\href{https://musescore.org/}{https://musescore.org/}).}
     \label{fig6:HmrBaselineComparison03}
-    \medskip
-    \small
-    The upper part (first three staves) are taken from the HMR baseline article (\cite{HmrBaseline}). The first staff is the input image from CVC-MUSCIMA, page 03, writer 13. The second staff is what produced the commercial software PhotoScore. The third staff is what the HMR baseline article achieved and the last staff is what our model returned, together with the Mashcima annotation. The image was created from the annotation by hand using MuseScore (\href{https://musescore.org/}{https://musescore.org/}).
 \end{figure}
 
 You can see, that the difference is not as pronounced, although this staff is one of the simpler ones. There is, however, also a qualitative comparison on a staff from page 1 (see figure~\ref{fig6:HmrBaselineComparison01}).
@@ -722,21 +717,18 @@ You can see, that the difference is not as pronounced, although this staff is on
     \verb`=s=1 =e-3 | h-4 | e=5 . =t=2 =s2 . e=4 . =e8 . s=7 . =s=8 .`
     \verb`=e4 . | e6 er s5 ( ) q5 | e=5 =s=2 ) =e2 e=4 =e=2 =e4 e1 |`
     \verb` time.6 time.7 w8 * s=-6 ( =e=-7 =e-6 |`
-    \caption{Comparison of our results to the HMR baseline article on page 01, writer 17.}
+    \caption{Comparison of our results to the HMR baseline article on page 01, writer 17. The upper part (first three staves) are taken from the HMR baseline article (\cite{HmrBaseline}). The first staff is the input image from CVC-MUSCIMA, page 01, writer 17. The second staff is what produced the commercial software PhotoScore. The third staff is what the HMR baseline article achieved and the last staff is what our model returned, together with the Mashcima annotation. The image was created from the annotation by hand using MuseScore (\href{https://musescore.org/}{https://musescore.org/}).
+    The blue boxes are part of the original image and they show difficulties with recognizing symbols placed above each other. The red symbols in the last staff show errors introduced during manual engraving. MuseScore requires rhythm to be correct. For the actual output of our model refer to the Mashcima annotation below the staff.}
     \label{fig6:HmrBaselineComparison01}
-    \medskip
-    \small
-    The upper part (first three staves) are taken from the HMR baseline article (\cite{HmrBaseline}). The first staff is the input image from CVC-MUSCIMA, page 01, writer 17. The second staff is what produced the commercial software PhotoScore. The third staff is what the HMR baseline article achieved and the last staff is what our model returned, together with the Mashcima annotation. The image was created from the annotation by hand using MuseScore (\href{https://musescore.org/}{https://musescore.org/}).
-    The blue boxes are part of the original image and they show difficulties with recognizing symbols placed above each other. The red symbols in the last staff show errors introduced during manual engraving. MuseScore requires rhythm to be correct. For the actual output of our model refer to the Mashcima annotation below the staff.
 \end{figure}
 
-Both models make a lot of mistakes on this more difficult input so it isn't easy to tell which one is better. What we can conclude is that their performance is actually very comparable.
+Both models make a lot of mistakes on this more difficult input so it is not easy to tell which one is better. What we can conclude is that their performance is actually very comparable.
 
 It should also be noted, that each model uses a different resolution for input images. The model from HMR article normalizes to a height of 100 pixels, whereas ours normalizes to only 64 pixels. This might be a disadvantage for us. Also, our model cannot read chords by design, but theirs can. This might very well be required for some task and it would make our model unusable. Their model can also detect the presence of dynamics and text.
 
 \section{Evaluating on Printed PrIMuS Incipits}
 
-We also wanted to try, how would our model perform on printed music. Models by other people are often pre-trained on printed music and then fine-tuned on handwritten images via transfer learning. Ours is different in that it has never seen an image of printed music. We already have code for parsing PrIMuS dataset and since the dataset contains images as well, we will use those. We just slightly preprocessed the images --- inverted them, normalized, and slightly scaled down to have dimensions comparable to what our model trained on. We used the model from experiment 4 since it performed the best. The evaluation was performed on 100 incipits that the model hasn't seen during training and these are the results:
+We also wanted to try, how would our model perform on printed music. Models by other people are often pre-trained on printed music and then fine-tuned on handwritten images via transfer learning. Ours is different in that it has never seen an image of printed music. We already have code for parsing PrIMuS dataset and since the dataset contains images as well, we will use those. We just slightly preprocessed the images --- inverted them, normalized, and slightly scaled down to have dimensions comparable to what our model trained on. We used the model from experiment 4 since it performed the best. The evaluation was performed on 100 incipits that the model has not seen during training and these are the results:
 
 \begin{table}[h] \centering
 \begin{tabular}{l@{\hspace{1.5cm}}lllll}
@@ -750,7 +742,7 @@ We also wanted to try, how would our model perform on printed music. Models by o
 0.61 & 0.64 & 0.64 & 0.60 & 0.59 & 0.56 \\
 \bottomrule
 \end{tabular}
-\caption{All metrics, evaluated on printed primus incipits. Our model wasn't trained on printed music so the performance suffers.}
+\caption{All metrics, evaluated on printed primus incipits. Our model was not trained on printed music so the performance suffers.}
 \label{tab6:MetricsOverPrintedPrimus}
 \end{table}
 
