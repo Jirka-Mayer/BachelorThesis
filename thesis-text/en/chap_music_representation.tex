@@ -27,7 +27,7 @@ The PrIMuS dataset contains over 87~000~items, each with an~image of the printed
     \label{fig4:PrimusIncipit}
 \end{figure}
 
-The first of these two encodings is the \emph{semantic encoding}. It represents what the musical symbols mean. Each symbol has a~specific pitch that relies on the cleft at the beginning of the staff. This makes the vocabulary much larger and any model using this encoding has taken the clef into account when reading the symbols. It is however much easier to transform this encoding to some well-known format like MusicXML since these formats tend to represent the meaning of a~score, not the score appearance.
+The first of these two encodings is the \emph{semantic encoding}. It represents what the musical symbols mean. Each symbol has a~specific pitch that relies on the cleft at the beginning of the staff. This makes the vocabulary much larger and any model using this encoding has to take the clef into account when reading the symbols. It is however much easier to transform this encoding to some well-known format like MusicXML since these formats tend to represent the meaning of a~score, not the score appearance.
 
 \begin{figure}[h]
     \centering
@@ -191,7 +191,7 @@ There are some tokens that contain pitch information and some that do not. Since
 
 Generic tokens are not present in the vocabulary and cannot be produced by the model. They should also never appear in the gold data. They are, however, often used when analyzing a~given token sequence.
 
-The only exception make tokens that do not contain pitch information (e.g. rests). They are considered to be their own generic token (i.e. the generic token for a~quarter rest \texttt{qr} is still just \texttt{qr}).
+The only exception is tokens that do not contain pitch information (e.g. rests). They are considered to be their own generic token (i.e. the generic token for a~quarter rest \texttt{qr} is still just \texttt{qr}).
 
 The vocabulary file (\texttt{app/vocabulary.py}) contains helper methods for working with pitches:
 
@@ -471,13 +471,15 @@ Primus contains symbols that Mashcima encoding cannot represent. Gracenotes are 
 \label{tab4:TokenConversionLookup}
 \end{table}
 
+\newpage
+
 
 \section{Extensibility}
 \label{sec:RepresentationExtensibility}
 
 Because the CVC-MUSCIMA dataset contains such a~wide range of symbols, we did not want to create an~encoding that would capture every possible symbol in the dataset. Most of these unusual symbols are present in only a~few places and adding them to the encoding would make everything much more complicated, for little to no return. Therefore the Mashcima encoding contains the \verb`?`~token. This token should be placed into gold data whenever we encounter a~symbol (or a~group of symbols) that cannot be represented by our encoding. This \verb`?`~token acts as a~marker, that we cannot fully represent a~specific place in the staff. It can then be used to filter out such bars or just to find such places if the encoding was ever extended in the future.
 
-As mentioned in previous sections, there are missing some note and rest durations. These can be easily added when needed. These new tokens would follow the rules that are imposed onto all the current notes and rests.
+As mentioned in previous sections, there are some missing note and rest durations. These can be easily added when needed. These new tokens would follow the rules that are imposed onto all the current notes and rests.
 
 Similarly, many symbols are not present in the encoding but could be easily added. Dynamics cannot be encoded right now. They are ignored as if they were not present at all. They could be added as \emph{after attachments}. The same applies to additional tuplets or similar ornaments.
 

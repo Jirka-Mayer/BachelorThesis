@@ -16,7 +16,7 @@ We have a system, that can create images for given annotations. All we need to p
 
 \subsection{PrIMuS Incipits}
 
-The 20 pages of CVC-MUSCIMA contain this information. The problem is that there are only 20 of them. We ideally need thousands of annotations to account for all the variability in note types and pitches our encoding can capture. Luckily, the PrIMuS dataset (\cite{Primus}) contains exactly what we need. PrIMuS contains over 87~000~incipits of monophonic music. An incipit is the recognizable part of a melody or a song. The incipits have the ideal length of a few measures. It is not an entire staff, but not a few symbols either. Also, all the incipits are encoded in many formats, but most importantly they are encoded in the agnostic format, which is very similar to the Mashcima encoding.
+We ideally need thousands of annotations to account for all the variability in note types and pitches our encoding can capture. Luckily, the PrIMuS dataset (\cite{Primus}) contains exactly what we need. PrIMuS contains over 87~000~incipits of monophonic music. An incipit is the recognizable part of a melody or a song. The incipits have the ideal length of a few measures. It is not an entire staff, but not a few symbols either. Also, all the incipits are encoded in many formats, but most importantly they are encoded in the agnostic format, which is very similar to the Mashcima encoding.
 
 We can take the PrIMuS dataset, engrave all the incipits using Mashcima, and train on the result. The only obstacle is converting PrIMuS agnostic encoding to Mashcima encoding.
 
@@ -238,6 +238,8 @@ Lastly, we want to show a frequency table of the most common tokens and pitches 
     \label{tab6:TokenFrequencies}
 \end{table}
 
+\newpage
+
 
 \subsection{Manual Annotation Experience}
 \label{sec:ManualAnnotationExperience}
@@ -307,7 +309,7 @@ Looking at the work by Calvo-Zaragoza and Rizo (\cite{Primus}) or the HMR baseli
 
 Regular Levenshtein distance (\cite{Levenshtein}) is defined as the minimum number of single-character edits that turn our prediction into the gold sequence. We do not work with strings, so we use tokens instead of characters. The basic edit operations are insertion, deletion, and substitution. The lower this number, the better. Zero means a perfect match.
 
-This metric has to be normalized by the length of the gold sequence to allow for averaging over multiple values. Normalized Levehnstein distance produces a number that is typically between 0 and 1, where 0 means the sequences were predicted perfectly and 1 means the sequence is entirely wrong. The normalized distance can be greater than 1 when the predicted sequence is much longer than the gold one, but that happens only when the model is completely useless.
+This metric has to be normalized by the length of the gold sequence to allow for averaging over multiple values. Normalized Levehnstein distance produces a number that is typically between 0 and 1, where 0 means the sequence was predicted perfectly and 1 means the sequence was entirely wrong. The normalized distance can be greater than 1 when the predicted sequence is much longer than the gold one, but that happens only when the model is completely useless.
 
 $$
 SER = \text{LevNormalized} = \frac{\#\text{Insertions} + \#\text{Deletions} + \#\text{Substitutions}}{\text{GoldLength}}
@@ -315,7 +317,7 @@ $$
 
 Since this metric is also used by other works, we will use it for comparison against these works.
 
-When training, we will use the edit distance function implemented in the Tensorflow\footnote{\href{http://tensorflow.org/}{http://tensorflow.org/}} library. Although it is claimed to be the normalized Levenshtein distance, the implementation is different from the one used during evaluation. Therefore these two values should not be compared directly. The training edit distance is only meant for tracking the learning process a determining the stopping condition.
+When training, we will use the edit distance function implemented in the Tensorflow\footnote{\href{http://tensorflow.org/}{http://tensorflow.org/}} library. Although it is claimed to be the normalized Levenshtein distance, the implementation is different from the one used during evaluation. Therefore these two values should not be compared directly. The training edit distance is only meant for tracking the learning process and determining the stopping condition.
 
 
 \subsection{Understanding Model Mistakes}
@@ -347,7 +349,7 @@ Also please understand, that all these errors are computed on a single trained m
 \section{Architecture, Training, and Evaluation}
 \label{sec:ArchitectureTrainingEvaluation}
 
-In chapter \ref{chap:DeepNeuralNetwork} we provided a short introduction to deep neural networks and described the RCNN architecture. We will use this architecture in the following experiments. Here is the list of layers, used in the neural network:
+In chapter \ref{chap:DeepNeuralNetwork} we provided a short introduction to deep neural networks and described the RCNN architecture. We will use this architecture in the following experiments. The list of layers used in the neural network can be found in table~\ref{tab6:NetworkLayers}.
 
 \begin{table}[h] \centering
 \begin{tabular}{lll}
@@ -394,7 +396,7 @@ The Mashcima engraving system works with images at the resolution of the CVC-MUS
 
 There will be two datasets used for training. One for the actual training --- a \emph{training dataset} and one for validation --- a \emph{validation dataset} (or \emph{dev dataset}). The training dataset is fed into the model in batches and each batch is used to perform an update of the learned parameters of the model. This process is called stochastic gradient descent (\cite{Goodfellow-et-al-2016}). Using the entire training dataset once is called \emph{one epoch}. The validation dataset will be used after each epoch to estimate the true performance of the model (to estimate the generalization error).
 
-Learned parameters will be updated by the adaptive learning rate optimizer (Adam) (\cite{AdamOptimizer}), that comes with Tensorflow\footnote{\href{http://tensorflow.org/}{http://tensorflow.org/}}, with the default parameters:
+Learned parameters will be updated by the adaptive learning rate optimizer (Adam) (\cite{AdamOptimizer}), that comes with Tensorflow\footnote{\href{http://tensorflow.org/}{http://tensorflow.org/}}, with the default parameters (table~\ref{tab6:AdamParameters}).
 
 \begin{table}[h] \centering
 \begin{tabular}{l@{\hspace{1.5cm}}l}
@@ -439,7 +441,7 @@ To test this hypothesis we propose a set of four experiments (table~\ref{tab6:Ex
 \label{tab6:ExperimentData}
 \end{table}
 
-The first experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last experiment validates on real-world incipits since the evaluation will also be performed on real-world music. The second experiment validates on synthetic incipits because we wanted to simulate a scenario where we do not have access to real-world incipits. The fourth experiment is the same as the third one, only utilizing the whole PrIMuS dataset as is available to us.
+The first experiment trains a model on real-world incipits, second uses synthetic incipits and the third one combines both approaches in a 1:1 ratio. The last two experiments validate on real-world incipits since the evaluation will also be performed on real-world music. The second experiment validates on synthetic incipits because we wanted to simulate a scenario where we do not have access to real-world incipits. The fourth experiment is the same as the third one, only utilizing the whole PrIMuS dataset as is available to us.
 
 When training, a random permutation of the size of the entire dataset is generated and then used to access training items at random. This ensures random order of training items and also proper mixing of real-world and synthetic incipits. New permutation is generated for each epoch.
 
@@ -466,6 +468,8 @@ We trained each experiment for 20~epochs (except for the fourth that has been tr
     \caption{What epochs had the smallest validation error and were chosen as the final model.}
     \label{tab6:OptimalEpochs}
 \end{table}
+
+\newpage
 
 
 \section{Results}
@@ -568,6 +572,8 @@ Now that we know the experiment~4 performed the best, we will take a closer look
 
 We can average the results for each writer and compare them to the style of their handwriting (table~\ref{tab6:SerAverageForWriters}).
 
+\newpage
+
 \begin{table}[h] \centering
 \begin{tabular}{lll}
 \toprule
@@ -615,7 +621,7 @@ Pages 9 and 11 ended up last because they are only present for writer~49, who en
 \subsection{Language Model}
 \label{sec:LanguageModel}
 
-Symbol error rates on the evaluation dataset for each experiment. When comparing the results of training on real-world data vs. synthetic data, it is strange that pure synthetic data outperform purely real-world data. But it probably has to do with the fact, that the synthetic dataset is balanced with respect to the individual output class abundance. The learned language model of real-world data helps the first experiment, but it is not nearly enough to beat the benefits of a balanced dataset for the second experiment.
+When comparing the results of training on real-world data vs. synthetic data, it is strange that pure synthetic data outperform purely real-world data. But it probably has to do with the fact, that the synthetic dataset is balanced with respect to the individual output class abundance. The learned language model of real-world data helps the first experiment, but it is not nearly enough to beat the benefits of a balanced dataset for the second experiment.
 
 This idea is supported by the fact that the third experiment beats both of the first two. It can benefit from both a balanced dataset and from learning a language model.
 
@@ -725,6 +731,8 @@ You can see, that the difference is not as pronounced, although this staff is on
 Both models make a lot of mistakes on this more difficult input so it is not easy to tell which one is better. What we can conclude is that their performance is actually very comparable.
 
 It should also be noted, that each model uses a different resolution for input images. The model from HMR article normalizes to a height of 100 pixels, whereas ours normalizes to only 64 pixels. This might be a disadvantage for us. Also, our model cannot read chords by design, but theirs can. This might very well be required for some task and it would make our model unusable. Their model can also detect the presence of dynamics and text.
+
+\newpage
 
 \section{Evaluating on Printed PrIMuS Incipits}
 

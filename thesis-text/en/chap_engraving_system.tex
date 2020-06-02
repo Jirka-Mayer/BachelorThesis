@@ -86,7 +86,7 @@ Slurs have some pre-defined attachment points they can use and the specific atta
     \label{fig5:FailedSlurs}
 \end{figure}
 
-Beams face many similar problems as slurs. They are also rendered manually, as straight lines. This again does not capture the real world. Beams are often curved or they have a~gap between itself and a~note stem. This again seems to be the source of many mistakes, especially with the writer 49, who leaves a~lot of gaps between beams and stems.
+Beams face many similar problems as slurs. They are also rendered manually, as straight lines. This again does not capture the real world. Beams are often curved or they have a~gap between themselves and note stems. This again seems to be the source of many mistakes, especially with the writer 49, who leaves a~lot of gaps between beams and stems.
 
 
 \section{Multi-staff images}
@@ -124,7 +124,7 @@ Finally, before the image is fed into the model, it is normalized to a~specified
 There are many places where the engraving system makes an arbitrary decision. This section attempts to list most of them. The list is not exhaustive. The goal is to give you an idea of how the system works.
 
 \begin{itemize}
-    \item Sprites are selected randomly from a repository of all sprites. This selection has the most impact on the variability of the resulting image. The repository contains sprites from all writer so this selection process mixes up symbols from different writers.
+    \item Sprites are selected randomly from a repository of all sprites. This selection has the most impact on the variability of the resulting image. The repository contains sprites from all writers so this selection process mixes up symbols from different writers.
     \item Noteheads and stems are not mixed --- a given note sprite will always have its corresponding stem sprite when engraved.
     \item A canvas item has a pivot that is placed according to the item's pitch. This placement is not randomized (vertically) because sprite selection does a good job of it already.
     \item A note will have many sprites attached (accidentals, duration dots, staccato) and they are also chosen randomly from the sprite repository. Their position is slightly randomized. Sometimes additional rules are applied (e.g. to prevent duration dots from landing on staff lines and not being visible).
