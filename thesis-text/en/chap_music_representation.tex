@@ -142,7 +142,7 @@ The pitch encoding is built such that it would be easy to understand for a~non-m
     \centering
     \includegraphics[width=120mm]{../img/rising-half-notes}
     \verb`h-8 h-7 h-6 h-5 h-4 h-3 h-2 h-1 h0 h1 h2 h3 h4 h5 h6 h7 h8`
-    \caption{Half notes with pitches from -8 to 8 engraved using Mashcima. You can see the stem orientation being randomized for pitches between -2 and 2.}
+    \caption{Half notes with pitches from -8 to 8 engraved using Mashcima. Stem orientation is randomized for pitches between -2 and 2.}
     \label{fig4:RisingHalfNotes}
 \end{figure}
 
@@ -172,7 +172,7 @@ The second most common symbol is probably a~rest. A~rest has duration, just like
 \label{tab4:RestDurations}
 \end{table}
 
-You may have noticed, that that there are two extra durations --- longa and breve. Also, there is missing the sixty-fourth rest. It all has to do with the fact that not all durations are used equally frequently. I based Mashcima on the CVC-MUSCIMA and MUSCIMA++ datasets. There is no occurrence of longa or breve notes in those datasets. There are, however, occurrences of longa and breve rests. Similarly, sixty-fourth notes and rests are also not present. The vocabulary can luckily be extended to accommodate these symbols. See the section \ref{sec:RepresentationExtensibility} for more details.
+The reader may have noticed, that that there are two extra durations --- longa and breve. Also, there is missing the sixty-fourth rest. It all has to do with the fact that not all durations are used equally frequently. I based Mashcima on the CVC-MUSCIMA and MUSCIMA++ datasets. There is no occurrence of longa or breve notes in those datasets. There are, however, occurrences of longa and breve rests. Similarly, sixty-fourth notes and rests are also not present. The vocabulary can luckily be extended to accommodate these symbols. See the section \ref{sec:RepresentationExtensibility} for more details.
 
 Now that we have notes and rests, we can start grouping them into measures (bars). A~barline is represented by the "pipe" character (\texttt{|}). Barlines separate notes and rests into groups of the same total duration. There are many types of barlines (double barline, repeat signs) and although they are used quite often, they have not yet been implemented into the Mashcima engraving system. This is simply because we wanted to see, whether our approach even works. These special barline types can be easily added in the future.
 
@@ -218,7 +218,7 @@ Many kinds of musical symbols behave as attachments:
 \item \textbf{Artificial tokens}, that we have added to encode specific time-spanning symbols. See the section \ref{sec:RepresentationSlurs} on slurs to learn more.
 \end{itemize}
 
-You can see, that the term \emph{attachment} is not a~musical term and it describes more how a~symbol is represented, not what a~symbol means.
+The term \emph{attachment} is not a~musical term and it describes more how a~symbol is represented, not what a~symbol means.
 
 All of these attachments lack pitch information since the pitch is stored in the note token. The only exception here is accidentals. Accidentals are special because they need not be attached to a~note. They can be standalone in a~key signature. This means that they need pitch information. This creates some redundancy in the encoding; when a~note has an~accidental, they both should have the same pitch. This condition is not ideal, because it may cause the model to make unnecessary errors. It is however better than having different tokens for standalone accidentals and attached accidentals.
 

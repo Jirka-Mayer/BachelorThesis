@@ -39,7 +39,7 @@ Token groups are used in Mashcima annotation validation. When proper attachment 
 
 Two special kinds of token groups are key signatures and numeric time signatures. It again makes sense to treat a~time signature as a~single object and since it is a~multitude of tokens, it is represented by a~token group.
 
-Token groups are important because they map directly onto canvas items. A~\emph{canvas item} is something on the staff, that takes up horizontal space and can be rendered. Canvas item represents a~barline, a~note, a~rest. Attachments, like accidentals and dots, are not canvas items but are part of some given canvas item and they modify its appearance. Canvas items are placed on the staff right after each other with some randomized amount of padding between them. A~canvas item has all the vertical space it can have and it decides, where to draw itself vertically. You can see the bounding boxes of individual canvas items in figure~\ref{fig5:CanvasItems}.
+Token groups are important because they map directly onto canvas items. A~\emph{canvas item} is something on the staff, that takes up horizontal space and can be rendered. Canvas item represents a~barline, a~note, a~rest. Attachments, like accidentals and dots, are not canvas items but are part of some given canvas item and they modify its appearance. Canvas items are placed on the staff right after each other with some randomized amount of padding between them. A~canvas item has all the vertical space it can have and it decides, where to draw itself vertically. The bounding boxes of individual canvas items can be seen in figure~\ref{fig5:CanvasItems}.
 
 \begin{figure}[h]
     \centering
@@ -121,7 +121,7 @@ Finally, before the image is fed into the model, it is normalized to a~specified
 
 \section{Parameters}
 
-There are many places where the engraving system makes an arbitrary decision. This section attempts to list most of them. The list is not exhaustive. The goal is to give you an idea of how the system works.
+There are many places where the engraving system makes an arbitrary decision. This section attempts to list most of them. The list is not exhaustive. The goal is to give the reader an idea of how the system works.
 
 \begin{itemize}
     \item Sprites are selected randomly from a repository of all sprites. This selection has the most impact on the variability of the resulting image. The repository contains sprites from all writers so this selection process mixes up symbols from different writers.

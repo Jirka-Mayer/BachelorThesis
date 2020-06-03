@@ -534,7 +534,7 @@ In a previous section on evaluation (section~\ref{sec:ArchitectureTrainingEvalua
 \label{tab6:RepairComparison}
 \end{table}
 
-You can see, that there is almost no difference. The repairs were indeed disabled, it is just that the performance difference was so minor, that the resulting average is the same.
+It can be seen, that there is almost no difference. The repairs were indeed disabled, it is just that the performance difference was so minor, that the resulting average is the same.
 
 Now that we know the experiment~4 performed the best, we will take a closer look at it. The table~\ref{tab6:MetricsForEachPage} shows metrics for each evaluation page (averaged over all staves in that page).
 
@@ -664,7 +664,7 @@ We wanted to make a comparison against the HMR baseline article (\cite{HmrBaseli
 \label{tab6:ComparisonToHmrBaseline}
 \end{table}
 
-You can see, that our model has a much smaller error rate, but we have to consider this result carefully. Their model does not use the CTC loss and the output encoding is very different. While our model might output a sequence of length 50, their model produces a sequence of the same length as the width of the input image, which is in the order of hundreds to a thousand sequence items. Also, their encoding requires perfect alignment. If the model transitions between output classes at slightly different time-steps then the gold data, it produces a lot of error, even though when collapsed, the resulting sequence is the same. And given the temporal resolution, this might contribute a lot.
+Our model has a much smaller error rate, but we have to consider this result carefully. Their model does not use the CTC loss and the output encoding is very different. While our model might output a sequence of length 50, their model produces a sequence of the same length as the width of the input image, which is in the order of hundreds to a thousand sequence items. Also, their encoding requires perfect alignment. If the model transitions between output classes at slightly different time-steps then the gold data, it produces a lot of error, even though when collapsed, the resulting sequence is the same. And given the temporal resolution, this might contribute a lot.
 
 A more fair comparison would be a qualitative one. Luckily the paper provides a qualitative comparison of one staff from page~3 of their model against a commercial software called PhotoScore\footnote{\href{https://www.neuratron.com/photoscore.htm}{https://www.neuratron.com/photoscore.htm}}. We can add a prediction by our model and compare all three (see figure~\ref{fig6:HmrBaselineComparison03}). Note that the image has been produced by manually engraving the predicted Mashcima annotation.
 
@@ -696,7 +696,7 @@ A more fair comparison would be a qualitative one. Luckily the paper provides a 
     \label{fig6:HmrBaselineComparison03}
 \end{figure}
 
-You can see, that the difference is not as pronounced, although this staff is one of the simpler ones. There is, however, also a qualitative comparison on a staff from page 1 (see figure~\ref{fig6:HmrBaselineComparison01}).
+We can see, that the difference is not as pronounced, although this staff is one of the simpler ones. There is, however, also a qualitative comparison on a staff from page 1 (see figure~\ref{fig6:HmrBaselineComparison01}).
 
 \begin{figure}[p]
     \centering
@@ -754,7 +754,7 @@ We also wanted to try, how would our model perform on printed music. Models by o
 \label{tab6:MetricsOverPrintedPrimus}
 \end{table}
 
-You can see, that the performance is not very impressive. We did expect the error rate to be high, but not that high. Although, it is understandable because the printed music is very different from the handwritten. It would be interesting to also train on printed images in the future. This error rate would go down, but maybe the CVC-MUSCIMA error rate would go down as well.
+It can be seen, that the performance is not very impressive. We did expect the error rate to be high, but not that high. Although, it is understandable because the printed music is very different from the handwritten. It would be interesting to also train on printed images in the future. This error rate would go down, but maybe the CVC-MUSCIMA error rate would go down as well.
 
 \begin{figure}[h]
     \centering

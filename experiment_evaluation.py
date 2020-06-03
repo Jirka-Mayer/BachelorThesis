@@ -122,7 +122,7 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
                 print("Warnings:", warnings)
 
                 for metric in item_metrics:
-                    print("{:}: {:.2f}".format(metric, item_metrics[metric]))
+                    print("{:}: {:.4f}".format(metric, item_metrics[metric]))
 
             # report on the page
             print("")
@@ -132,7 +132,7 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
                 print("No metrics recorded")
             else:
                 for metric in page_sums:
-                    print("{:}: {:.2f}".format(metric, page_sums[metric] / page_count))
+                    print("{:}: {:.4f}".format(metric, page_sums[metric] / page_count))
 
     # report on the entire run
     print("\n")
@@ -143,7 +143,7 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
         print("No metrics recorded")
     else:
         for metric in total_sums:
-            print("Average {:}: {:.2f}".format(metric, total_sums[metric] / total_count))
+            print("Average {:}: {:.4f}".format(metric, total_sums[metric] / total_count))
 
 
 def evaluate_on_primus(model_name: str, take_last=100):
@@ -224,7 +224,7 @@ def evaluate_on_primus(model_name: str, take_last=100):
         print("Warnings:", warnings)
 
         for metric in item_metrics:
-            print("{:}: {:.2f}".format(metric, item_metrics[metric]))
+            print("{:}: {:.4f}".format(metric, item_metrics[metric]))
 
         # show the incipit image
         # plt.imshow(incipit["img"])
@@ -239,7 +239,7 @@ def evaluate_on_primus(model_name: str, take_last=100):
         print("No metrics recorded")
     else:
         for metric in total_sums:
-            print("Average {:}: {:.2f}".format(metric, total_sums[metric] / total_count))
+            print("Average {:}: {:.4f}".format(metric, total_sums[metric] / total_count))
 
 
 def _calculate_item_metrics(gold: str, prediction: str):
