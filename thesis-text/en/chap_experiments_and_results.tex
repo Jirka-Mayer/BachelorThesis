@@ -459,10 +459,10 @@ We trained each experiment for 20~epochs (except for the fourth that has been tr
     \toprule
     \textbf{Experiment} & \textbf{Optimal epoch} & \textbf{Batches trained} & \textbf{Validation SER} \\
     \midrule
-    1 & 9  & 56 700 & 0.0238 \\
-    2 & 7  & 44 100 & 0.1409 \\
-    3 & 6  & 37 800 & 0.0292 \\
-    4 & 10 & 63 000 & 0.0278 \\
+    1 & 9  & 56 700 & 0.024 \\
+    2 & 7  & 44 100 & 0.141 \\
+    3 & 6  & 37 800 & 0.029 \\
+    4 & 10 & 63 000 & 0.028 \\
     \bottomrule
     \end{tabular}
     \caption{What epochs had the smallest validation error and were chosen as the final model.}
@@ -482,10 +482,10 @@ The table~\ref{tab6:ExperimentSER} shows the resulting symbol error rates, avera
 \toprule
 \textbf{Experiment} & \textbf{Symbol error rate} \\
 \midrule
-1 & 0.34 \\
-2 & 0.28 \\
-3 & 0.26 \\
-\textbf{4} & \textbf{0.25} \\
+1 & 0.337 \\
+2 & 0.284 \\
+3 & 0.260 \\
+\textbf{4} & \textbf{0.251} \\
 \bottomrule
 \end{tabular}
 \caption{Symbol error rates on the evaluation dataset for each experiment.}
@@ -504,11 +504,10 @@ In section~\ref{sec:UnderstandingModelMistakes} we proposed a set of metrics, in
 & \footnotesize{\verb`TRAINED`} & \footnotesize{\verb`SLURLESS`}
 & \footnotesize{\verb`ORNAMENTLESS`} & \footnotesize{\verb`PITCHLESS`} \\
 \midrule
-1 & 0.44 & 0.42 & 0.30 & 0.26 & 0.21 \\
-2 & 0.37 & 0.34 & 0.28 & 0.25 & 0.17 \\
-3 & 0.34 & 0.32 & 0.24 & 0.21 & 0.16 \\
-3 & 0.33 & 0.31 & 0.23 & 0.21 & 0.16 \\
-4 & 0.33 & 0.31 & 0.23 & 0.21 & 0.16 \\
+1 & 0.439 & 0.422 & 0.298 & 0.262 & 0.212 \\
+2 & 0.365 & 0.345 & 0.283 & 0.254 & 0.174 \\
+3 & 0.339 & 0.322 & 0.237 & 0.211 & 0.156 \\
+4 & 0.328 & 0.312 & 0.233 & 0.207 & 0.156 \\
 \bottomrule
 \end{tabular}
 \caption{ITER metrics (section~\ref{sec:UnderstandingModelMistakes}) on the evaluation dataset for each experiment.}
@@ -524,17 +523,17 @@ In a previous section on evaluation (section~\ref{sec:ArchitectureTrainingEvalua
 \toprule
 \textbf{Experiment} & \textbf{Raw SER} & \textbf{Repaired prediction SER} \\
 \midrule
-1 & 0.34 & 0.34 \\
-2 & 0.28 & 0.28 \\
-3 & 0.26 & 0.26 \\
-4 & 0.25 & 0.25 \\
+1 & 0.335 & 0.337 \\
+2 & 0.277 & 0.284 \\
+3 & 0.259 & 0.260 \\
+4 & 0.246 & 0.251 \\
 \bottomrule
 \end{tabular}
 \caption{Comparison of repaired and non-repaired predictions.}
 \label{tab6:RepairComparison}
 \end{table}
 
-It can be seen, that there is almost no difference. The repairs were indeed disabled, it is just that the performance difference was so minor, that the resulting average is the same.
+It can be seen, that there is almost no difference. Interestingly, the repairs seem to increase the error rate but this might be done by the fact that the repaired sequence has trailing barlines trimmed. This reduces the length of the gold sequence (it is also trimmed), thus the normalization number is smaller which in turn increases the error rate.
 
 Now that we know the experiment~4 performed the best, we will take a closer look at it. The table~\ref{tab6:MetricsForEachPage} shows metrics for each evaluation page (averaged over all staves in that page).
 
@@ -547,23 +546,23 @@ Now that we know the experiment~4 performed the best, we will take a closer look
 & \footnotesize{\verb`TRAINED`} & \footnotesize{\verb`SLURLESS`}
 & \footnotesize{\verb`ORNAMENTLESS`} & \footnotesize{\verb`PITCHLESS`} \\
 \midrule
-02 & 13 & 0.16 & 0.18 & 0.17 & 0.17 & 0.14 & 0.12 \\
-03 & 13 & 0.12 & 0.13 & 0.13 & 0.07 & 0.06 & 0.04 \\
-16 & 13 & 0.30 & 0.42 & 0.40 & 0.33 & 0.27 & 0.21 \\
-01 & 17 & 0.28 & 0.37 & 0.31 & 0.26 & 0.23 & 0.16 \\
-02 & 20 & 0.26 & 0.32 & 0.30 & 0.27 & 0.24 & 0.14 \\
-03 & 20 & 0.11 & 0.12 & 0.12 & 0.07 & 0.06 & 0.05 \\
-16 & 20 & 0.32 & 0.48 & 0.44 & 0.27 & 0.22 & 0.15 \\
-02 & 34 & 0.28 & 0.34 & 0.32 & 0.29 & 0.24 & 0.15 \\
-03 & 34 & 0.06 & 0.07 & 0.07 & 0.03 & 0.03 & 0.02 \\
-16 & 34 & 0.34 & 0.49 & 0.47 & 0.35 & 0.29 & 0.19 \\
-02 & 41 & 0.23 & 0.27 & 0.25 & 0.24 & 0.22 & 0.14 \\
-03 & 41 & 0.14 & 0.16 & 0.16 & 0.07 & 0.07 & 0.06 \\
-16 & 41 & 0.28 & 0.41 & 0.37 & 0.29 & 0.23 & 0.14 \\
-03 & 49 & 0.29 & 0.33 & 0.33 & 0.24 & 0.24 & 0.21 \\
-05 & 49 & 0.24 & 0.26 & 0.25 & 0.21 & 0.21 & 0.18 \\
-09 & 49 & 0.42 & 0.61 & 0.59 & 0.36 & 0.35 & 0.33 \\
-11 & 49 & 0.50 & 0.67 & 0.67 & 0.50 & 0.48 & 0.44 \\
+02 & 13 & 0.157 & 0.183 & 0.174 & 0.171 & 0.144 & 0.122 \\
+03 & 13 & 0.116 & 0.132 & 0.132 & 0.066 & 0.062 & 0.038 \\
+16 & 13 & 0.300 & 0.419 & 0.402 & 0.329 & 0.271 & 0.212 \\
+01 & 17 & 0.281 & 0.366 & 0.315 & 0.262 & 0.233 & 0.157 \\
+02 & 20 & 0.262 & 0.320 & 0.300 & 0.273 & 0.237 & 0.138 \\
+03 & 20 & 0.106 & 0.122 & 0.122 & 0.069 & 0.065 & 0.054 \\
+16 & 20 & 0.323 & 0.479 & 0.440 & 0.274 & 0.216 & 0.149 \\
+02 & 34 & 0.279 & 0.340 & 0.324 & 0.291 & 0.238 & 0.154 \\
+03 & 34 & 0.064 & 0.074 & 0.074 & 0.032 & 0.029 & 0.018 \\
+16 & 34 & 0.336 & 0.495 & 0.466 & 0.346 & 0.291 & 0.185 \\
+02 & 41 & 0.229 & 0.265 & 0.245 & 0.238 & 0.222 & 0.143 \\
+03 & 41 & 0.141 & 0.156 & 0.156 & 0.068 & 0.065 & 0.062 \\
+16 & 41 & 0.283 & 0.412 & 0.366 & 0.289 & 0.234 & 0.144 \\
+03 & 49 & 0.292 & 0.333 & 0.333 & 0.236 & 0.236 & 0.213 \\
+05 & 49 & 0.245 & 0.263 & 0.252 & 0.212 & 0.212 & 0.178 \\
+09 & 49 & 0.424 & 0.606 & 0.592 & 0.356 & 0.351 & 0.328 \\
+11 & 49 & 0.498 & 0.670 & 0.667 & 0.498 & 0.480 & 0.436 \\
 \bottomrule
 \end{tabular}
 \caption{All metrics for each page in the evaluation dataset.}
@@ -579,12 +578,12 @@ We can average the results for each writer and compare them to the style of thei
 \toprule
 \textbf{Writer} & \textbf{SER} & \textbf{Handwriting style} \\
 \midrule
-13 & 0.19 & regular, round noteheads          \\
-41 & 0.22 & beautiful, round noteheads        \\
-34 & 0.23 & regular, round noteheads, slanted \\
-20 & 0.23 & regular, dash noteheads           \\
-17 & 0.28 & regular, round noteheads          \\
-49 & 0.36 & worse, dash noteheads             \\
+13 & 0.191 & regular, round noteheads          \\
+41 & 0.218 & beautiful, round noteheads        \\
+34 & 0.226 & regular, round noteheads, slanted \\
+20 & 0.230 & regular, dash noteheads           \\
+17 & 0.281 & regular, round noteheads          \\
+49 & 0.365 & worse, dash noteheads             \\
 \bottomrule
 \end{tabular}
 \caption{Symbol error rates averaged for each writer and handwriting style of each writer.}
@@ -600,13 +599,13 @@ Similarly, we can average over each page and compare it to the annotation diffic
 \toprule
 \textbf{Page} & \textbf{SER} & \textbf{Notes} \\
 \midrule
-03 & 0.14 & perfect                                    \\
-02 & 0.23 & trills, grace notes                        \\
-05 & 0.24 & trills                                     \\
-01 & 0.28 & triplets, fermata, rests in beamed groups  \\
-16 & 0.31 & beamed notes with empty noteheads, accents \\
-09 & 0.42 & \verb`?` token, fermata                    \\
-11 & 0.50 & \verb`?` token                             \\
+03 & 0.144 & perfect                                    \\
+02 & 0.232 & trills, grace notes                        \\
+05 & 0.245 & trills                                     \\
+01 & 0.281 & triplets, fermata, rests in beamed groups  \\
+16 & 0.311 & beamed notes with empty noteheads, accents \\
+09 & 0.424 & \verb`?` token, fermata                    \\
+11 & 0.498 & \verb`?` token                             \\
 \bottomrule
 \end{tabular}
 \caption{Symbol error rates averaged for each page and annotation notes for each page.}
@@ -656,8 +655,8 @@ We wanted to make a comparison against the HMR baseline article (\cite{HmrBaseli
 & \mc{Rhythm} & \mc{Pitch} & \mc{Combined}
 & \multicolumn{1}{r}{\pulrad{\textbf{\qquad Our SER}}} \\
 \midrule
-1 & 17 & 0.528 & 0.349 & 0.592 & 0.28 \\
-3 & 13 & 0.226 & 0.175 & 0.270 & 0.12 \\
+1 & 17 & 0.528 & 0.349 & 0.592 & 0.281 \\
+3 & 13 & 0.226 & 0.175 & 0.270 & 0.116 \\
 \bottomrule
 \end{tabular}
 \caption{Comparison of our model from experiment 4 to the model proposed by the HMR baseline article (\cite{HmrBaseline}).}
@@ -747,7 +746,7 @@ We also wanted to try, how would our model perform on printed music. Models by o
 & \footnotesize{\verb`TRAINED`} & \footnotesize{\verb`SLURLESS`}
 & \footnotesize{\verb`ORNAMENTLESS`} & \footnotesize{\verb`PITCHLESS`} \\
 \midrule
-0.61 & 0.64 & 0.64 & 0.60 & 0.59 & 0.56 \\
+0.613 & 0.639 & 0.639 & 0.604 & 0.590 & 0.556 \\
 \bottomrule
 \end{tabular}
 \caption{All metrics, evaluated on printed primus incipits. Our model was not trained on printed music so the performance suffers.}
@@ -773,7 +772,7 @@ It can be seen, that the performance is not very impressive. We did expect the e
     \\
     \medskip
     \textbf{SER:}
-    \verb`0.35`
+    \verb`0.346`
     \caption{Evaluation on printed PrIMuS incipits.}
     \label{fig6:EvaluatinoOnPrinted}
 \end{figure}
