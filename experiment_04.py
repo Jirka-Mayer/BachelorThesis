@@ -9,6 +9,7 @@ The available commands are:
    train               Train new model for the experiment
    evaluate            Evaluate the trained model against annotated muscima parts
    evaluate_on_primus  Evaluate trained model against some primus incipits
+   evaluate_on_real    Evaluate trained model against real scanned sheet music
 
 Experiment 04:
     - Train on 63K Primus incipits and 63K generated incipits
@@ -125,6 +126,14 @@ class Experiment04(object):
 
         from experiment_evaluation import evaluate_model
         evaluate_model(args.model, args.writers, args.pages)
+
+    def evaluate_on_real(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--model', default="experiment_04")
+        args = parser.parse_args(sys.argv[2:])
+
+        from experiment_evaluation import evaluate_on_real
+        evaluate_on_real(args.model)
 
     def evaluate_on_primus(self):
         parser = argparse.ArgumentParser()

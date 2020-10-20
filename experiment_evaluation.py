@@ -146,6 +146,77 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
             print("Average {:}: {:.4f}".format(metric, total_sums[metric] / total_count))
 
 
+def evaluate_on_real(model_name: str):
+    """Evaluates a model on real scanned music pages"""
+    print("Evaluating on real", model_name)
+
+    MASHCIMA_IMAGE = False
+
+    if MASHCIMA_IMAGE:
+        image_path = os.path.join(
+            config.CVC_MUSCIMA_PATH,
+            "w-01/image/p001.png"
+        )
+        img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    else:
+        image_path = os.path.join(
+            os.path.dirname(__file__),
+            "real-images/001-cavatine-01.png"
+        )
+        img = 255 - cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    # import matplotlib.pyplot as plt
+    # plt.imshow(img)
+    # plt.show()
+    # return
+
+    staff_images = get_staff_images_from_sheet_image(img)
+    #assert len(staff_images) == len(staves)
+
+    # import matplotlib.pyplot as plt
+    # for i in staff_images:
+    #     plt.imshow(i)
+    #     plt.show()
+
+    image_to_eval = staff_images[0]
+
+    # NETWORK STUFF
+
+    from app.Network import Network
+    network = Network.load(model_name)
+
+    prediction = network.predict(image_to_eval)
+    gold_annotation = "clef.G-2 b0 b3 b-1 b2 h-4 * qr | hr qr q-4 | h-4 ( b-3 q-3 ) q2 | h1 * ( ) b1 q1 |"
+
+    # sort attachments, repair beams and stuff
+    repaired_prediction, warnings = repair_annotation(prediction)
+
+    # trim non-important barlines
+    repaired_prediction = trim_non_repeat_barlines(repaired_prediction)
+    gold_annotation = trim_non_repeat_barlines(gold_annotation)
+
+    # # calculate metrics
+    item_metrics = _calculate_item_metrics(
+        gold_annotation,
+        repaired_prediction
+    )
+
+    # report on the staff
+    print("")
+    # print("Staff: ", i)
+    print("GOLD:       ", gold_annotation)
+    print("PREDICTION: ", prediction)
+    print("REPAIRED:   ", repaired_prediction)
+    print("Warnings:", warnings)
+
+    print("")
+    print("SER:", item_metrics["SER"])
+
+    import matplotlib.pyplot as plt
+    plt.imshow(image_to_eval)
+    plt.show()
+
+
 def evaluate_on_primus(model_name: str, take_last=100):
     """Test model on printed primus incipits"""
     from mashcima.primus_adapter import load_primus_as_mashcima_annotations
