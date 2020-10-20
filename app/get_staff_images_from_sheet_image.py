@@ -4,7 +4,7 @@ import math
 from typing import List
 
 
-def get_staff_images_from_sheet_image(sheet_image: np.ndarray) -> List[np.ndarray]:
+def get_staff_images_from_sheet_image(sheet_image: np.ndarray, dilate=False) -> List[np.ndarray]:
     """Breaks a sheet image up into individual staff images"""
 
     # by how many pixels should a line bounding box grow vertically
@@ -13,7 +13,7 @@ def get_staff_images_from_sheet_image(sheet_image: np.ndarray) -> List[np.ndarra
 
     # lines above this angle will no longer be considered horizontal
     # and will be ignored
-    LINE_ANGLE_THRESHOLD = 0.01
+    LINE_ANGLE_THRESHOLD = 0.02
 
     # how much space to leave on the sides
     HORIZONTAL_PADDING_IN_STAFF_HEIGHTS = 0.5
@@ -24,14 +24,27 @@ def get_staff_images_from_sheet_image(sheet_image: np.ndarray) -> List[np.ndarra
     # print debugging image
     DEBUG = False
 
+    # dilate horizontally
+    if dilate:
+        dilatation_size_x, dilatation_size_y = 10, 1
+        element = cv2.getStructuringElement(
+            cv2.MORPH_ELLIPSE,
+            (2 * dilatation_size_x + 1, 2 * dilatation_size_y + 1),
+            (dilatation_size_x, dilatation_size_y)
+        )
+        dilated_sheet_image = cv2.dilate(sheet_image, element)
+
     # this image will contain debugging information
     debug_image = None
     if DEBUG:
-        debug_image = cv2.cvtColor(sheet_image, cv2.COLOR_GRAY2BGR)
+        debug_image = cv2.cvtColor(
+            dilated_sheet_image if dilate else sheet_image,
+            cv2.COLOR_GRAY2BGR
+        )
 
     # detected lines
     lines = cv2.HoughLinesP(
-        sheet_image,
+        dilated_sheet_image if dilate else sheet_image,
         1,  # spatial resolution
         np.pi / 180,  # angular resolution
         threshold=800,

@@ -150,33 +150,32 @@ def evaluate_on_real(model_name: str):
     """Evaluates a model on real scanned music pages"""
     print("Evaluating on real", model_name)
 
-    MASHCIMA_IMAGE = False
+    image_path = os.path.join(
+        os.path.dirname(__file__),
+        "real-images/003-cavatine-03.png"
+    )
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
-    if MASHCIMA_IMAGE:
-        image_path = os.path.join(
-            config.CVC_MUSCIMA_PATH,
-            "w-01/image/p001.png"
-        )
-        img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    else:
-        image_path = os.path.join(
-            os.path.dirname(__file__),
-            "real-images/001-cavatine-01.png"
-        )
-        img = 255 - cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    # invert to white on black
+    img = 255 - img
+
+    # threshold to remove marker notes
+    _, img = cv2.threshold(img, 90, 255, cv2.THRESH_BINARY)
 
     # import matplotlib.pyplot as plt
     # plt.imshow(img)
     # plt.show()
     # return
 
-    staff_images = get_staff_images_from_sheet_image(img)
+    staff_images = get_staff_images_from_sheet_image(img, dilate=True)
     #assert len(staff_images) == len(staves)
 
-    # import matplotlib.pyplot as plt
-    # for i in staff_images:
-    #     plt.imshow(i)
-    #     plt.show()
+    import matplotlib.pyplot as plt
+    for i in staff_images:
+        plt.imshow(i)
+        plt.show()
+
+    exit()
 
     image_to_eval = staff_images[0]
 
