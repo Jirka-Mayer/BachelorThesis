@@ -2,6 +2,7 @@ import cv2
 import os
 import editdistance
 from app.muscima_annotations import MUSCIMA_RAW_ANNOTATIONS
+from app.real_annotations import REAL_RAW_ANNOTATIONS
 from app.get_staff_images_from_sheet_image import get_staff_images_from_sheet_image
 import config
 from app.vocabulary import repair_annotation
@@ -148,72 +149,113 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
 
 def evaluate_on_real(model_name: str):
     """Evaluates a model on real scanned music pages"""
-    print("Evaluating on real", model_name)
-
-    image_path = os.path.join(
-        os.path.dirname(__file__),
-        "real-images/003-cavatine-03.png"
-    )
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-
-    # invert to white on black
-    img = 255 - img
-
-    # threshold to remove marker notes
-    _, img = cv2.threshold(img, 90, 255, cv2.THRESH_BINARY)
-
-    # import matplotlib.pyplot as plt
-    # plt.imshow(img)
-    # plt.show()
-    # return
-
-    staff_images = get_staff_images_from_sheet_image(img, dilate=True)
-    #assert len(staff_images) == len(staves)
-
-    import matplotlib.pyplot as plt
-    for i in staff_images:
-        plt.imshow(i)
-        plt.show()
-
-    exit()
-
-    image_to_eval = staff_images[0]
-
-    # NETWORK STUFF
-
     from app.Network import Network
     network = Network.load(model_name)
 
-    prediction = network.predict(image_to_eval)
-    gold_annotation = "clef.G-2 b0 b3 b-1 b2 h-4 * qr | hr qr q-4 | h-4 ( b-3 q-3 ) q2 | h1 * ( ) b1 q1 |"
+    print("\n")
 
-    # sort attachments, repair beams and stuff
-    repaired_prediction, warnings = repair_annotation(prediction)
+    total_count = 0
+    total_sums = {
+        "SER": 0,
+        "ITER_RAW": 0,
+        "ITER_TRAINED": 0,
+        "ITER_SLURLESS": 0,
+        "ITER_ORNAMENTLESS": 0,
+        "ITER_PITCHLESS": 0,
+    }
 
-    # trim non-important barlines
-    repaired_prediction = trim_non_repeat_barlines(repaired_prediction)
-    gold_annotation = trim_non_repeat_barlines(gold_annotation)
+    for file, staves in REAL_RAW_ANNOTATIONS.items():
+        print("\n")
+        print("##########################")
+        print("# File: " + file)
+        print("##########################")
 
-    # # calculate metrics
-    item_metrics = _calculate_item_metrics(
-        gold_annotation,
-        repaired_prediction
-    )
+        image_path = os.path.join(
+            os.path.dirname(__file__),
+            "real-images/" + file
+        )
+        img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
-    # report on the staff
-    print("")
-    # print("Staff: ", i)
-    print("GOLD:       ", gold_annotation)
-    print("PREDICTION: ", prediction)
-    print("REPAIRED:   ", repaired_prediction)
-    print("Warnings:", warnings)
+        # pre-processing to bring it closer looking to the cvc muscima dataset
+        img = 255 - img
+        _, img = cv2.threshold(img, 90, 255, cv2.THRESH_BINARY)
 
-    print("")
-    print("SER:", item_metrics["SER"])
+        # split staves (use dilation!)
+        staff_images = get_staff_images_from_sheet_image(img, dilate=True)
+        assert len(staff_images) == len(staves)
 
-    import matplotlib.pyplot as plt
-    plt.imshow(image_to_eval)
-    plt.show()
+        page_count = 0
+        page_sums = {
+            "SER": 0,
+            "ITER_RAW": 0,
+            "ITER_TRAINED": 0,
+            "ITER_SLURLESS": 0,
+            "ITER_ORNAMENTLESS": 0,
+            "ITER_PITCHLESS": 0,
+        }
+
+        for i, gold_annotation in enumerate(staves):
+            prediction = network.predict(staff_images[i])
+
+            PERFORM_REPAIR = True
+
+            if PERFORM_REPAIR:
+                # sort attachments, repair beams and stuff
+                repaired_prediction, warnings = repair_annotation(prediction)
+
+                # trim non-important barlines
+                repaired_prediction = trim_non_repeat_barlines(repaired_prediction)
+                gold_annotation = trim_non_repeat_barlines(gold_annotation)
+            else:
+                repaired_prediction = prediction
+                warnings = []
+
+            # calculate metrics
+            item_metrics = _calculate_item_metrics(
+                gold_annotation,
+                repaired_prediction
+            )
+
+            # sum metrics
+            for metric in total_sums:
+                total_sums[metric] += item_metrics[metric]
+            for metric in page_sums:
+                page_sums[metric] += item_metrics[metric]
+            total_count += 1
+            page_count += 1
+
+            # report on the staff
+            print("")
+            print("Staff: ", i)
+            print("GOLD:       ", gold_annotation)
+            print("PREDICTION: ", prediction)
+            print("REPAIRED:   ", repaired_prediction)
+            print("Warnings:", warnings)
+
+            for metric in item_metrics:
+                print("{:}: {:.4f}".format(metric, item_metrics[metric]))
+
+        # report on the file
+        print("")
+        print("---------------------------")
+        print("File: " + file)
+        if page_sums == 0:
+            print("No metrics recorded")
+        else:
+            for metric in page_sums:
+                print("{:}: {:.4f}".format(metric, page_sums[metric] / page_count))
+
+        # report on the entire run
+
+    print("\n")
+    print("==========================================")
+    print("=                Averages                =")
+    print("==========================================")
+    if total_count == 0:
+        print("No metrics recorded")
+    else:
+        for metric in total_sums:
+            print("Average {:}: {:.4f}".format(metric, total_sums[metric] / total_count))
 
 
 def evaluate_on_primus(model_name: str, take_last=100):
