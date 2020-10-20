@@ -145,7 +145,7 @@ def get_staff_images_from_sheet_image(sheet_image: np.ndarray, dilate=False) -> 
             y = 0
             h += y
         if y + h >= sheet_image.shape[0]:
-            h = sheet_image.shape[1] - 1 - y
+            h = sheet_image.shape[0] - 1 - y
 
         staff_images.append(sheet_image[y:(y + h), x:(x + w)])
 
