@@ -198,6 +198,29 @@ def frequency_tables():
         print(token, "&", token_frequencies[token], "\\\\")
 
 
+def article_showcase_image():
+    _engrave_annotation(
+        "clef.G-2 time.4 time.4 #4 e=-1 . er =e=1 . =e2 . q0 e=-2 =e-1 ( | ) h-1 hr | b0 b3 s=4 * ( ) =e0 qr b4 s=4 * ( ) N0 =e0 qr |"
+    )
+
+
+def article_token_overview():
+    _engrave_annotation(
+        "clef.G-2 clef.C0 clef.F2 time.C w-2 h-1 q0 e1 s2 | wr hr qr er sr | #2 b0 N-2"
+    )
+
+
+def article_example_incipit():
+    primus = load_primus_as_mashcima_annotations(take=100)
+    annotation = None
+    for p in primus:
+        if "000103351-1_1_1" not in p["path"]: continue
+        print(p["path"])
+        print(p["mashcima"])
+        _engrave_annotation(p["mashcima"])
+        return
+
+
 ########
 # MAIN #
 ########
@@ -217,4 +240,7 @@ def frequency_tables():
 # normalized_image()
 # comparison_2_engraved_image()
 # synthetic_annotation()
-frequency_tables()
+# frequency_tables()
+# article_showcase_image()
+# article_token_overview()
+article_example_incipit()
