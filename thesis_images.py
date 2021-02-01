@@ -221,6 +221,13 @@ def article_example_incipit():
         return
 
 
+def article_writer_style_variation():
+    _engrave_annotation(
+        "e-3 e-3 e-3 e-3 e-3 e-3 e-3 e-3 e-3 e-3 e-3 e-3 e-3 e-3 e-3 e-3",
+        full_mashcima=True
+    )
+
+
 ########
 # MAIN #
 ########
@@ -243,4 +250,5 @@ def article_example_incipit():
 # frequency_tables()
 # article_showcase_image()
 # article_token_overview()
-article_example_incipit()
+# article_example_incipit()
+article_writer_style_variation()
