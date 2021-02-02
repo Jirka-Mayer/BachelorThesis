@@ -507,7 +507,8 @@ def parse_annotation_into_token_groups(annotation: str) -> Tuple[List[TokenGroup
             # except for these allowed symbols
             if is_rest(group.token)\
                     or is_clef(group.token)\
-                    or isinstance(group, KeySignatureTokenGroup):
+                    or isinstance(group, KeySignatureTokenGroup)\
+                    or group.token == "?":
                 continue
 
             if not is_beamed_note(group.token):

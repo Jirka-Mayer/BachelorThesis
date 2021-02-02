@@ -195,6 +195,10 @@ def evaluate_on_real(model_name: str):
         }
 
         for i, gold_annotation in enumerate(staves):
+            # skip "None" annotated staves
+            if gold_annotation is None:
+                continue
+
             prediction = network.predict(staff_images[i])
 
             PERFORM_REPAIR = True
