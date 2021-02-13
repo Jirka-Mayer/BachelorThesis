@@ -71,15 +71,16 @@ class Experiment01(object):
         parser.add_argument('--batch_size', default=10, type=int)
         parser.add_argument('--threads', default=4, type=int)
         parser.add_argument('--load_model', action="store_true", help="continue training a model")
+        parser.add_argument('--seed_offset', default=0, type=int)
         args = parser.parse_args(sys.argv[2:])
 
         # set seed
         import tensorflow as tf
         import numpy as np
         import random
-        tf.set_random_seed(20200524)
-        np.random.seed(20200524)
-        random.seed(20200524)
+        tf.set_random_seed(20200524 + args.seed_offset)
+        np.random.seed(20200524 + args.seed_offset)
+        random.seed(20200524 + args.seed_offset)
 
         training_dataset, validation_dataset = self._prepare_datasets()
 
