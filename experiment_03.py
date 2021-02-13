@@ -40,10 +40,10 @@ class Experiment03(object):
 
         from experiment_utils import prepare_annotations
         training_annotations = prepare_annotations(
-            primus_skip=0, primus_take=31500, generated_take=31500
+            primus_skip=0, primus_take=31564, generated_take=31564
         )
         validation_annotations = prepare_annotations(
-            primus_skip=31500, primus_take=1000, generated_take=0
+            primus_skip=63127, primus_take=1000, generated_take=0
         )
 
         from experiment_utils import prepare_dataset
