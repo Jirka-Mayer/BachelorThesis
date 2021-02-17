@@ -48,11 +48,15 @@ NEW EVALUATION RUNS WITH MORE METRICS GATHERED
 
 #staffs ... total number of staffs (items) evaluated
 #gold_t ... total number of gold tokens
+            (5676 < 5840 because minor repairs happen before evaluation
+            (stripping trailing barlines etc.))
 #edits ... total number of edits ( = #ins + #dels + #reps )
 #ins ... total number of inserts
 #dels ... total number of deletes
 #reps ... total number of replacements
 a_SER ... the old SER - normalized over staffs and then *averaged* over the dataset
+            (but it did increase slightly from the old values (by ~0.005) due to
+            the code refactoring - maybe fixed some minor bug there)
 t_SER ... new, *total* SER, normalized over the entire dataset ( = #edits / #gold )
 
 
@@ -61,21 +65,21 @@ t_SER ... new, *total* SER, normalized over the entire dataset ( = #edits / #gol
 -------------------------------------------------------------------------------
 Ex. run   | #staffs | #gold_t | #edits | #ins | #dels | #reps | a_SER | t_SER |
 ----------| ------- | ------- | ------ | ---- | ----- | ----- | ----- | ----- |
-ex_01+000 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   | 0.337 |   ?   |
-ex_01+001 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   | 0.345 |   ?   |
-ex_01+002 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   |   ?   |   ?   |
+ex_01+000 | 115     | 5676    | 1973   | 710  | 171   | 1092  | 0.338 | 0.348 |
+ex_01+001 | 115     | 5676    | 1972   | 623  | 217   | 1132  | 0.345 | 0.347 |
+ex_01+002 | 115     | 5676    |    ?   |  ?   |   ?   |   ?   |   ?   |   ?   |
 ----------|---------|---------|--------|------|-------|-------|-------|-------|
-ex_02+000 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   | 0.284 |   ?   |
-ex_02+001 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   | 0.290 |   ?   |
-ex_02+002 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   |   ?   |   ?   |
+ex_02+000 | 115     | 5676    | 1677   | 363  | 212   | 1102  | 0.285 | 0.296 |
+ex_02+001 | 115     | 5676    | 1675   | 389  | 188   | 1098  | 0.290 | 0.295 |
+ex_02+002 | 115     | 5676    |    ?   |  ?   |   ?   |   ?   |   ?   |   ?   |
 ----------|---------|---------|--------|------|-------|-------|-------|-------|
-ex_03+000 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   | 0.260 |   ?   |
-ex_03+001 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   | 0.239 |   ?   |
-ex_03+002 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   |   ?   |   ?   |
+ex_03+000 | 115     | 5676    | 1549   | 490  | 128   | 931   | 0.262 | 0.273 |
+ex_03+001 | 115     | 5676    | 1424   | 574  | 105   | 745   | 0.239 | 0.251 |
+ex_03+002 | 115     | 5676    |    ?   |  ?   |   ?   |   ?   |   ?   |   ?   |
 ----------|---------|---------|--------|------|-------|-------|-------|-------|
-ex_04+000 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   | 0.251 |   ?   |
-ex_04+001 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   | 0.266 |   ?   |
-ex_04+002 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   |   ?   |   ?   |
+ex_04+000 | 115     | 5676    | 1515   | 507  | 124   | 884   | 0.254 | 0.267 |
+ex_04+001 | 115     | 5676    | 1587   | 673  | 116   | 798   | 0.266 | 0.280 |
+ex_04+002 | 115     | 5676    |    ?   |  ?   |   ?   |   ?   |   ?   |   ?   |
 ----------|---------|---------|--------|------|-------|-------|-------|-------|
 
 
@@ -101,3 +105,282 @@ ex_04+001 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   | 0.500 |   ?   |
 ex_04+002 |    ?    |    ?    |    ?   |  ?   |   ?   |   ?   |   ?   |   ?   |
 ----------|---------|---------|--------|------|-------|-------|-------|-------|
 
+
+Experiment 01+000 : IN-DOMAIN
+==============================================================
+
+total STAFF_COUNT: 115
+avg SER: 0.3380
+total EDIT_COUNT: 1973
+total GOLD_TOKEN_COUNT: 5676
+avg ITER_RAW: 0.4401
+avg ITER_TRAINED: 0.4224
+avg ITER_SLURLESS: 0.2991
+avg ITER_ORNAMENTLESS: 0.2630
+avg ITER_PITCHLESS: 0.2120
+total norm SER: 0.3476
+
+INSERTS: 710
+DELETES: 171
+REPLACEMENTS: 1092
+
+Tokens (generic) by most participation in edits:
+q 377
+) 345
+( 337
+e= 224
+. 193
+=e= 192
+=e 176
+# 128
+* 101
+e 101
+=s 93
+w 70
+=s= 63
+| 61
+s= 60
+clef.C 54
+h 51
+N 50
+b 49
+qr 49
+> 40
+s 39
+trill 21
+time.C 20
+clef.F 18
+lr 15
+? 15
+tuplet.3 13
+clef.G 11
+=t= 11
+** 9
+br 8
+time.4 8
+time.3 7
+time.2 6
+t= 6
+=t 5
+time.8 5
+er 5
+time.C/ 4
+hr 4
+time.6 4
+t 4
+fermata 4
+sr 2
+:|: 2
+:| 2
+time.5 1
+time.7 1
+wr 1
+
+
+Experiment 02+000 : IN-DOMAIN
+==============================================================
+
+total STAFF_COUNT: 115
+avg SER: 0.2850
+total EDIT_COUNT: 1677
+total GOLD_TOKEN_COUNT: 5676
+avg ITER_RAW: 0.3667
+avg ITER_TRAINED: 0.3462
+avg ITER_SLURLESS: 0.2840
+avg ITER_ORNAMENTLESS: 0.2555
+avg ITER_PITCHLESS: 0.1759
+total norm SER: 0.2955
+
+INSERTS: 363
+DELETES: 212
+REPLACEMENTS: 1102
+
+Tokens (generic) by most participation in edits:
+q 343
+=e= 260
+e= 211
+=e 192
+) 188
+( 183
+. 150
+* 109
+s= 105
+# 103
+e 95
+=s= 91
+=s 76
+h 75
+w 73
+N 69
+qr 59
+> 40
+er 38
+b 34
+| 32
+clef.C 25
+trill 21
+time.4 19
+s 19
+sr 16
+t= 15
+? 15
+** 15
+clef.F 14
+tuplet.3 13
+clef.G 10
+=t 9
+=t= 9
+lr 9
+time.9 9
+time.3 8
+br 5
+fermata 4
+time.7 3
+time.8 2
+time.2 2
+time.1 2
+hr 2
+:|: 2
+:| 2
+wr 1
+time.5 1
+time.C 1
+
+
+Experiment 03+000 : IN-DOMAIN
+==============================================================
+
+total STAFF_COUNT: 115
+avg SER: 0.2615
+total EDIT_COUNT: 1549
+total GOLD_TOKEN_COUNT: 5676
+avg ITER_RAW: 0.3408
+avg ITER_TRAINED: 0.3233
+avg ITER_SLURLESS: 0.2384
+avg ITER_ORNAMENTLESS: 0.2124
+avg ITER_PITCHLESS: 0.1572
+total norm SER: 0.2729
+
+INSERTS: 490
+DELETES: 128
+REPLACEMENTS: 931
+
+Tokens (generic) by most participation in edits:
+q 366
+( 240
+) 212
+=e= 210
+e= 203
+=e 168
+. 133
+=s 101
+e 101
+* 89
+# 84
+s= 66
+=s= 63
+h 61
+N 52
+w 51
+> 40
+qr 24
+s 23
+| 22
+trill 21
+b 19
+? 15
+clef.C 15
+tuplet.3 13
+** 12
+er 12
+time.3 7
+lr 6
+hr 5
+t= 5
+time.2 5
+=t= 4
+sr 4
+fermata 4
+time.4 4
+br 3
+clef.G 2
+clef.F 2
+time.C/ 2
+:|: 2
+:| 2
+wr 1
+time.C 1
+time.5 1
+time.7 1
+time.8 1
+=t 1
+time.1 1
+
+
+Experiment 04+000 : IN-DOMAIN
+==============================================================
+
+total STAFF_COUNT: 115
+avg SER: 0.2537
+total EDIT_COUNT: 1515
+total GOLD_TOKEN_COUNT: 5676
+avg ITER_RAW: 0.3302
+avg ITER_TRAINED: 0.3139
+avg ITER_SLURLESS: 0.2350
+avg ITER_ORNAMENTLESS: 0.2089
+avg ITER_PITCHLESS: 0.1557
+total norm SER: 0.2669
+
+INSERTS: 507
+DELETES: 124
+REPLACEMENTS: 884
+
+Tokens (generic) by most participation in edits:
+q 380
+) 229
+=e= 203
+( 194
+e= 177
+=e 144
+. 125
+=s 94
+e 92
+* 87
+# 80
+s= 62
+=s= 61
+w 49
+N 48
+h 48
+> 40
+b 37
+qr 24
+s 22
+trill 21
+| 19
+** 17
+t= 16
+? 15
+er 14
+clef.C 13
+tuplet.3 13
+time.3 9
+lr 8
+=t= 7
+time.2 7
+=t 5
+clef.F 5
+time.4 5
+time.7 4
+fermata 4
+br 4
+sr 3
+hr 3
+clef.G 2
+:|: 2
+:| 2
+time.5 1
+time.8 1
+time.1 1
+time.C/ 1
+wr 1
