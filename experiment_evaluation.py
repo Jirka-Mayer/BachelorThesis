@@ -32,24 +32,7 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
 
     print("\n")
 
-    # Evaluated metrics:
-    # (each builds on the previous removing some nuance)
-    #
-    # RAW) Raw edit distance
-    # GENERATED) Edit distance over generated symbols only
-    # SLURLESS) Edit distance without slurs
-    # ATTACHMENTLESS) Edit distance without attachments
-    # PITCHLESS) Edit distance without attachments and pitches
-
-    total_count = 0
-    total_sums = {
-        "SER": 0,
-        "ITER_RAW": 0,
-        "ITER_TRAINED": 0,
-        "ITER_SLURLESS": 0,
-        "ITER_ORNAMENTLESS": 0,
-        "ITER_PITCHLESS": 0,
-    }
+    total_metric_aggregate = _initialize_metrics_aggregate()
 
     for writer, pages in MUSCIMA_RAW_ANNOTATIONS.items():
         for page, staves in pages.items():
@@ -74,15 +57,7 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
             staff_images = get_staff_images_from_sheet_image(img)
             assert len(staff_images) == len(staves)
 
-            page_count = 0
-            page_sums = {
-                "SER": 0,
-                "ITER_RAW": 0,
-                "ITER_TRAINED": 0,
-                "ITER_SLURLESS": 0,
-                "ITER_ORNAMENTLESS": 0,
-                "ITER_PITCHLESS": 0,
-            }
+            page_metric_aggregate = _initialize_metrics_aggregate()
 
             for i, gold_annotation in enumerate(staves):
                 prediction = network.predict(staff_images[i])
@@ -101,18 +76,14 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
                     warnings = []
 
                 # calculate metrics
-                item_metrics = _calculate_item_metrics(
+                staff_metrics = _calculate_staff_metrics(
                     gold_annotation,
                     repaired_prediction
                 )
 
                 # sum metrics
-                for metric in total_sums:
-                    total_sums[metric] += item_metrics[metric]
-                for metric in page_sums:
-                    page_sums[metric] += item_metrics[metric]
-                total_count += 1
-                page_count += 1
+                _add_metrics(page_metric_aggregate, staff_metrics)
+                _add_metrics(total_metric_aggregate, staff_metrics)
 
                 # report on the staff
                 print("")
@@ -121,30 +92,21 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
                 print("PREDICTION: ", prediction)
                 print("REPAIRED:   ", repaired_prediction)
                 print("Warnings:", warnings)
-
-                for metric in item_metrics:
-                    print("{:}: {:.4f}".format(metric, item_metrics[metric]))
+                print("****")
+                _report_staff_metrics(staff_metrics)
 
             # report on the page
             print("")
             print("---------------------------")
             print("Writer: {:02d}      Page: {:03d}".format(writer, page))
-            if page_sums == 0:
-                print("No metrics recorded")
-            else:
-                for metric in page_sums:
-                    print("{:}: {:.4f}".format(metric, page_sums[metric] / page_count))
+            _report_page_metrics(page_metric_aggregate)
 
     # report on the entire run
     print("\n")
     print("==========================================")
     print("=                Averages                =")
     print("==========================================")
-    if total_count == 0:
-        print("No metrics recorded")
-    else:
-        for metric in total_sums:
-            print("Average {:}: {:.4f}".format(metric, total_sums[metric] / total_count))
+    _report_dataset_metrics(total_metric_aggregate)
 
 
 def evaluate_on_real(model_name: str):
@@ -154,15 +116,7 @@ def evaluate_on_real(model_name: str):
 
     print("\n")
 
-    total_count = 0
-    total_sums = {
-        "SER": 0,
-        "ITER_RAW": 0,
-        "ITER_TRAINED": 0,
-        "ITER_SLURLESS": 0,
-        "ITER_ORNAMENTLESS": 0,
-        "ITER_PITCHLESS": 0,
-    }
+    total_metric_aggregate = _initialize_metrics_aggregate()
 
     for file, staves in REAL_RAW_ANNOTATIONS.items():
         print("\n")
@@ -184,15 +138,7 @@ def evaluate_on_real(model_name: str):
         staff_images = get_staff_images_from_sheet_image(img, dilate=True)
         assert len(staff_images) == len(staves)
 
-        page_count = 0
-        page_sums = {
-            "SER": 0,
-            "ITER_RAW": 0,
-            "ITER_TRAINED": 0,
-            "ITER_SLURLESS": 0,
-            "ITER_ORNAMENTLESS": 0,
-            "ITER_PITCHLESS": 0,
-        }
+        page_metric_aggregate = _initialize_metrics_aggregate()
 
         for i, gold_annotation in enumerate(staves):
             # skip "None" annotated staves
@@ -215,18 +161,14 @@ def evaluate_on_real(model_name: str):
                 warnings = []
 
             # calculate metrics
-            item_metrics = _calculate_item_metrics(
+            staff_metrics = _calculate_staff_metrics(
                 gold_annotation,
                 repaired_prediction
             )
 
             # sum metrics
-            for metric in total_sums:
-                total_sums[metric] += item_metrics[metric]
-            for metric in page_sums:
-                page_sums[metric] += item_metrics[metric]
-            total_count += 1
-            page_count += 1
+            _add_metrics(page_metric_aggregate, staff_metrics)
+            _add_metrics(total_metric_aggregate, staff_metrics)
 
             # report on the staff
             print("")
@@ -235,19 +177,14 @@ def evaluate_on_real(model_name: str):
             print("PREDICTION: ", prediction)
             print("REPAIRED:   ", repaired_prediction)
             print("Warnings:", warnings)
-
-            for metric in item_metrics:
-                print("{:}: {:.4f}".format(metric, item_metrics[metric]))
+            print("****")
+            _report_staff_metrics(staff_metrics)
 
         # report on the file
         print("")
         print("---------------------------")
         print("File: " + file)
-        if page_sums == 0:
-            print("No metrics recorded")
-        else:
-            for metric in page_sums:
-                print("{:}: {:.4f}".format(metric, page_sums[metric] / page_count))
+        _report_page_metrics(page_metric_aggregate)
 
         # report on the entire run
 
@@ -255,11 +192,7 @@ def evaluate_on_real(model_name: str):
     print("==========================================")
     print("=                Averages                =")
     print("==========================================")
-    if total_count == 0:
-        print("No metrics recorded")
-    else:
-        for metric in total_sums:
-            print("Average {:}: {:.4f}".format(metric, total_sums[metric] / total_count))
+    _report_dataset_metrics(total_metric_aggregate)
 
 
 def evaluate_on_primus(model_name: str, take_last=100):
@@ -299,15 +232,7 @@ def evaluate_on_primus(model_name: str, take_last=100):
     from app.Network import Network
     network = Network.load(model_name)
 
-    total_count = 0
-    total_sums = {
-        "SER": 0,
-        "ITER_RAW": 0,
-        "ITER_TRAINED": 0,
-        "ITER_SLURLESS": 0,
-        "ITER_ORNAMENTLESS": 0,
-        "ITER_PITCHLESS": 0,
-    }
+    total_metric_aggregate = _initialize_metrics_aggregate()
 
     for incipit in primus:
         gold_annotation = incipit["mashcima"]
@@ -321,15 +246,13 @@ def evaluate_on_primus(model_name: str, take_last=100):
         gold_annotation = trim_non_repeat_barlines(gold_annotation)
 
         # calculate metrics
-        item_metrics = _calculate_item_metrics(
+        staff_metrics = _calculate_staff_metrics(
             gold_annotation,
             repaired_prediction
         )
 
         # sum metrics
-        for metric in total_sums:
-            total_sums[metric] += item_metrics[metric]
-        total_count += 1
+        _add_metrics(total_metric_aggregate, staff_metrics)
 
         # report on the staff
         print("")
@@ -338,9 +261,8 @@ def evaluate_on_primus(model_name: str, take_last=100):
         print("PREDICTION: ", prediction)
         print("REPAIRED:   ", repaired_prediction)
         print("Warnings:", warnings)
-
-        for metric in item_metrics:
-            print("{:}: {:.4f}".format(metric, item_metrics[metric]))
+        print("****")
+        _report_staff_metrics(staff_metrics)
 
         # show the incipit image
         # plt.imshow(incipit["img"])
@@ -351,14 +273,85 @@ def evaluate_on_primus(model_name: str, take_last=100):
     print("==========================================")
     print("=                Averages                =")
     print("==========================================")
-    if total_count == 0:
+    _report_dataset_metrics(total_metric_aggregate)
+
+
+#######################################################
+# Private functions implementing various helper logic #
+#######################################################
+
+
+def _initialize_metrics_aggregate():
+    return {
+        "STAFF_COUNT": 0,
+        "SER": 0,
+        "EDITS": [],
+        "EDIT_COUNT": 0,
+        "GOLD_TOKEN_COUNT": 0,
+        "ITER_RAW": 0,
+        "ITER_TRAINED": 0,
+        "ITER_SLURLESS": 0,
+        "ITER_ORNAMENTLESS": 0,
+        "ITER_PITCHLESS": 0,
+    }
+
+
+def _add_metrics(metrics_aggregate, metrics):
+    for metric in metrics_aggregate:
+        metrics_aggregate[metric] += metrics[metric]
+
+
+def _report_staff_metrics(metrics):
+    m = metrics
+
+    print("SER: {:.4f}".format(m["SER"]))
+
+    print("EDITS:", m["EDITS"])
+    print("EDIT_COUNT:", m["EDIT_COUNT"])
+    print("GOLD_TOKEN_COUNT:", m["GOLD_TOKEN_COUNT"])
+
+    print("ITER_RAW: {:.4f}".format(m["ITER_RAW"]))
+    print("ITER_TRAINED: {:.4f}".format(m["ITER_TRAINED"]))
+    print("ITER_SLURLESS: {:.4f}".format(m["ITER_SLURLESS"]))
+    print("ITER_ORNAMENTLESS: {:.4f}".format(m["ITER_ORNAMENTLESS"]))
+    print("ITER_PITCHLESS: {:.4f}".format(m["ITER_PITCHLESS"]))
+
+
+def _report_page_metrics(metrics_aggregate):
+    m = metrics_aggregate
+
+    c = m["STAFF_COUNT"]
+
+    if c == 0:
         print("No metrics recorded")
-    else:
-        for metric in total_sums:
-            print("Average {:}: {:.4f}".format(metric, total_sums[metric] / total_count))
+        return
+
+    print("total STAFF_COUNT:", c)
+
+    print("avg SER: {:.4f}".format(m["SER"] / c))
+
+    #print("total EDITS:", m["EDITS"]) # a long list - don't print
+    print("total EDIT_COUNT:", m["EDIT_COUNT"])
+    print("total GOLD_TOKEN_COUNT:", m["GOLD_TOKEN_COUNT"])
+
+    print("avg ITER_RAW: {:.4f}".format(m["ITER_RAW"] / c))
+    print("avg ITER_TRAINED: {:.4f}".format(m["ITER_TRAINED"] / c))
+    print("avg ITER_SLURLESS: {:.4f}".format(m["ITER_SLURLESS"] / c))
+    print("avg ITER_ORNAMENTLESS: {:.4f}".format(m["ITER_ORNAMENTLESS"] / c))
+    print("avg ITER_PITCHLESS: {:.4f}".format(m["ITER_PITCHLESS"] / c))
+
+    ser = m["EDIT_COUNT"] / m["GOLD_TOKEN_COUNT"]
+    print("total norm SER: {:.4f}".format(ser))
 
 
-def _calculate_item_metrics(gold: str, prediction: str):
+def _report_dataset_metrics(metrics_aggregate):
+    _report_page_metrics(metrics_aggregate)
+
+    # TODO: aggregate edits and do a frequency analysis
+    print("TODO: edits frequency analysis")
+
+
+def _calculate_staff_metrics(gold: str, prediction: str):
     def _normalized_edit_distance(p: str, g: str, normalize_by: int) -> float:
         ed = editdistance.eval(g.split(), p.split())
         if normalize_by == 0:
@@ -367,12 +360,26 @@ def _calculate_item_metrics(gold: str, prediction: str):
 
     important_token_count = count_important_tokens(gold)
 
+    # TODO: implement this
+    edits = [("insert", "#4"), ("delete", "b8"), ("replace", ".", "*")]
+    edit_count = editdistance.eval(gold.split(), prediction.split())
+
+    # make sure both edit distance libraries agree
+    #assert len(edits) == edit_count
+
     return {
+        "STAFF_COUNT": 1,  # increment staff count by one
+
         "SER": _normalized_edit_distance(
             prediction,
             gold,
             len(gold.split())
         ),
+        
+        "EDITS": edits,
+        "EDIT_COUNT": len(edits),
+        "GOLD_TOKEN_COUNT": len(gold.split()),
+
         "ITER_RAW": _normalized_edit_distance(
             iter_raw_transformation(prediction),
             iter_raw_transformation(gold),
