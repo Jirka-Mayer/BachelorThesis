@@ -13,6 +13,7 @@ from app.vocabulary import iter_trained_transformation
 from app.vocabulary import iter_slurless_transformation
 from app.vocabulary import iter_ornamentless_transformation
 from app.vocabulary import iter_pitchless_transformation
+from app.editops_levenshtein import editops_levenshtein
 
 
 def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
@@ -360,12 +361,14 @@ def _calculate_staff_metrics(gold: str, prediction: str):
 
     important_token_count = count_important_tokens(gold)
 
-    # TODO: implement this
-    edits = [("insert", "#4"), ("delete", "b8"), ("replace", ".", "*")]
+    edits = editops_levenshtein(gold, prediction)
     edit_count = editdistance.eval(gold.split(), prediction.split())
 
+    # "edits" look like this:
+    # [("insert", "#4"), ("delete", "b8"), ("replace", (what) ".", (with) "*")]
+
     # make sure both edit distance libraries agree
-    #assert len(edits) == edit_count
+    assert len(edits) == edit_count
 
     return {
         "STAFF_COUNT": 1,  # increment staff count by one
