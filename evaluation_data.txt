@@ -1,0 +1,41 @@
+Results gathered from several runs
+==================================
+
+There are experiments 01, 02, 03 and 04
+
+Each experiment was run first with seed 20200524 + 0,
+this first run was on 63_000 items.
+
+Additional runs were performed with seed 20200524 + k     (k > 0)
+that ran on full 63_127 items.
+
+The results:
+
+             IN DOMAIN
+----------------------------------
+Ex. | k: |  000  |  001  |  002  |
+---------| ----- | ----- | ----- |
+01       | 0.337 | 0.345 |   ?   |
+02       | 0.284 | 0.290 |   ?   |
+03       | 0.260 | 0.239 |   ?   |
+04       | 0.251 | 0.266 |   ?   |
+
+           OUT OF DOMAIN
+----------------------------------
+Ex. | k: |  000  |  001  |  002  |
+---------| ----- | ----- | ----- |
+01       | 0.593 | 0.605 |   ?   |
+02       | 0.605 | 0.578 |   ?   |
+03       | 0.469 | 0.499 |   ?   |
+04       | 0.510 | 0.500 |   ?   |
+
+NOTES:
+experiment_03_001 ... crashed in ~30%, right in the optimum
+experiment_04_001 ... crashed in ~65%, well past the optimum
+Both will be re-run with k=002, hopefully not crashing this time
+to get the full chart for the article.
+
+ALSO:
+All values are first normalized over each staff and then averaged
+over all staves in the dataset.
+We could maybe directly normalize over the entire dataset.
