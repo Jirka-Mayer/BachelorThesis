@@ -44,7 +44,7 @@ MUSCIMA_RAW_ANNOTATIONS = {
             "| clef.G-2 time.3 time.4 q-6 q1 q2 | q3 q2 q1 | q2 e=3 =e=2 =e=1 =e0 | q1 e=2 ( ) =e=1 =e=0 ( ) =e1 | q0 q3 * e4 | q2 e=1 ( ) =e0 q3 | q1 qr qr | qr q0 q1 |",
             "| clef.C0 time.3 time.4 q0 qr qr | qr #4 q4 q5 | q6 q5 #4 q4 | q5 e=6 =e=5 #4 =e=4 #3 =e3 | #4 q4 e=5 ( ) =e=4 #3 =e=3 ( ) =e4 | #4 q4 q6 * e7 | q5 #4 e=4 ( ) #3 =e3 q6 | q2 q2 #4 q4 |",
             "| clef.C0 time.3 time.4 q-3 qr qr | wr | wr | qr q0 q1 | q2 q1 q0 | q1 e=2 =e=1 =e=0 =e-1 | q0 e=1 ( ) =e=0 =e=-1 ( ) =e0 | q-1 q2 q2 |",
-            "| clef.C-4 time.3 time.4 qr q3 q4 | q5 ( ) q4 q3 | q4 ( e=5 =e=4 =e=3 =e2 | q3 e=4 ) =e3 e=2 ( ) =e3 | q2 q5 * e6 | q4 e=3 ( ) =e2 q5 | q3 qr qr | qr q2 q3 |",
+            "| clef.C-4 time.3 time.4 qr q3 q4 | q5 ( ) q4 q3 | q4 e=5 ( =e=4 =e=3 =e2 | q3 e=4 ) =e3 e=2 ( ) =e3 | q2 q5 * e6 | q4 e=3 ( ) =e2 q5 | q3 qr qr | qr q2 q3 |",
             "| clef.C0 time.3 time.4 wr | qr #4 q4 q5 | q6 q5 #4 q4 | q5 ( e=5 =e=5 #4 =e=4 #3 =e3 | #4 q4 e=5 ) =e4 #3 e=3 ( ) =e5 | #4 q4 q6 * e7 | q5 #4 e=4 ( ) #3 =e3 q6 | q2 q2 #4 q4 |",
             "| clef.C2 time.3 time.4 wr | wr | wr | qr q2 q3 | q4 ( ) q3 q2 | q3 ( e=4 =e=3 =e=2 =e1 | q2 e=3 ) =e2 e=1 =e2 | q1 q4 q4 |",
             "| clef.F2 time.3 time.4 wr | wr | wr | wr | qr #3 q3 q4 | q5 ( ) q4 #3 q3 | q4 ( e=5 =e=4 #3 =e=3 #2 =e2 | #3 q3 ) e=4 =e3 #2 e=2 ( ) =e1 |"
