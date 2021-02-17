@@ -13,6 +13,7 @@ from app.vocabulary import iter_trained_transformation
 from app.vocabulary import iter_slurless_transformation
 from app.vocabulary import iter_ornamentless_transformation
 from app.vocabulary import iter_pitchless_transformation
+from app.vocabulary import to_generic
 from app.editops_levenshtein import editops_levenshtein
 
 
@@ -348,8 +349,37 @@ def _report_page_metrics(metrics_aggregate):
 def _report_dataset_metrics(metrics_aggregate):
     _report_page_metrics(metrics_aggregate)
 
-    # TODO: aggregate edits and do a frequency analysis
-    print("TODO: edits frequency analysis")
+    counts = {
+        "insert": 0,
+        "delete": 0,
+        "replace": 0,
+    }
+
+    edit_participation = {
+        # "generic-token": <number-of-edits-it-participated-in>
+    }
+
+    for edit in metrics_aggregate["EDITS"]:
+        counts[edit[0]] += 1
+        
+        for token in edit[1:]: # because replacements have 2 participants
+            gt = to_generic(token)
+            if gt not in edit_participation:
+                edit_participation[gt] = 0
+            edit_participation[gt] += 1
+
+    print("\n")
+    print("Edits analysis")
+    print("===========================")
+
+    print("INSERTS:", counts["insert"])
+    print("DELETES:", counts["delete"])
+    print("REPLACEMENTS:", counts["replace"])
+    print("\n")
+
+    print("Tokens (generic) by most participation in edits:")
+    for gt, p in sorted(edit_participation.items(), key=lambda i: i[1], reverse=True):
+        print(gt, p)
 
 
 def _calculate_staff_metrics(gold: str, prediction: str):

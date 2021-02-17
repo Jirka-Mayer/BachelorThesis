@@ -19,6 +19,7 @@ Make sure you have all the required python packages installed:
     pip install tensorflow  # tensorflow version 1 is needed
     pip install muscima
     pip install editdistance
+    pip install python-Levenshtein
     pip install matplotlib
 
 > Tensorflow has to be in version 1. Project has been tested with versions 1.12.0 and 1.5.0. In case there are some problems, check that the blank symbol of CTC loss is encoded as `num_classes - 1`, not `0`.
