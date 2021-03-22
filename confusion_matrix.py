@@ -2,6 +2,7 @@ import json
 from app.muscima_annotations import MUSCIMA_RAW_ANNOTATIONS
 from app.editops_levenshtein import editops_levenshtein_sequenced
 from app.vocabulary import repair_annotation
+from app.vocabulary import trim_non_repeat_barlines
 from app.vocabulary import to_generic
 from app.vocabulary import get_pitch
 from typing import List
@@ -80,8 +81,8 @@ def main():
                 prediction = prediction_sheet[str(writer)][str(part)][i]
 
                 replacements = editops_levenshtein_sequenced(
-                    repair_annotation(gold)[0],
-                    repair_annotation(prediction)[0]
+                    trim_non_repeat_barlines(repair_annotation(gold)[0]),
+                    trim_non_repeat_barlines(repair_annotation(prediction)[0])
                 )
 
                 for s in stats:
