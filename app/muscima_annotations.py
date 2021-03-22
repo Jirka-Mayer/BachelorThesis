@@ -217,3 +217,14 @@ for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
                 )
                 print(staff)
                 print("\t" + "\n\t".join(warnings))
+
+
+def create_empty_prediction_sheet():
+    """Copies MUSCIMA_RAW_ANNOTATIONS, fills it with None and returns"""
+    import copy
+    sheet = copy.deepcopy(MUSCIMA_RAW_ANNOTATIONS)
+    for parts in sheet.values():
+        for staves in parts.values():
+            for i in range(len(staves)):
+                staves[i] = None
+    return sheet

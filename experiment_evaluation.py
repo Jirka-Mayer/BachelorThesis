@@ -2,6 +2,7 @@ import cv2
 import os
 import editdistance
 from app.muscima_annotations import MUSCIMA_RAW_ANNOTATIONS
+from app.muscima_annotations import create_empty_prediction_sheet
 from app.real_annotations import REAL_RAW_ANNOTATIONS
 from app.get_staff_images_from_sheet_image import get_staff_images_from_sheet_image
 import config
@@ -15,6 +16,15 @@ from app.vocabulary import iter_ornamentless_transformation
 from app.vocabulary import iter_pitchless_transformation
 from app.vocabulary import to_generic
 from app.editops_levenshtein import editops_levenshtein
+import json
+
+
+PREDICTIONS_FILE = "experiment-predictions.json"
+
+
+def save_predictions_file(prediction_sheet):
+    with open(PREDICTIONS_FILE, "w") as f:
+        json.dump(prediction_sheet, f, indent=4)
 
 
 def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
@@ -35,6 +45,8 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
     print("\n")
 
     total_metric_aggregate = _initialize_metrics_aggregate()
+    
+    prediction_sheet = create_empty_prediction_sheet()
 
     for writer, pages in MUSCIMA_RAW_ANNOTATIONS.items():
         for page, staves in pages.items():
@@ -96,6 +108,10 @@ def evaluate_model(model_name: str, writers_filter: str, pages_filter: str):
                 print("Warnings:", warnings)
                 print("****")
                 _report_staff_metrics(staff_metrics)
+
+                # save the predicted annotation
+                prediction_sheet[writer][page][i] = repaired_prediction
+                save_predictions_file(prediction_sheet)
 
             # report on the page
             print("")
