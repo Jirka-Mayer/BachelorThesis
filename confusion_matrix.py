@@ -17,7 +17,7 @@ class Statistics:
         self.title = title
         
         # transforms token sequences before aggregation
-        self.transformer = transformer
+        self.transformer = transformer or (lambda x: x)
 
         # internal statistics "seq": count
         self.stats = {}
@@ -28,9 +28,8 @@ class Statistics:
             self.add_replacement(r[0], r[1])
 
     def add_replacement(self, pred, gold):
-        if self.transformer is not None:
-            pred = self.transformer(pred)
-            gold = self.transformer(gold)
+        pred = self.transformer(pred)
+        gold = self.transformer(gold)
 
         if len(pred) == 0:
             pred_str = Statistics.EMPTY_SEQUENCE
@@ -70,8 +69,8 @@ def main():
 
     stats = [
         Statistics("Basic stats"),
-        #Statistics("Generic tokens", lambda seq: [to_generic(t) for t in seq]),
-        #Statistics("Pitch only", lambda seq: [str(get_pitch(t)) for t in seq]),
+        Statistics("Generic tokens", lambda seq: [to_generic(t) for t in seq]),
+        Statistics("Pitch only", lambda seq: [str(get_pitch(t) or "no") for t in seq]),
     ]
 
     for writer, parts in MUSCIMA_RAW_ANNOTATIONS.items():
@@ -80,12 +79,14 @@ def main():
                 gold = MUSCIMA_RAW_ANNOTATIONS[writer][part][i]
                 prediction = prediction_sheet[str(writer)][str(part)][i]
 
-                replacements = editops_levenshtein_sequenced(
-                    trim_non_repeat_barlines(repair_annotation(gold)[0]),
-                    trim_non_repeat_barlines(repair_annotation(prediction)[0])
-                )
+                gold = trim_non_repeat_barlines(repair_annotation(gold)[0])
+                prediction = trim_non_repeat_barlines(repair_annotation(prediction)[0])
 
                 for s in stats:
+                    replacements = editops_levenshtein_sequenced(
+                        s.transformer(gold.split()),
+                        s.transformer(prediction.split())
+                    )
                     s.add_replacements(replacements)
 
     for s in stats:

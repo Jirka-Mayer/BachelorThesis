@@ -7,16 +7,20 @@ import Levenshtein
 # The encoding is needed since the package only accepts strings, not lists
 
 
-def _encode_tokens(tokens: List[str]) -> str:
+def _encode_tokens(tokens: List[str], vocabulary=None) -> str:
+    if vocabulary is None:
+        vocabulary = VOCABULARY
     return "".join([
-        chr(VOCABULARY.index(token))
+        chr(vocabulary.index(token))
         for token in tokens
     ])
 
 
-def _decode_tokens(encoded: str) -> List[str]:
+def _decode_tokens(encoded: str, vocabulary=None) -> List[str]:
+    if vocabulary is None:
+        vocabulary = VOCABULARY
     return [
-        VOCABULARY[ord(c)]
+        vocabulary[ord(c)]
         for c in encoded
     ]
 
@@ -44,14 +48,12 @@ def editops_levenshtein(gold: str, prediction: str):
     return [_transform_op(o, prediction_tokens, gold_tokens) for o in ops]
 
 
-def editops_levenshtein_sequenced(gold: str, prediction: str):
+def editops_levenshtein_sequenced(gold_tokens: List[str], prediction_tokens: List[str]):
     """Computes entire sequence-based edit operations, all replacements"""
     # run levenshtein
-    gold_tokens = gold.split()
-    prediction_tokens = prediction.split()
-
-    gold_encoded = _encode_tokens(gold_tokens)
-    prediction_encoded = _encode_tokens(prediction_tokens)
+    vocabulary = list(set(gold_tokens + prediction_tokens))
+    gold_encoded = _encode_tokens(gold_tokens, vocabulary)
+    prediction_encoded = _encode_tokens(prediction_tokens, vocabulary)
 
     # NOTE: editops(source, destination)
     ops = Levenshtein.editops(prediction_encoded, gold_encoded)
