@@ -8,6 +8,9 @@ from app.vocabulary import get_pitch
 from typing import List
 
 
+GROUP_BY_KIND_WHEN_PRINTING = True
+
+
 class Statistics:
     JOINER = "  →  "
     EMPTY_SEQUENCE = "∅"
@@ -48,13 +51,45 @@ class Statistics:
         
         self.stats[key] += 1
 
-    def print_report(self):
+    def print_report(self, grouped=False):
+        count = len(self.stats)
+        def key_by_count(i):
+            return i[1]
+        def compare_grouped(i, j):
+            ia, ib = i[0].split(Statistics.JOINER)
+            ja, jb = j[0].split(Statistics.JOINER)
+
+            # pure insertions first
+            if ia == Statistics.EMPTY_SEQUENCE and ja != Statistics.EMPTY_SEQUENCE: return 1
+            if ia != Statistics.EMPTY_SEQUENCE and ja == Statistics.EMPTY_SEQUENCE: return -1
+
+            # pure deletions second
+            if ib == Statistics.EMPTY_SEQUENCE and jb != Statistics.EMPTY_SEQUENCE: return 1
+            if ib != Statistics.EMPTY_SEQUENCE and jb == Statistics.EMPTY_SEQUENCE: return -1
+            
+            # token count (inversed)
+            if len(i[0].split()) < len(j[0].split()): return 1
+            if len(i[0].split()) > len(j[0].split()): return -1
+
+            # occurence count
+            if i[1] < j[1]: return -1
+            if i[1] > j[1]: return 1
+
+            # string lexi
+            if i[0] < j[0]: return -1
+            if i[0] > j[0]: return 1
+            
+            return 0
+
+        import functools
+        key = functools.cmp_to_key(compare_grouped) if grouped else key_by_count
+
         print()
         print()
         print("Replacement statistics: " + self.title)
         print("-------------------------------------------------")
         print("<count>: <replacement>")
-        for trans, count in sorted(self.stats.items(), key=lambda i: i[1], reverse=True):
+        for trans, count in sorted(self.stats.items(), key=key, reverse=True):
             print(str(count).rjust(7) + ": " + trans)
 
 
@@ -90,7 +125,7 @@ def main():
                     s.add_replacements(replacements)
 
     for s in stats:
-        s.print_report()
+        s.print_report(GROUP_BY_KIND_WHEN_PRINTING)
 
 
 main()
