@@ -83,7 +83,8 @@ def main():
     shutil.rmtree(directory)
     os.mkdir(directory)
 
-    mc = Mashcima(use_cache=True)
+    # skip all the writers present in the evaluation dataset
+    mc = Mashcima(use_cache=True, skip_writers=[13, 17, 20, 34, 41, 49])
 
     store_sprite_groups(directory, "whole_note", mc.WHOLE_NOTES)
     store_sprite_groups(directory, "half_note", mc.HALF_NOTES)
