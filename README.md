@@ -28,7 +28,7 @@ Download PRIMUS dataset (as a `.tgz` file) from
 [https://grfia.dlsi.ua.es/primus/](https://grfia.dlsi.ua.es/primus/)
 It need not be extracted.
 
-Download staff-removal set of CVC-MUSCIMA images from [http://www.cvc.uab.es/cvcmuscima/index_database.html](http://www.cvc.uab.es/cvcmuscima/index_database.html)
+Download staff-removal set of CVC-MUSCIMA images from [https://pages.cvc.uab.es/cvcmuscima/index_database.html](https://pages.cvc.uab.es/cvcmuscima/index_database.html)
 
 Download MUSCIMA++ from [https://ufal.mff.cuni.cz/muscima](https://ufal.mff.cuni.cz/muscima)
 
